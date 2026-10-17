@@ -219,6 +219,12 @@ ul.pts li::before{content:"";position:absolute;left:4px;top:15px;width:9px;heigh
 .steps-list{margin:0 0 10px;padding-left:20px;font-size:14px}
 .steps-list li{margin:3px 0}
 @media (min-width:600px){ .pchips{grid-template-columns:repeat(6,1fr)} }
+html[data-view="athletik"] main > section:not(#athletik),
+html[data-view="normen"] main > section:not(#normen){display:none!important}
+html[data-view="athletik"] .picker, html[data-view="normen"] .picker{display:none!important}
+html[data-view="athleten"][data-app] #athletik, html[data-view="athleten"][data-app] nav.jump a[href="#athletik"]{display:none!important}
+html[data-view="normen"] #normAth{display:none}
+html:not([data-view="normen"]) #normRef{display:none}
 </style>
 <style id="dtv-appbar">
 .appbar{display:flex;align-items:center;gap:6px;background:#2B2B2B;color:#fff;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));overflow-x:auto;scrollbar-width:none;position:relative;z-index:30}
@@ -230,11 +236,16 @@ ul.pts li::before{content:"";position:absolute;left:4px;top:15px;width:9px;heigh
 .appbar .ab-t.on{background:#D7191C;opacity:1}
 html[data-app] .brand{display:none!important}
 html[data-app] nav.jump a.ext{display:none!important}
-body.running .appbar{display:none}
+body.running .appbar,body.running .subbar{display:none}
+.subbar{display:flex;gap:6px;background:#3A3A3A;padding:5px 10px;overflow-x:auto;scrollbar-width:none}
+.subbar::-webkit-scrollbar{display:none}
+.subbar a{color:#fff;text-decoration:none;white-space:nowrap;font:600 14px 'Barlow',system-ui,sans-serif;padding:6px 12px;border-radius:999px;opacity:.8}
+.subbar a.on{background:#fff;color:#2B2B2B;opacity:1}
+.subbar[hidden]{display:none}
 </style>
 </head>
 <body>
-<nav class="appbar" aria-label="Trainer-App"><a class="ab-home" href="index.html"><img src="dtv-icon.png" alt="">DTV 1847</a><a class="ab-t" href="plan.html">Planung</a><a class="ab-t" href="zirkel.html">Zirkel</a><a class="ab-t on" href="training.html">Athleten</a><a class="ab-t" href="technik.html">Technik</a><a class="ab-t" href="masse.html">Maße</a></nav>
+<nav class="appbar" aria-label="Trainer-App"><a class="ab-home" href="index.html"><img src="dtv-icon.png" alt="">DTV 1847</a><a class="ab-t" data-t="plan.html" href="plan.html">Planung</a><a class="ab-t" data-t="zirkel.html" href="zirkel.html">Zirkel</a><a class="ab-t" data-t="training.html" href="training.html">Athleten</a><a class="ab-t" data-t="wissen.html" href="wissen.html">Wissen</a></nav><nav class="subbar" aria-label="Wissen" hidden><a data-w="technik.html" href="technik.html">Technik</a><a data-w="training.html?view=athletik" href="training.html?view=athletik">Athletik</a><a data-w="training.html?view=normen" href="training.html?view=normen">Normen</a><a data-w="masse.html" href="masse.html">Maße</a></nav><script>(function(){var p=location.pathname.split('/').pop()||'index.html',q=location.search,v=(q.match(/view=(\w+)/)||[])[1];var w=p==='wissen.html'||p==='technik.html'||p==='masse.html'||(p==='training.html'&&v);var t=w?'wissen.html':p;document.querySelectorAll('.appbar .ab-t').forEach(function(a){if(a.dataset.t===t)a.classList.add('on');});var sb=document.querySelector('.subbar');if(w&&p!=='wissen.html'){sb.hidden=false;var cur=p+(v?'?view='+v:'');sb.querySelectorAll('a').forEach(function(a){if(a.dataset.w===cur)a.classList.add('on');});}})();</script>
 
 <div class="nojs-banner">Diese Seite braucht JavaScript. Bitte über den Link in Safari öffnen, nicht in der Dateivorschau.</div>
 <header>
@@ -317,6 +328,7 @@ body.running .appbar{display:none}
     <div class="btns"><button class="btn small" type="button" id="toPlan">In den Plan übernehmen</button></div>
     <p class="ok" id="toPlanMsg" hidden></p>
   </div>
+  <div class="block" id="zoneBox" hidden></div>
 
   <details class="block">
     <summary><h3>Berechnung</h3></summary>
@@ -385,7 +397,14 @@ body.running .appbar{display:none}
   <div class="block">
     <div class="qchips" id="nChips"></div>
   </div>
-  <div id="normOut"></div>
+  <div id="normRef" class="block">
+    <div class="fg">
+      <label class="f"><span>Geschlecht</span><select id="nrG"><option value="w">weiblich</option><option value="m">männlich</option></select></label>
+      <label class="f"><span>Alter im Jahr</span><select id="nrAge"><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option></select></label>
+    </div>
+    <div id="normRefOut" style="margin-top:12px"></div>
+  </div>
+  <div id="normAth"><div id="normOut"></div></div>
   <details class="block safe">
     <summary><h3>Was die Werte bedeuten</h3></summary>
     <div class="inner">
@@ -541,11 +560,13 @@ body.running .appbar{display:none}
 </section>
 </main>
 
-<footer class="only-js">Die Vorgaben sind Richtwerte und ersetzen nicht das Auge des Trainers. <span class="ver">Trainer · Version 2026-09-26</span></footer>
+<footer class="only-js">Die Vorgaben sind Richtwerte und ersetzen nicht das Auge des Trainers. <span class="ver">Trainer · Version 2026-10-17 · Laufbereiche bis Marathon</span></footer>
 
 <script>
 (function(){
 const KEY = 'dtv-training-v1';
+const VIEW = (()=>{ const v = new URLSearchParams(location.search).get('view'); return ['athletik','normen'].includes(v) ? v : ''; })();
+document.documentElement.setAttribute('data-view', VIEW || 'athleten');
 const Y = new Date().getFullYear();
 const $ = s => document.querySelector(s);
 const on = (sel, ev, fn, opt) => { const el = $(sel); if (el) el.addEventListener(ev, fn, opt); };
@@ -558,7 +579,7 @@ const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
 const MOVES_KEYS = ['sprint','absprung','wurf','stoss','huerden','lauf'];
 const CFG = {
   sprint:{dMin:20, dMax:300, dStep:10, dChips:[30,60,80,100,150,200,300], pMin:50, pMax:100, pStep:5, pChips:[60,70,80,90,95,100]},
-  run:   {dMin:100, dMax:5000, dStep:100, dChips:[200,400,800,1000,2000,3000], pMin:60, pMax:110, pStep:1, pChips:[80,85,90,95,100,105]}
+  run:   {dMin:100, dMax:10000, dStep:100, dChips:[400,1000,2000,3000,5000,10000], pMin:60, pMax:110, pStep:1, pChips:[80,85,90,95,100,105]}
 };
 const FIELD = [['TWEI|m','Weitsprung'],['THOC|m','Hochsprung'],['TDRE|m','Dreisprung'],['TSTA|m','Stabhochsprung'],
   ['TKUG_3000|m','Kugelstoß 3 kg'],['TKUG_4000|m','Kugelstoß 4 kg'],['TKUG_5000|m','Kugelstoß 5 kg'],['TKUG_6000|m','Kugelstoß 6 kg'],['TKUG_7260|m','Kugelstoß 7,26 kg'],
@@ -569,7 +590,7 @@ const FIELD = [['TWEI|m','Weitsprung'],['THOC|m','Hochsprung'],['TDRE|m','Dreisp
   ['H80|s','80 m Hürden'],['H100|s','100 m Hürden'],['H110|s','110 m Hürden'],['H300|s','300 m Hürden'],['H400|s','400 m Hürden']];
 const DISC = {
   Sprint:[['20|1','20 m fliegend'],['30|1','30 m fliegend'],['30|0','30 m aus dem Start'],['60|0','60 m'],['80|0','80 m'],['100|0','100 m'],['150|0','150 m'],['200|0','200 m'],['300|0','300 m'],['400|0','400 m']],
-  Lauf:[['800|0','800 m'],['1000|0','1.000 m'],['1500|0','1.500 m'],['2000|0','2.000 m'],['3000|0','3.000 m'],['5000|0','5.000 m'],['10000|0','10.000 m']]
+  Lauf:[['800|0','800 m'],['1000|0','1.000 m'],['1500|0','1.500 m'],['2000|0','2.000 m'],['3000|0','3.000 m'],['5000|0','5.000 m'],['10000|0','10.000 m'],['21097.5|0','Halbmarathon'],['42195|0','Marathon']]
 };
 const discOptions = (sel, custom) => Object.entries(DISC).map(([g,list])=>`<optgroup label="${g}">${list.map(([v,l])=>`<option value="${v}"${v===sel?' selected':''}>${l}</option>`).join('')}</optgroup>`).join('')
   + (custom ? `<optgroup label="Sprung, Wurf und Hürden">${FIELD.map(([v,l])=>`<option value="${v}"${v===sel?' selected':''}>${l}</option>`).join('')}</optgroup>` : '')
@@ -871,8 +892,44 @@ function renderCalc(){
     refSel.disabled = true; refSel.innerHTML = '<option>Automatisch</option>';
   }
   renderPicker();
+  renderZones();
 }
 
+/* Trainingsbereiche für Läufer, abgeleitet aus einer Laufbestzeit über die 10-km-Äquivalenz (Riegel) */
+const ZONES = [
+  ['GA1', 'locker: Dauerlauf, lange Läufe, NI-Läufe', 73, 80],
+  ['GA2', 'zügig: Tempodauerlauf', 85, 92],
+  ['Schwelle', 'z. B. 2–3 × 10 min, Tempo zwischen 10 km und Halbmarathon', 96, 100],
+  ['Intervall', 'z. B. 5 × 1000 m, Tempo um 3 bis 5 km', 104, 108],
+  ['Wiederholung', 'z. B. 8 × 400 m mit voller Pause', 109, 114]
+];
+const PRED = [[1500,'1.500 m'],[3000,'3.000 m'],[5000,'5.000 m'],[10000,'10.000 m'],[21097.5,'Halbmarathon'],[42195,'Marathon']];
+const paceKm = v => fmtT(1000 / v, 0);
+const per400 = v => { const t = 400 / v; return t < 60 ? num(Math.round(t), 0) + ' s' : fmtT(t, 0); };
+function renderZones(){
+  const box = $('#zoneBox'), a = current();
+  if (!box) return;
+  if (db.s.disc !== 'run' || !a){ box.hidden = true; return; }
+  const ov = runs(a).find(e=>e.id === a.refL);
+  const ref = (ov && isRun(ov)) ? ov : (runs(a).filter(isRun).length ? autoRef(a, 10000, false, 'run') : null);
+  if (!ref || !isRun(ref)){ box.hidden = false; box.innerHTML = `<div class="block-head"><h3>Trainingsbereiche</h3></div><p class="note" style="margin:0">Für die Trainingsbereiche braucht ${esc(a.name)} eine Laufzeit ab 800 m.</p>`; return; }
+  const t10 = ref.t * Math.pow(10000 / ref.d, db.s.k), v10 = 10000 / t10;
+  let h = `<div class="block-head"><h3>Trainingsbereiche</h3><span class="tag">aus ${esc(refText(ref))}</span></div>`;
+  h += `<div class="tw"><table class="ov"><thead><tr><th>Bereich</th><th>Pace pro km</th><th>pro 400 m</th></tr></thead><tbody>`;
+  ZONES.forEach(([n, d, lo, hi])=>{
+    const vs = v10 * lo / 100, vf = v10 * hi / 100;
+    h += `<tr><td><b>${n}</b><br><small>${esc(d)}</small></td><td class="big">${paceKm(vf)} – ${paceKm(vs)}</td><td>${per400(vf)} – ${per400(vs)}</td></tr>`;
+  });
+  h += `</tbody></table></div>`;
+  h += `<h4 style="margin:14px 0 4px">Hochrechnung</h4><div class="tw"><table class="ov"><thead><tr><th>Strecke</th><th>Zeit</th><th>Pace pro km</th></tr></thead><tbody>`;
+  PRED.forEach(([d, l])=>{
+    const t = ref.t * Math.pow(d / ref.d, db.s.k);
+    h += `<tr${d === ref.d ? ' style="font-weight:700"' : ''}><td>${l}</td><td class="big">${fmtT(t, 0)}</td><td>${fmtT(t / d * 1000, 0)}</td></tr>`;
+  });
+  h += `</tbody></table></div>`;
+  h += `<p class="note">Richtwerte, angelehnt an gängige Tempotabellen. Mit Pulsgurt entspricht GA1 etwa Zone 2. Die Hochrechnung nutzt den Ermüdungsfaktor ${num(db.s.k, 2)}. Für Halbmarathon und Marathon ist sie bei wenig Trainingsumfang und bei Masters oft zu optimistisch, dann den Faktor unter „Berechnung“ auf 1,07 oder 1,08 stellen.</p>`;
+  box.hidden = false; box.innerHTML = h;
+}
 function renderPlan(){
   const disc = db.s.disc, out = $('#planOut'), a = current();
   $('#sharePlan').hidden = true;
@@ -1034,7 +1091,18 @@ function normCell(spec, best, unit, key){
   }
   return html;
 }
+function renderNormRef(){
+  const out = $('#normRefOut'); if (!out) return;
+  const g = $('#nrG').value, age = +$('#nrAge').value, n = db.s.norm;
+  if (!n.lk && !n.nk2){ out.innerHTML = '<div class="info">Mindestens eine Kaderstufe einblenden.</div>'; return; }
+  const rows = NORM_ROWS.map(([key,label,unit])=>{ const lk = n.lk ? normAt(g,'LK',age,key) : null, nk = n.nk2 ? normAt(g,'NK2',age,key) : null; return (lk || nk) ? {label,unit,key,lk,nk} : null; }).filter(Boolean);
+  if (!rows.length){ out.innerHTML = `<div class="info">Für ${age} Jahre gibt es in dieser Kaderstufe keine Richtwerte. NK2 beginnt mit 15 Jahren.</div>`; return; }
+  let h = `<div class="tw"><table class="ov nw"><thead><tr><th>Disziplin</th>${n.lk?'<th>Landeskader</th>':''}${n.nk2?'<th>NK2</th>':''}</tr></thead><tbody>`;
+  rows.forEach(r=>{ h += `<tr><td>${esc(r.label)}</td>${n.lk ? `<td>${normCell(r.lk, null, r.unit, r.key)}</td>` : ''}${n.nk2 ? `<td>${normCell(r.nk, null, r.unit, r.key)}</td>` : ''}</tr>`; });
+  out.innerHTML = h + '</tbody></table></div>';
+}
 function renderNorms(){
+  renderNormRef();
   const a = current(), n = db.s.norm, out = $('#normOut');
   $('#nChips').innerHTML = [['lk','Landeskader'],['nk2','NK2'],['all','alle Disziplinen']]
     .map(([k,l])=>`<button type="button" class="qchip${n[k]?' on':''}" data-n="${k}">${l}</button>`).join('');
@@ -1342,6 +1410,13 @@ function download(name, text, type){
 function flash(el, text){ el.textContent = text; el.hidden = false; clearTimeout(el._t); el._t = setTimeout(()=>el.hidden = true, 7000); }
 
 /* ---------- Ereignisse: Auswahl und Rechner ---------- */
+['#nrG','#nrAge'].forEach(id=>{ const el = $(id); if (el) el.addEventListener('change', renderNormRef); });
+if (VIEW){
+  const h1 = document.querySelector('.hero h1'), hp = document.querySelector('.hero p');
+  if (VIEW === 'athletik'){ if (h1) h1.textContent = 'Athletik'; if (hp) hp.textContent = 'Welche Muskeln antreiben, welche stabilisieren, und was sich dafür trainieren lässt'; document.title = 'Dürener TV 1847 – Athletik'; }
+  if (VIEW === 'normen'){ if (h1) h1.textContent = 'Normen'; if (hp) hp.textContent = 'Kaderrichtwerte des DLV für Landeskader und NK2 zum Nachschlagen'; document.title = 'Dürener TV 1847 – Normen';
+    const lead = document.querySelector('#normen .lead'); if (lead) lead.textContent = 'Zum Nachschlagen nach Alter und Geschlecht. Den Vergleich mit deinen Athleten findest du unter Athleten → Normen.'; }
+}
 $('#selA').addEventListener('change', e=>{ db.s.sel = e.target.value; save(); renderCalc(); renderPlan(); renderNorms(); });
 document.querySelectorAll('input[name="disc"]').forEach(r=>r.addEventListener('change', e=>{
   db.s.disc = e.target.value; save(); setupCalcControls(); renderCalc(); renderPlan(); renderPlanRows(); renderGroup(true);

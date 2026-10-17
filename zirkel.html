@@ -279,11 +279,16 @@ document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e
 .appbar .ab-t.on{background:#D7191C;opacity:1}
 html[data-app] .brand{display:none!important}
 html[data-app] nav.jump a.ext{display:none!important}
-body.running .appbar{display:none}
+body.running .appbar,body.running .subbar{display:none}
+.subbar{display:flex;gap:6px;background:#3A3A3A;padding:5px 10px;overflow-x:auto;scrollbar-width:none}
+.subbar::-webkit-scrollbar{display:none}
+.subbar a{color:#fff;text-decoration:none;white-space:nowrap;font:600 14px 'Barlow',system-ui,sans-serif;padding:6px 12px;border-radius:999px;opacity:.8}
+.subbar a.on{background:#fff;color:#2B2B2B;opacity:1}
+.subbar[hidden]{display:none}
 </style>
 </head>
 <body>
-<nav class="appbar" aria-label="Trainer-App"><a class="ab-home" href="index.html"><img src="dtv-icon.png" alt="">DTV 1847</a><a class="ab-t" href="plan.html">Planung</a><a class="ab-t on" href="zirkel.html">Zirkel</a><a class="ab-t" href="training.html">Athleten</a><a class="ab-t" href="technik.html">Technik</a><a class="ab-t" href="masse.html">Maße</a></nav>
+<nav class="appbar" aria-label="Trainer-App"><a class="ab-home" href="index.html"><img src="dtv-icon.png" alt="">DTV 1847</a><a class="ab-t" data-t="plan.html" href="plan.html">Planung</a><a class="ab-t" data-t="zirkel.html" href="zirkel.html">Zirkel</a><a class="ab-t" data-t="training.html" href="training.html">Athleten</a><a class="ab-t" data-t="wissen.html" href="wissen.html">Wissen</a></nav><nav class="subbar" aria-label="Wissen" hidden><a data-w="technik.html" href="technik.html">Technik</a><a data-w="training.html?view=athletik" href="training.html?view=athletik">Athletik</a><a data-w="training.html?view=normen" href="training.html?view=normen">Normen</a><a data-w="masse.html" href="masse.html">Maße</a></nav><script>(function(){var p=location.pathname.split('/').pop()||'index.html',q=location.search,v=(q.match(/view=(\w+)/)||[])[1];var w=p==='wissen.html'||p==='technik.html'||p==='masse.html'||(p==='training.html'&&v);var t=w?'wissen.html':p;document.querySelectorAll('.appbar .ab-t').forEach(function(a){if(a.dataset.t===t)a.classList.add('on');});var sb=document.querySelector('.subbar');if(w&&p!=='wissen.html'){sb.hidden=false;var cur=p+(v?'?view='+v:'');sb.querySelectorAll('a').forEach(function(a){if(a.dataset.w===cur)a.classList.add('on');});}})();</script>
 
 <div class="nojs-banner">Diese Seite braucht JavaScript. Bitte den Link in Safari öffnen, nicht in der Dateivorschau.</div>
 
