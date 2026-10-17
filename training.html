@@ -387,6 +387,12 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
   <div class="block" id="groupOut"></div>
   <div class="btns" style="margin:0"><button class="btn small" id="shareGroup" type="button">Gruppe teilen</button></div>
+  <div class="block" id="niBox" style="margin-top:14px">
+    <div class="block-head"><h3>NI-Läufe</h3><span class="tag">niedrige Intensität</span></div>
+    <p class="note" style="margin-top:0">8 bis 10 Läufe auf 60 % des Bestzeit-Tempos, dazwischen 1 bis 2 Minuten gehen oder traben. Bis U14 über 100 m, ab U16 über 200 m. Mit Pulsgurt nach Pulszone steuern (Vorgabe Zone 4), ohne Gurt nach diesen Zielzeiten.</p>
+    <div id="niOut"></div>
+    <div class="btns"><button class="btn small" id="shareNI" type="button">NI-Läufe teilen</button></div>
+  </div>
 </section>
 
 
@@ -560,7 +566,7 @@ body.running .appbar,body.running .subbar{display:none}
 </section>
 </main>
 
-<footer class="only-js">Die Vorgaben sind Richtwerte und ersetzen nicht das Auge des Trainers. <span class="ver">Trainer · Version 2026-10-17 · Laufbereiche bis Marathon</span></footer>
+<footer class="only-js">Die Vorgaben sind Richtwerte und ersetzen nicht das Auge des Trainers. <span class="ver">Trainer · Version 2026-10-17b · NI-Läufe</span></footer>
 
 <script>
 (function(){
@@ -971,6 +977,7 @@ function renderSettings(){
 }
 
 function renderGroup(init){
+  renderNI();
   const disc = db.s.disc, g = db.s.grp[disc];
   if (init){ $('#gD').value = g.d; $('#gFly').checked = !!g.fly; }
   $('#gFlyWrap').hidden = disc!=='sprint';
@@ -994,6 +1001,42 @@ function renderGroup(init){
   });
   out.innerHTML = h + '</tbody></table></div>';
   $('#shareGroup').hidden = false;
+}
+/* NI-Läufe: bis U14 100 m, ab U16 200 m, Zielzeit = Referenzzeit / 0,6 */
+const NI_P = 0.6;
+function niDist(a){ return (a.jg && Y - a.jg <= 13) ? 100 : (a.jg ? 200 : 100); }
+function niRows(){
+  return sortByClass(db.athletes).map(a=>{
+    const d = niDist(a);
+    const sp = runs(a).filter(e=>!isRun(e));
+    let ref = null, rough = false;
+    if (sp.length){ const same = sp.filter(e=>e.d===d && !e.fly); ref = same.length ? pick(same) : autoRef({entries:sp}, d, false, 'sprint'); if (ref && ref.fly) rough = true; }
+    else if (runs(a).length){ ref = autoRef(a, d, false, 'run'); rough = true; }
+    const base = ref ? baseTime(ref, d, isRun(ref) ? 'run' : 'sprint') : null;
+    return {a, d, ref, rough: rough || (ref && (d/ref.d > 2.5 || d/ref.d < 0.4)), t: base ? base / NI_P : null};
+  });
+}
+function renderNI(){
+  const out = $('#niOut'); if (!out) return;
+  const rows = niRows();
+  $('#shareNI').hidden = !rows.some(r=>r.t);
+  if (!rows.length){ out.innerHTML = '<p class="note" style="margin:0">Noch keine Athleten.</p>'; return; }
+  let h = `<div class="tw"><table class="ov"><thead><tr><th>Athlet</th><th>Strecke</th><th>Referenz</th><th>Zielzeit je Lauf</th></tr></thead><tbody>`, last = null;
+  rows.forEach(r=>{
+    const lbl = classLabel(r.a);
+    if (lbl !== last){ h += `<tr class="grp"><td colspan="4">${esc(lbl)}</td></tr>`; last = lbl; }
+    h += `<tr><td>${esc(r.a.name)}</td><td>${r.d} m</td><td>${r.ref ? fmtT(r.ref.t,2) + '<br><small>' + esc(dLabel(r.ref.d,r.ref.fly) + ' ' + kindLabel(r.ref)) + '</small>' : '–'}</td>
+      <td class="big">${r.t ? fmtT(r.t,1) + (r.t < 60 ? ' s' : ' min') + (r.rough ? '<br><small>grober Anhalt</small>' : '') : '<small>Sprintzeit eintragen</small>'}</td></tr>`;
+  });
+  out.innerHTML = h + '</tbody></table></div>';
+}
+function niText(){
+  const lines = ['NI-Läufe: 8 bis 10 × auf 60 % Tempo, 1 bis 2 min Gehpause'];
+  let last = null;
+  niRows().forEach(r=>{ if (!r.t) return; const lbl = classLabel(r.a);
+    if (lbl !== last){ lines.push(''); lines.push(lbl); last = lbl; }
+    lines.push(r.a.name + ': ' + r.d + ' m in ' + fmtT(r.t,1) + (r.t < 60 ? ' s' : ' min')); });
+  return lines.join('\n');
 }
 function groupRows(){
   const disc = db.s.disc, g = db.s.grp[disc], d = +g.d, fly = disc==='sprint' && !!g.fly;
@@ -1478,6 +1521,7 @@ $('#addRow').addEventListener('click', ()=>{
 });
 $('#sharePlan').addEventListener('click', e=>shareText(planText(), e.currentTarget));
 $('#shareGroup').addEventListener('click', e=>shareText(groupText(), e.currentTarget));
+$('#shareNI').addEventListener('click', e=>shareText(niText(), e.currentTarget));
 
 /* Gruppe */
 $('#nChips').addEventListener('click', e=>{

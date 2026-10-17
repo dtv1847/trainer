@@ -448,7 +448,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </main>
 
-<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-17 · mehrere Kader</span></footer>
+<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-17b · U12-Kader</span></footer>
 </div>
 
 <!-- ============ LAUF ============ -->
@@ -498,7 +498,7 @@ body.running .appbar,body.running .subbar{display:none}
 <script>
 (function(){
 const KEY = 'dtv-zirkel-v1';
-const SQUADS = [['U14','U14'],['U16','U16'],['U18','U18'],['MW','M/W'],['Masters','Masters']];
+const SQUADS = [['U12','U12'],['U14','U14'],['U16','U16'],['U18','U18'],['MW','M/W'],['Masters','Masters']];
 const $ = s => document.querySelector(s);
 const on = (sel, ev, fn) => { const el = $(sel); if (el) el.addEventListener(ev, fn); };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1047,7 +1047,7 @@ function athleteList(){
 function squadForJg(jg){
   if (!jg) return null;
   const age = new Date().getFullYear() - jg;
-  if (age < 14) return 'U14'; if (age < 16) return 'U16'; if (age < 18) return 'U18'; if (age < 30) return 'MW'; return 'Masters';
+  if (age < 12) return 'U12'; if (age < 14) return 'U14'; if (age < 16) return 'U16'; if (age < 18) return 'U18'; if (age < 30) return 'MW'; return 'Masters';
 }
 function importAthletes(){
   const list = athleteList(); let added = 0, noJg = 0;

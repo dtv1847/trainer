@@ -165,6 +165,39 @@ details.block > .inner{padding:0 14px 14px}
 .pv-note{font-size:14px;color:var(--muted);margin:0 0 10px}
 .pv-rule{background:#FFF6E3;border-left:5px solid #E2A81B;border-radius:8px;padding:9px 12px;font-size:14.5px;margin:8px 0}
 .pv-rule b{display:block;font-size:13px;color:#6B4E12;margin-bottom:2px}
+.pv-rule.ok{background:#EEF6EE;border-left-color:#2E7D32}
+.pv-rule.ok b{color:#1F5A23}
+.blkrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.blkw{position:relative;min-width:0}
+.blk{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:3px;border:1px solid var(--line);border-left:5px solid var(--technik);border-radius:10px;background:#fff;padding:6px 8px;cursor:pointer;font:inherit;color:inherit;text-align:left}
+.blk.own{border-left-color:var(--ink)}
+.blk:disabled{opacity:.5;cursor:default}
+.blk .strip{display:flex;gap:2px}
+.blk .strip svg{width:28px;height:28px;color:var(--ink)}
+.blk b{font:700 16px/1.1 var(--cond)}
+.blk .m{font-size:12.5px;color:var(--muted)}
+.blkdel{position:absolute;top:4px;right:4px;width:26px;height:26px;border:0;border-radius:50%;background:var(--bg);font:700 16px/1 var(--body);cursor:pointer;color:var(--ink)}
+.sercard{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-left:5px solid var(--technik);border-radius:8px;padding:6px 8px;margin-top:6px}
+.sercard:first-child{margin-top:0}
+.sercard .sc-t{flex:1;min-width:0}
+.sercard .sc-t b{display:block;font:700 16px/1.15 var(--cond)}
+.sercard .sc-t span{font-size:13.5px;color:var(--muted)}
+.sercard.done{opacity:.6}
+.serbar{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin:4px 0 2px}
+.serbar i{display:block;height:100%;background:#2E7D32}
+.serblk.unfit .serstrip{opacity:.55}
+.serstrip{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:10px}
+.sst{border:1px solid var(--line);border-radius:10px;padding:4px 4px 6px;background:#fff;cursor:pointer;font:inherit;color:var(--ink);text-align:center;min-width:0}
+.sst svg{width:100%;height:auto;display:block}
+.sst small{display:block;font-size:12.5px;line-height:1.2;min-height:2.4em}
+.sst i{display:block;font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted);min-height:1.2em}
+.sst.ok{border-color:#2E7D32;background:#F2F8F2}
+.sst.ok i{color:#1F5A23}
+.sst.cur{border:2px solid var(--red)}
+.sst.cur i{color:var(--red)}
+.serchips{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.schip{font:600 12.5px var(--body);border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:3px 10px;cursor:pointer;min-height:28px}
+.schip.on{background:#2E7D32;border-color:#2E7D32;color:#fff}
 .pv-rule.bad{background:#FDECEC;border-left-color:var(--red)}
 .pv-rule.bad b{color:#8E1B1B}
 @media (max-width:560px){ .pv-top{flex-direction:column;align-items:flex-start} }
@@ -301,6 +334,7 @@ body.running .appbar,body.running .subbar{display:none}
   <nav class="jump" aria-label="Bereiche">
     <a href="#woche">Woche</a>
     <a href="#einheit">Einheit</a>
+    <a href="#reihen">Reihen</a>
     <a href="#saison">Saison</a>
     <a href="#uebungen">Übungen</a>
     <a href="#gruppen">Gruppen</a>
@@ -329,6 +363,14 @@ body.running .appbar,body.running .subbar{display:none}
   <div class="block" id="unitHead"></div>
   <div class="split">
     <div>
+      <div class="block" id="serNowBox">
+        <div class="block-head"><h3>Reihen dieser Gruppe</h3><a class="tag" href="#reihen" data-goto="reihen">alle Reihen</a></div>
+        <div id="serNow"></div>
+      </div>
+      <div class="block">
+        <div class="block-head"><h3>Bausteine</h3><span class="tag">tippen fügt alles ein</span></div>
+        <div class="blkrow" id="blkList"></div>
+      </div>
       <div class="block">
         <div class="block-head"><h3>Übungen</h3><span class="tag" id="libCount"></span></div>
         <div class="qchips" id="spChips"></div>
@@ -345,6 +387,7 @@ body.running .appbar,body.running .subbar{display:none}
           <button class="btn primary small" type="button" id="fillBtn">Vorschlag füllen</button>
           <button class="btn small" type="button" id="shareUnit">Einheit teilen</button>
           <button class="btn small" type="button" id="copyUnit">In andere Woche kopieren</button>
+          <button class="btn small" type="button" id="saveBlock">Als Baustein speichern</button>
           <button class="btn danger small" type="button" id="clearUnit">Leeren</button>
         </div>
         <p class="ok" id="unitMsg" hidden></p>
@@ -352,6 +395,14 @@ body.running .appbar,body.running .subbar{display:none}
       </div>
     </div>
   </div>
+</section>
+
+<!-- ============ REIHEN ============ -->
+<section id="reihen">
+  <h2>Reihen</h2>
+  <p class="lead" id="serLead">&nbsp;</p>
+  <p class="ok" id="serMsg" hidden></p>
+  <div id="serOut"></div>
 </section>
 
 <!-- ============ SAISON ============ -->
@@ -442,7 +493,7 @@ body.running .appbar,body.running .subbar{display:none}
 </main>
 
 <div class="pov" id="exView" hidden><div class="povbox" id="exViewBox"></div></div>
-<footer class="only-js">Die Vorschläge sind Richtwerte und ersetzen nicht die Trainerentscheidung. <span class="ver">Planung · Version 2026-10-17 · gemeinsame Einheiten</span></footer>
+<footer class="only-js">Die Vorschläge sind Richtwerte und ersetzen nicht die Trainerentscheidung. <span class="ver">Planung · Version 2026-10-17b · Reihen und Bausteine</span></footer>
 
 <script>
 (function(){
@@ -655,6 +706,17 @@ const PROPS = {
   slope(x1,x2,h){ return {s:`<path d="M${x1} 0L${x2} ${-h}L${x2} 0Z" fill="currentColor" fill-opacity=".15" stroke-width="2.6"/>`, p:[[x1,-h],[x2,0]]}; },
   roller(x,y){ return {s:`<circle cx="${x}" cy="${y}" r="5.5" fill="currentColor" fill-opacity=".45" stroke-width="2.6"/>`, p:[[x-6,y-6],[x+6,y+6]]}; },
   lane(x1,x2){ return {s:`<path d="M${x1} 2Q${(x1+x2)/2} 12 ${x2} 2M${x1} 7Q${(x1+x2)/2} 15 ${x2} 7" stroke-width="2.2" opacity=".6"/>`, p:[[x1,0],[x2,9]]}; },
+  bbox(x0,y0,x1,y1){ return {s:'', p:[[x0,y0],[x1,y1]]}; },
+  dice(x,y,s){ s = s || 12; const h = s/2, d = s*0.24, P = [[-d,-d],[d,d],[d,-d],[-d,d],[0,0]];
+    return {s:`<rect x="${x-h}" y="${y-h}" width="${s}" height="${s}" rx="2.5" stroke-width="2.6" fill="currentColor" fill-opacity=".08"/>` + P.map(([a,b])=>`<circle cx="${f1(x+a)}" cy="${f1(y+b)}" r="${f1(s*0.08)}" fill="currentColor" stroke="none"/>`).join(''), p:[[x-h-1,y-h-1],[x+h+1,y+h+1]]}; },
+  card(x,y,t,up){ return {s:`<rect x="${x-6}" y="${y-8}" width="12" height="16" rx="2" stroke-width="2.4" fill="currentColor" fill-opacity="${up?'0':'.3'}"/>` + (t ? `<text x="${x}" y="${y+3.5}" font-size="10" font-weight="700" font-family="sans-serif" text-anchor="middle" fill="currentColor" stroke="none">${t}</text>` : ''), p:[[x-7,y-9],[x+7,y+9]]}; },
+  flat(x,t){ return {s:`<rect x="${x-6}" y="-2.5" width="12" height="3" rx="1" fill="currentColor" fill-opacity="${t?'.85':'.35'}" stroke="none"/>`, p:[[x-6,-3],[x+6,0]]}; },
+  light(x,y,on){ on = on == null ? 0 : on; let c = ''; for (let i=0;i<3;i++) c += `<circle cx="${x}" cy="${y-9+i*9}" r="3" ${i===on?'fill="currentColor" stroke="none"':'stroke-width="1.8"'}/>`;
+    return {s:`<rect x="${x-6.5}" y="${y-15}" width="13" height="30" rx="3.5" stroke-width="2.6"/>` + c + `<path d="M${x} ${y+15}V0" stroke-width="2.6"/>`, p:[[x-7,y-16],[x+7,0]]}; },
+  grid(x,y,s){ s = s || 24; const a = s/3; let d = ''; for (let i=1;i<3;i++) d += `M${x+a*i} ${y}v${s}M${x} ${y+a*i}h${s}`;
+    return {s:`<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="2" stroke-width="2.4"/><path d="${d}" stroke-width="1.8"/><path d="M${x+2} ${y+2}l${a-4} ${a-4}M${x+a-2} ${y+2}l${-a+4} ${a-4}M${x+a*2+2} ${y+a+2}l${a-4} ${a-4}M${x+a*3-2} ${y+a+2}l${-a+4} ${a-4}" stroke-width="2"/>`, p:[[x-1,y-1],[x+s+1,y+s+1]]}; },
+  frisbee(x,y){ return {s:`<ellipse cx="${x}" cy="${y}" rx="7.5" ry="2.8" fill="currentColor" stroke="none"/>`, p:[[x-8,y-3],[x+8,y+3]]}; },
+  band(x,y,dx,dy){ return {s:`<path d="M${x} ${y}q${dx/2} ${dy+5} ${dx} ${dy}" stroke-width="2.4" stroke-dasharray="3 2"/>`, p:[[Math.min(x,x+dx),y-2],[Math.max(x,x+dx),y+dy+6]]}; },
   hoop(x){ return {s:`<ellipse cx="${x}" cy="3" rx="10" ry="3" ${PS}/>`, p:[[x-11,0],[x+11,6]]}; },
   signal(x,y){ return {s:`<circle cx="${x}" cy="${y}" r="7" ${PS}/><path d="M${x} ${y-4}V${y+0.8}" stroke-width="2.8"/><circle cx="${x}" cy="${y+3.4}" r="1.3" fill="currentColor" stroke="none"/>`, p:[[x-8,y-8],[x+8,y+8]]}; },
   speed(x,y){ return {s:`<path d="M${x} ${y}h-9M${x+2} ${y+7}h-12M${x} ${y+14}h-8" stroke-width="2.4" opacity=".6"/>`, p:[[x-10,y],[x+2,y+14]]}; },
@@ -691,6 +753,8 @@ function iconSvg(spec, opt){
       parts.push(`<path d="M${f1(x)} ${f1(y-6)}V${f1(y+6)}" stroke-width="3"/><path d="M${f1(x-3)} ${f1(y-7)}h6M${f1(x-3)} ${f1(y+7)}h6" stroke-width="4"/>`); pts.push([x-4,y-8],[x+4,y+8]); }
     else if (k === 'hsled'){ const h = lastJ.rh; const r = PROPS.sled(f1(h[0]-4), 26, f1(-h[1])); parts.push(r.s); pts.push(...r.p); }
     else if (k === 'jline'){ const a = lastJ[it[1]]; parts.push(`<path d="M${f1(a[0])} ${f1(a[1])}L${it[2]} ${it[3]}" stroke-width="2.4"/>`); }
+    else if (k === 'jpath'){ const j = lastJ[it[1]]; parts.push(`<path d="M${f1(j[0])} ${f1(j[1])}${it[2]}" stroke-width="${it[3]||2.4}"${it[4]?' stroke-dasharray="'+it[4]+'"':''}/>`); }
+    else if (k === 'jat'){ const j = lastJ[it[1]]; const r = PROPS[it[2]](f1(j[0]+it[3]), f1(j[1]+it[4]), ...it.slice(5)); parts.push(r.s); pts.push(...r.p); }
     else if (k === 'hband'){ const a = lastJ.lh, b = lastJ.rh; parts.push(`<path d="M${f1(a[0])} ${f1(a[1])}L${f1(b[0])} ${f1(b[1])}" stroke-width="2.6"/>`); }
     else { const r = PROPS[k](...it.slice(1)); (k==='mat'||k==='ladder'||k==='floorline'||k==='hoop' ? under : parts).push(r.s); pts.push(...r.p); }
   }
@@ -912,6 +976,79 @@ const PIC = {
  bike:     [['F',JOG]],
  ballsprint:[['F',Object.assign({}, RUN, {x:-16})],['sball',30,-6],['arrow',[30,-30,30,-14]]]
 };
+/* Stufe 2/3: Koordination, Ausdauerspiele, Technikphasen */
+const STANDF = {t:180};
+Object.assign(PIC, {
+ /* --- Tennisball und Koordination plus Kopf --- */
+ tb_toss:  [['F',{t:180,ra:[150,170],la:[40,60]}],['jat','rh','sball',0,-24],['path','M4 -110 Q30 -100 22 -52',2.2,'3 3']],
+ tb_clap:  [['F',{t:180,ra:[120,150],la:[118,148]}],['sball',4,-108],['path','M14 -98 l5 -4M15 -92 l6 0M14 -86 l5 4',2.2]],
+ tb_wall:  [['wall',36,90,1],['F',{t:180,ra:[110,130],la:[60,100],x:-18}],['sball',22,-74],['path','M-2 -84 L32 -70 L6 -64',2.2,'3 3']],
+ tb_juggle:[['F',{t:180,ra:[80,150],la:[70,140],fr:1}],['sball',-14,-104],['sball',14,-96],['path','M-12 -66 Q-16 -112 12 -100',2,'3 3'],['path','M14 -90 Q18 -80 12 -66',2,'3 3']],
+ tb_partner:[['F',{t:180,ra:[90,150],la:[70,120],x:-30}],['F',{t:180,mir:1,ra:[90,150],la:[70,120],x:30}],['sball',-6,-96],['sball',6,-84],['path','M-18 -78 Q-4 -104 18 -80',2,'3 3'],['path','M18 -70 Q4 -90 -18 -70',2,'3 3']],
+ kk_cross: [['F',{t:200,h:190,fr:1,r:[-75,-10],l:[4,0],ra:[-2,-50],la:[110,140]}],['F',{t:160,h:170,fr:1,r:[75,10],l:[-4,0],ra:[2,50],la:[-110,-140],x:44}],['arrow',[10,-86,34,-86],1]],
+ kk_cones: [['F',{t:180,ra:[60,120],la:[-20,-10],x:-26}],['bubble',-2,-92],['cone',8],['cone',26],['cone',44],['txt',8,-17,'R'],['txt',26,-17,'G'],['txt',44,-17,'B']],
+ kk_dice:  [['F',{t:180,ra:[150,170],la:[-150,-170],fr:1,l:[-20,0],r:[20,0],x:-16}],['dice',30,-60,18],['arrow',[30,-40,30,-24]]],
+ kk_cards: [['F',{t:180,ra:[60,110],la:[-20,-10],x:-22}],['card',18,-68,'3',1],['card',34,-68,'',0],['arrow',[10,-40,40,-40]]],
+ kk_mirror:[['F',{t:180,ra:[150,140],la:[-60,-40],r:[40,0],x:-28}],['F',{t:180,mir:1,ra:[150,140],la:[-60,-40],r:[40,0],x:28}],['path','M0 -96V6',2.2,'4 4']],
+ kk_count: [['F',{t:180,fr:1,ra:[90,90],la:[-90,-90],l:[-14,0],r:[14,0]}],['bubble',30,-96]],
+ /* --- Ausdauerspiele --- */
+ ag_transport:[['F',Object.assign({},RUN,{x:-24,air:2})],['jat','rh','sball',3,0],['hoop',30],['sball',26,-3],['sball',34,-3]],
+ ag_memory:[['F',Object.assign({},RUN,{x:-26,air:2})],['flat',10,0],['flat',26,0],['flat',42,1],['card',42,-30,'?',1]],
+ ag_dice:  [['F',Object.assign({},RUN,{x:-20,air:2})],['dice',32,-50,18],['speed',-34,-60]],
+ ag_laps:  [['cone',-44],['cone',44],['F',Object.assign({},JOG,{x:-2})],['txt',30,-62,'IIII'],['path','M-44 6 Q0 16 44 6',2,'3 3']],
+ ag_abc:   [['F',Object.assign({},RUN,{x:-24,air:2})],['card',14,-30,'A',1],['card',30,-30,'B',1],['card',46,-30,'C',1]],
+ ag_ampel: [['light',36,-50,0],['F',Object.assign({},RUN,{x:-18,air:2})]],
+ ag_lines: [['floorline',-40],['floorline',0],['floorline',40],['F',Object.assign({},RUN,{x:-24,ra:[90,92]})],['F',Object.assign({},RUN,{x:22,t:160})]],
+ ag_hase:  [['F',Object.assign({},RUN,{x:-26,ra:[96,92]})],['F',Object.assign({},RUN,{x:22,t:164})],['jpath','p','l-12 -4 l-10 8',3.4]],
+ ag_ultimate:[['F',{t:176,r:[30,0],l:[-26,-10],ra:[80,95],la:[-80,-60],x:-32}],['F',{t:180,mir:1,ra:[150,170],la:[60,90],x:34}],['frisbee',0,-90],['path','M-20 -66 Q-6 -94 0 -90',2,'3 3']],
+ ag_bingo: [['F',Object.assign({},RUN,{x:-22,air:2})],['grid',20,-62,28]],
+ ag_relaylong:[['F',Object.assign({},RUN,{x:-22, ra:[85,92], la:[-45,40]})],['F',Object.assign({},RUN,{x:22, ra:[-60,-95], la:[50,150]})],['link',0,'rh',1,'rh',3.2],['watch',0,-110]],
+ ag_fahrt: [['F',Object.assign({},JOG,{x:-24})],['dice',28,-64,14],['path','M14 -30 l8 -8 l8 8 l8 -8',2.4],['speed',-38,-56]],
+ ni_runs:  [['F',Object.assign({},JOG,{x:-14})],['txt',28,-70,'60%'],['path','M-40 4H44',2,'3 3']],
+ tt_est:   [['F',Object.assign({},JOG,{x:-16})],['watch',28,-66],['txt',44,-82,'?']],
+});
+/* Technik: Bildfolgen (gleicher Maßstab je Disziplin über bbox) */
+const BBW = ['bbox',-60,-100,60,4];
+Object.assign(PIC, {
+ /* Weitsprung */
+ wsp_1: [BBW,['F',Object.assign({},RUN,{air:2,x:-8})],['speed',-30,-60],['path','M-56 4H40',2,'4 4']],
+ wsp_2: [BBW,['board',4,30],['F',{t:178,h:182,l:[-28,-20],r:[96,12],ra:[-50,-20],la:[125,160],pin:['lf',4,-10]}],['arrow',[18,-72,30,-96]]],
+ wsp_3: [BBW,['pit',-6,60],['F',{t:174,r:[88,-8],l:[-26,-70],ra:[160,170],la:[150,175],air:30,x:6}],['path','M-56 -10 Q-20 -40 10 -36',2,'3 3']],
+ wsp_4: [BBW,['pit',-40,56],['F',{t:150,h:150,r:[86,88],l:[84,86],ra:[-70,-40],la:[-66,-36],x:10,air:-2}],['arrow',[-30,-56,-12,-66,0,-44]]],
+ /* Hochsprung Flop */
+ hsp_1: [BBW,['path','M-58 4 Q-10 8 10 -2 T40 -16',2.4,'4 4'],['hjbar',30,58,30],['F',{t:166,r:[60,-20],l:[-28,-90],ra:[-45,40],la:[50,150],x:-14,air:2}]],
+ hsp_2: [BBW,['hjbar',30,58,30],['F',{t:182,h:186,l:[-6,-4],r:[100,10],ra:[165,175],la:[160,172],x:0,air:3}],['arrow',[-16,-90,-16,-112]]],
+ hsp_3: [BBW,['matt',-34,50,12],['hjbar',-30,44,40],['F',{t:-105,h:-130,r:[105,20],l:[108,24],ra:[-130,-120],la:[-128,-118],pin:['p',8,-44]}]],
+ hsp_4: [BBW,['matt',-50,50,14],['F',{t:-88,h:-92,r:[150,120],l:[156,126],ra:[-150,-120],la:[-160,-130],pin:['p',4,-18]}]],
+ /* Sprintstart */
+ ss_1: [BBW,['block',-14],['block',-34],['path','M30 1V-4',3],['F',{t:116,h:126,r:[56,-62],l:[-6,-90],ra:[2,2],la:[0,0],pin:['rh',28,-3]}]],
+ ss_2: [BBW,['block',-14],['block',-34],['path','M30 1V-4',3],['F',{t:108,h:118,r:[40,-38],l:[-18,-80],ra:[2,2],la:[0,0],pin:['rh',28,-3]}]],
+ ss_3: [BBW,['block',-34],['path','M30 1V-4',3],['F',{t:132,h:136,l:[-42,-48],r:[96,24],ra:[-55,-10],la:[100,150],pin:['lf',-22,-4]}],['speed',-40,-70]],
+ ss_4: [BBW,['F',{t:152,h:156,l:[-40,-70],r:[80,0],ra:[-50,20],la:[80,140],x:10,air:2}],['speed',-26,-66],['path','M-56 4H50',2,'4 4']],
+ /* Hürden */
+ hu_1: [BBW,['hurdle',34,40,14],['F',Object.assign({},RUN,{x:-14,air:2})]],
+ hu_2: [BBW,['hurdle',34,40,14],['F',{t:150,h:150,l:[-28,-30],r:[100,40],la:[100,104],ra:[-45,10],pin:['lf',-22,-3]}]],
+ hu_3: [BBW,['hurdle',-6,40,14],['F',{t:146,h:146,r:[96,96],l:[-80,10],la:[100,100],ra:[-45,10],air:28,x:-2}]],
+ hu_4: [BBW,['hurdle',-40,40,14],['F',{t:166,h:170,r:[4,0],l:[80,-40],la:[-40,10],ra:[60,100],x:8}]],
+ /* Kugel (Angleittechnik, Stoßrichtung nach rechts) */
+ ku_1: [BBW,['F',{mir:1,t:122,h:120,r:[4,0],l:[-70,-70],ra:[40,150],la:[30,10],x:-14}],['hsball','n',-3,2],['path','M44 1V-4',3]],
+ ku_2: [BBW,['F',{mir:1,t:110,h:110,r:[50,-30],l:[-80,-90],ra:[40,150],la:[10,-20],x:4}],['hsball','n',-3,2],['path','M44 1V-4',3],['arrow',[-36,-10,-6,-10]]],
+ ku_3: [BBW,['F',{t:204,h:198,r:[30,4],l:[-44,-20],ra:[-60,-170],la:[110,150],x:6}],['hsball','n',4,2],['path','M44 1V-4',3]],
+ ku_4: [BBW,['F',{t:166,r:[30,0],l:[-26,-10],ra:[132,150],la:[78,100],x:14}],['hsball','rh',2,-2],['arrow',[44,-90,58,-104]],['path','M44 1V-4',3]],
+ /* Schlagwurf / Speer (Wurfrichtung nach rechts) */
+ sp_1: [BBW,['F',Object.assign({},RUN,{ra:[-150,150],x:-6,air:2})],['stick','rh',56,94,4,2.6],['speed',-30,-60]],
+ sp_2: [BBW,['F',{t:192,h:186,r:[60,-10],l:[-40,-20],ra:[-100,-96],la:[110,120],x:0,air:4}],['stick','rh',56,100,10,2.6]],
+ sp_3: [BBW,['F',{t:200,h:186,r:[40,10],l:[-50,-30],ra:[-100,-96],la:[120,140],x:4}],['stick','rh',56,104,10,2.6],['arrow',[-30,-30,-14,-34,-4,-22]]],
+ sp_4: [BBW,['F',{t:168,r:[30,0],l:[-30,-12],ra:[160,140],la:[80,40],x:6}],['stick','rh',56,70,14,2.6],['arrow',[30,-104,52,-114]]],
+ /* 800 m */
+ ms_1: [BBW,['path','M30 1V-4',3],['F',{t:150,h:160,r:[40,-10],l:[-30,-30],ra:[-40,10],la:[60,110],x:0}]],
+ ms_2: [BBW,['F',Object.assign({},JOG,{x:0})],['path','M-56 4H50',2,'4 4']],
+ ms_3: [BBW,['lane',-58,58],['G',Object.assign({},JOG,{x:-18})],['F',Object.assign({},JOG,{x:18})]],
+ rel_stand:[BBW,['F',{t:180,ra:[60,80],la:[-10,-6],x:-24}],['F',{t:180,ra:[-50,-70],la:[10,6],x:24}],['link',0,'rh',1,'rh',3.4]],
+ rel_walk: [BBW,['F',Object.assign({},JOG,{x:-24,air:0,ra:[85,92]})],['F',Object.assign({},JOG,{x:20,air:0,ra:[-60,-95]})],['link',0,'rh',1,'rh',3.4]],
+ rel_mark: [BBW,['F',Object.assign({},RUN,{x:-34,air:2})],['floorline',-6],['F',{t:150,h:160,r:[40,-10],l:[-30,-30],ra:[-40,10],la:[60,110],x:36}],['path','M-6 -20 Q14 -40 30 -20',2,'3 3']],
+ ms_4: [BBW,['F',Object.assign({},RUN,{x:4,air:2})],['speed',-26,-64],['path','M50 -110V4',2.4,'3 3']],
+});
 
 return {iconSvg, EX, GENERIC, PIC};
 })();
@@ -1055,7 +1192,7 @@ const LIBN = [
  {id:'n_minutes', sp:'ausdauer', name:'Minutenläufe', min:25, place:'out', from:0, to:4, note:'zum Beispiel 3 × 4 min', ic:'jog', fl:'', how:'Drei bis vier Mal vier Minuten ruhig laufen, zwei Minuten Gehpause. Kinder schätzen gut ein, wie lange vier Minuten sind.'},
  {id:'n_pyramid', sp:'ausdauer', name:'Pyramidenlauf', min:35, place:'out', from:3, to:7, note:'200 – 400 – 600 – 400 – 200 m', ic:'interval', fl:'', how:'Strecken ansteigend und wieder abfallend, dazwischen Trabpause halb so lang wie die Strecke. Gleichmäßiges Tempo.'},
  {id:'n_crescendo', sp:'ausdauer', name:'Steigerungsdauerlauf', min:25, place:'out', from:3, to:7, note:'jedes Drittel etwas schneller', ic:'jog', fl:'', how:'20 bis 25 Minuten, in drei Abschnitten. Jeder Abschnitt etwas schneller, der letzte zügig, aber kontrolliert.'},
- {id:'n_guess', sp:'ausdauer', name:'Schätzläufe', min:15, place:'out', from:0, to:3, note:'Zeit schätzen ohne Uhr', ic:'interval', fl:'', how:'Eine Runde in einer vorgegebenen Zeit laufen, ohne Uhr. Wer am nächsten dran ist, gewinnt. Schult das Tempogefühl.'},
+ {id:'n_guess', sp:'ausdauer', name:'Schätzläufe', min:15, place:'out', from:0, to:3, note:'Zeit schätzen ohne Uhr', ic:'tt_est', fl:'', how:'Eine Runde in einer vorgegebenen Zeit laufen, ohne Uhr. Wer am nächsten dran ist, gewinnt. Schult das Tempogefühl.'},
  {id:'n_circ3015', sp:'ausdauer', name:'Zirkel 30/15', min:25, place:'in', from:1, to:7, note:'mit der Zirkel-App steuern', ic:'circuit', fl:'', how:'Acht bis zehn Stationen, 30 Sekunden Belastung, 15 Sekunden Wechsel, zwei Durchgänge. Mit der Zirkel-App steuern.'},
  {id:'n_ropeint', sp:'ausdauer', name:'Seilspringen-Intervalle', min:12, place:'both', from:1, to:7, note:'1 min springen, 30 s Pause', ic:'rope', fl:'', how:'Sechs bis acht Mal eine Minute springen, 30 Sekunden Pause. Varianten wechseln, locker aus dem Fußgelenk.'},
  {id:'n_stairrun', sp:'ausdauer', name:'Treppenläufe', min:20, place:'out', from:3, to:7, note:'kräftigt und trainiert Ausdauer', ic:'hill', fl:'', how:'Treppe hoch zügig, runter locker gehen. Acht bis zehn Wiederholungen. Nur auf trockenen Stufen.'},
@@ -1063,6 +1200,36 @@ const LIBN = [
  {id:'n_alt', sp:'ausdauer', name:'Alternativtraining Rad oder Schwimmen', min:30, place:'both', from:4, to:7, note:'gelenkschonend', ic:'bike', fl:'', how:'30 bis 45 Minuten Radfahren oder Schwimmen in ruhigem Tempo. Gut bei Beschwerden oder in der Erholungswoche, besonders für Masters.'},
  {id:'n_orient', sp:'ausdauer', name:'Hindernis- und Orientierungslauf', min:25, place:'out', from:0, to:4, note:'Posten suchen', ic:'cross', fl:'', how:'Posten auf dem Gelände verteilen, Karten oder Hinweise ausgeben. Kleine Gruppen suchen die Posten, Laufen nebenbei.'},
  {id:'n_biathlon', sp:'ausdauer', name:'Biathlon-Staffel', min:20, place:'both', from:0, to:3, note:'Laufrunde und Zielwurf', ic:'target', fl:'', how:'Mannschaften laufen eine Runde und werfen dann auf ein Ziel. Für jeden Fehlwurf eine kleine Strafrunde.'},
+ // Koordination: Tennisball
+ {id:'n_tbtoss', sp:'warm', name:'Tennisball: Hochwerfen und Fangen', min:8, place:'both', from:0, to:7, note:'rechts, links, über Kreuz', ic:'tb_toss', fl:'', how:'Jeder hat einen Tennisball. Hochwerfen und mit derselben Hand fangen, dann mit der anderen, dann über Kreuz. Steigern: im Gehen, auf einem Bein, Augen kurz zu beim Wurf.'},
+ {id:'n_tbclap', sp:'warm', name:'Tennisball: Klatschen und Drehen', min:8, place:'both', from:0, to:7, note:'Zusatzaufgabe zwischen Wurf und Fang', ic:'tb_clap', fl:'', how:'Ball hochwerfen, bis zum Fangen einmal klatschen. Dann zweimal, dann hinter dem Rücken klatschen, Boden berühren oder eine halbe Drehung. Wer den Ball fallen lässt, geht eine Stufe zurück.'},
+ {id:'n_tbwall', sp:'warm', name:'Tennisball: Wandprellen mit Zusatzaufgabe', min:10, place:'in', from:0, to:7, note:'werfen, Aufgabe, fangen', ic:'tb_wall', fl:'', how:'Zwei bis drei Meter vor der Wand. Ball an die Wand werfen und fangen, zwischendurch klatschen, drehen oder Hand wechseln. Später mit Bodenkontakt dazwischen oder einbeinig.'},
+ {id:'n_tbjug', sp:'warm', name:'Tennisball: Jonglieren mit zwei Bällen', min:10, place:'both', from:1, to:7, note:'erst eine Hand, dann beide', ic:'tb_juggle', fl:'', how:'Zwei Bälle in einer Hand im Kreis werfen, dann je ein Ball pro Hand gleichzeitig, dann versetzt. Wer es kann, versucht drei Bälle. Fehler sind erwünscht, das Lernen passiert dabei.'},
+ {id:'n_tbpart', sp:'warm', name:'Tennisball: Partnerwürfe mit zwei Bällen', min:10, place:'both', from:0, to:7, note:'gleichzeitig werfen und fangen', ic:'tb_partner', fl:'', how:'Zu zweit, drei Meter Abstand. Beide werfen gleichzeitig, einer hoch, einer gerade. Dann Ball aufprellen lassen, Hand wechseln, auf Zuruf die Wurfart tauschen.'},
+ {id:'n_tbrun', sp:'warm', name:'Tennisball: Prellen im Laufen', min:8, place:'both', from:0, to:7, note:'prellen, wechseln, Slalom', ic:'dribble', fl:'', how:'Im Traben den Ball prellen, jede Runde die Hand wechseln, dann um Hütchen. Steigern: zwei Bälle gleichzeitig oder auf Zuruf hochwerfen und fangen.'},
+ // Koordination plus Kopf
+ {id:'n_kkcross', sp:'warm', name:'Koordination plus Kopf: Überkreuzbewegungen', min:6, place:'both', from:0, to:7, note:'Hand an das andere Knie', ic:'kk_cross', fl:'', how:'Im Stand rechte Hand an das linke Knie, dann links an rechts. Dann Rhythmus ändern: zweimal rechts, einmal links. Wenn es klappt, sofort schwerer machen, nicht perfekt üben.'},
+ {id:'n_kkcone', sp:'warm', name:'Koordination plus Kopf: Farbhütchen auf Zuruf', min:8, place:'both', from:0, to:7, note:'Farbe hören, anderes Hütchen laufen', ic:'kk_cones', fl:'', how:'Hütchen in drei Farben um die Gruppe verteilen. Der Trainer ruft eine Farbe, alle laufen hin. Schwerer: zur Farbe links daneben oder bei Rot zur Mitte zurück.'},
+ {id:'n_kkdice', sp:'warm', name:'Koordination plus Kopf: Würfelbewegungen', min:8, place:'both', from:0, to:7, note:'Augenzahl bestimmt die Bewegung', ic:'kk_dice', fl:'', how:'Jede Augenzahl hat eine Bewegung, zum Beispiel 1 Hampelmann, 2 Kniebeuge, 3 Drehung. Würfeln, ansagen, ausführen. Nach zwei Runden die Bedeutung tauschen.'},
+ {id:'n_kkcard', sp:'warm', name:'Koordination plus Kopf: Kartensignale', min:8, place:'both', from:0, to:7, note:'Zahl gerade oder ungerade', ic:'kk_cards', fl:'', how:'Trainer zeigt Spielkarten. Gerade Zahl: Sprint nach rechts. Ungerade: nach links. Bild: stehen bleiben. Später zwei Regeln kombinieren, etwa Farbe und Zahl.'},
+ {id:'n_kkmirror', sp:'warm', name:'Koordination plus Kopf: Spiegeln', min:6, place:'both', from:0, to:7, note:'Partner macht nach, später gegengleich', ic:'kk_mirror', fl:'', how:'Zu zweit gegenüber. Einer bewegt Arme und Beine langsam, der andere spiegelt. Nach 30 Sekunden wechseln. Schwerer: gegengleich nachmachen statt spiegeln.'},
+ {id:'n_kkcount', sp:'warm', name:'Koordination plus Kopf: Zählen und Bewegen', min:6, place:'both', from:1, to:7, note:'Zahl ersetzt durch Klatschen', ic:'kk_count', fl:'', how:'Im Kreis laufend gemeinsam zählen. Jede Zahl mit 3 oder durch 3 teilbar wird durch Klatschen ersetzt. Dazu Armkreisen oder Hopserlauf. Fehler sind gewollt.'},
+ // Ausdauer: Niedrigintensität und Schätzen
+ {id:'n_ni', sp:'ausdauer', name:'NI-Läufe (niedrige Intensität)', min:20, place:'out', from:1, to:7, note:'8 bis 10 Läufe auf 60 % Tempo, bis U14 100 m, ab U16 200 m', ic:'ni_runs', fl:'', how:'Acht bis zehn Läufe locker auf 60 % des Bestzeit-Tempos, dazwischen ein bis zwei Minuten gehen oder traben. Bis U14 über 100 m, ab U16 über 200 m. Mit Pulsgurt nach Pulszone steuern (Vorgabe Zone 4), ohne Gurt nach den Zielzeiten unter Athleten, Abschnitt Gruppe.'},
+ {id:'n_tguess', sp:'ausdauer', name:'Zeitschätzläufe 1 bis 3 Minuten', min:20, place:'both', from:0, to:7, note:'ohne Uhr, Abweichung zählt', ic:'tt_est', fl:'', how:'Ohne Uhr loslaufen und nach geschätzten 1, 2 oder 3 Minuten an der Startlinie stehen bleiben. Trainer nimmt die Zeit, die kleinste Abweichung gewinnt. Danach umgekehrt: feste Strecke in Wunschzeit.'},
+ // Ausdauerspiele
+ {id:'n_gtrans', sp:'ausdauer', name:'Transportlauf', min:15, place:'both', from:0, to:3, note:'Bälle einzeln von Reifen zu Reifen tragen', ic:'ag_transport', fl:'', how:'Mannschaften, je ein Reifen mit vielen Bällen am anderen Ende. Immer nur ein Ball pro Lauf in den eigenen Reifen tragen. Später darf man auch bei anderen Teams holen.'},
+ {id:'n_gmem', sp:'ausdauer', name:'Memory-Lauf', min:15, place:'both', from:0, to:3, note:'Karten am Wendepunkt aufdecken', ic:'ag_memory', fl:'', how:'Memory-Karten verdeckt am Ende der Laufstrecke. Pro Lauf darf ein Kind zwei Karten umdrehen. Passt das Paar, darf es mit. Staffelweise, bis alle Paare gefunden sind.'},
+ {id:'n_gdice', sp:'ausdauer', name:'Würfellauf', min:15, place:'both', from:0, to:4, note:'Augenzahl bestimmt die Runden', ic:'ag_dice', fl:'', how:'Würfeln, so viele kleine Runden laufen, wie Augen zeigen, dann wieder würfeln. Ziel: in 10 Minuten zum Beispiel 30 Runden sammeln. Mit Strichliste.'},
+ {id:'n_glaps', sp:'ausdauer', name:'Rundensammeln', min:12, place:'both', from:0, to:3, note:'Gummi oder Strich pro Runde', ic:'ag_laps', fl:'', how:'Feste Zeit, zum Beispiel 8 Minuten. Für jede Runde gibt es ein Gummiband oder einen Strich. Jeder läuft in seinem Tempo, gehen ist erlaubt, stehen nicht.'},
+ {id:'n_gabc', sp:'ausdauer', name:'Zahlen- und ABC-Lauf', min:15, place:'both', from:0, to:3, note:'Karten in der richtigen Reihenfolge holen', ic:'ag_abc', fl:'', how:'Karten mit Buchstaben oder Zahlen verdeckt verteilt. Die Gruppe holt sie in der richtigen Reihenfolge, immer nur eine Karte pro Lauf. Variante: ein Wort legen.'},
+ {id:'n_gampel', sp:'ausdauer', name:'Ampellauf', min:10, place:'both', from:0, to:2, note:'Grün laufen, Gelb gehen, Rot stehen', ic:'ag_ampel', fl:'', how:'Alle laufen frei. Grün: traben. Gelb: gehen. Rot: stehen und eine Übung, etwa Hampelmann. Der Trainer ruft oder zeigt Farbe. Gut als lockerer Einstieg.'},
+ {id:'n_glines', sp:'ausdauer', name:'Linienfangen', min:10, place:'in', from:0, to:3, note:'nur auf den Hallenlinien laufen', ic:'ag_lines', fl:'', how:'Alle dürfen nur auf den Linien der Halle laufen, auch die Fänger. Wer gefangen ist, wird zur Sperre und steht auf der Kreuzung. Nach zwei Minuten Fänger wechseln.'},
+ {id:'n_ghase', sp:'ausdauer', name:'Hasenjagd', min:10, place:'both', from:0, to:3, note:'Bänder als Schwänze sammeln', ic:'ag_hase', fl:'', how:'Jeder steckt ein Band hinten in den Hosenbund. Alle versuchen, Bänder zu sammeln und den eigenen zu behalten. Wer keins mehr hat, macht eine Runde und holt sich ein neues.'},
+ {id:'n_gulti', sp:'ausdauer', name:'Endzonenball', min:20, place:'both', from:1, to:7, note:'Ball in die Endzone passen, nicht laufen mit Ball', ic:'ag_ultimate', fl:'', how:'Zwei Teams, mit Frisbee oder Ball. Mit Ball in der Hand nicht laufen, nur passen. Punkt, wenn in der Endzone gefangen wird. Viel Laufarbeit, ohne dass es auffällt.'},
+ {id:'n_gbingo', sp:'ausdauer', name:'Bingo-Lauf', min:15, place:'both', from:0, to:3, note:'Felder auf dem Bingo-Blatt erlaufen', ic:'ag_bingo', fl:'', how:'Jedes Team hat ein Bingo-Feld mit 3 × 3 Kästchen. Pro Lauf eine Karte holen und das Feld ankreuzen. Wer zuerst eine Reihe voll hat, ruft Bingo.'},
+ {id:'n_grelay', sp:'ausdauer', name:'Staffel-Marathon', min:20, place:'out', from:0, to:7, note:'gemeinsam eine lange Strecke schaffen', ic:'ag_relaylong', fl:'', how:'Die Gruppe läuft als Staffel eine große Gesamtstrecke, zum Beispiel 10 oder 42 km. Jeder läuft 200 bis 400 m, dann Wechsel. Strecke laufend mitzählen.'},
+ {id:'n_gfahrt', sp:'ausdauer', name:'Fahrtspiel mit Würfel', min:20, place:'out', from:2, to:7, note:'Würfel bestimmt Tempo und Dauer', ic:'ag_fahrt', fl:'', how:'Würfeln: 1 und 2 locker traben, 3 und 4 zügig, 5 schnell, 6 Steigerung. Die Augenzahl gibt dazu die Minuten oder Abschnitte vor. Im Gelände am schönsten.'},
  // Abschluss
  {id:'n_relax', sp:'end', name:'Atmen und Entspannen', min:5, place:'both', from:0, to:7, note:'Rückenlage, Augen zu', ic:'relax', fl:'', how:'Rückenlage, Augen zu. Langsam durch die Nase ein, durch den Mund aus. Arme und Beine nacheinander schwer werden lassen.'},
  {id:'n_9090', sp:'end', name:'Hüftmobilisation 90/90', min:8, place:'both', from:2, to:7, note:'im Sitzen', ic:'hipflexor', fl:'', how:'Im Sitzen beide Beine im rechten Winkel, Knie von einer Seite zur anderen kippen. Zehnmal, dann jede Seite 20 Sekunden halten.'},
@@ -1084,10 +1251,77 @@ const FLAGINFO = {
  diskus:{n:'Diskus', t:a=>'Gewicht nach Altersklasse, siehe Maße-Seite. Sektor absperren, alle stehen hinter dem Werfer.'}
 };
 
+/* Methodische Reihen und Bausteine */
+const REIHEN = [
+ {id:'r_ws', name:'Weitsprung', from:0, to:7, steps:[
+  ['bound','Sprunglauf','Über 20 bis 30 m im Sprunglauf, Knie vorn hoch, Arme gegengleich. Zurück gehen.','die Sprünge gleich weit sind und die Arme mitarbeiten', 10],
+  ['take3','Absprung im Dreier-Rhythmus','Lauf mit einem Absprung jeden dritten Schritt, links und rechts. Schwungknie und Arm hoch.','der Absprung ohne Abbremsen aus dem Lauf kommt', 10],
+  ['wsp_2','Absprung aus 5 Schritten','Kurzanlauf mit fünf Schritten, Absprung in einer Zone statt vom Balken. Schwungknie bleibt kurz oben.','der Fuß aktiv aufgesetzt wird und der Körper aufrecht bleibt', 15],
+  ['wsp_3','Flug halten','Aus sieben Schritten über ein niedriges Hindernis in die Grube, die Schrittstellung in der Luft halten.','die Schrittstellung kurz sichtbar ist, ohne nach vorn zu kippen', 15],
+  ['wsp_4','Landung','Aus kurzem Anlauf beide Beine nach vorn, Arme nach hinten, im Sand nach vorn durchrutschen.','niemand mehr nach hinten in den Sand fällt', 10],
+  ['wsp_1','Anlauf einmessen','Anlauf von der Absprungzone rückwärts messen, markieren und mit ganzem Anlauf springen.','der Anlauf dreimal hintereinander auf dem Balken oder in der Zone ankommt', 20]]},
+ {id:'r_hs', name:'Hochsprung (Flop)', from:1, to:7, steps:[
+  ['hsp_1','Kurvenlauf','Kreise und Achterschleifen laufen, Körper leicht nach innen geneigt.','die Neigung aus dem Fuß kommt und nicht aus der Hüfte', 8],
+  ['hsp_2','Absprung aus der Kurve','Vier bis fünf Schritte Bogen, Absprung mit dem äußeren Bein, Knie und Arme hoch, ohne Latte.','der Absprung nach oben geht und nicht zur Latte hin', 12],
+  ['hsp_4','Rückwärts auf die Matte','Aus dem Stand rücklings auf die Matte springen, Hüfte hoch, Kinn zur Brust bei der Landung.','alle auf dem oberen Rücken landen und den Kopf schützen', 10],
+  ['hj_scissors','Schersprung','Schräger Anlauf, Schwungbein zuerst über die Gummilatte, Landung auf den Füßen.','der Rhythmus der letzten Schritte gleichmäßig ist', 12],
+  ['hsp_3','Flop aus 3 bis 5 Schritten','Kurzer Bogen, Absprung, Rücken zur Latte, Hüfte hoch, Beine zum Schluss anziehen.','die Hüfte der höchste Punkt über der Latte ist', 15],
+  ['hj_flop','Flop mit vollem Anlauf','Anlauf mit Geraden und Bogen einmessen, dann mit ganzem Anlauf springen.','der Absprungpunkt immer gleich ist', 20]]},
+ {id:'r_hu', name:'Hürden', from:1, to:7, steps:[
+  ['hurdlewalk','Hürden übergehen','Hürden auf niedriger Höhe im Gehen übersteigen, Schwung- und Nachziehbein im Wechsel.','die Hüfte hoch bleibt und der Oberkörper aufrecht', 8],
+  ['hu_2','Schwungbein an der Hürde','Seitlich an der Hürde laufen, nur das Schwungbein geht drüber. Knie zuerst, dann Unterschenkel.','das Knie zuerst kommt und der Oberkörper mitgeht', 10],
+  ['hu_4','Nachziehbein an der Hürde','Andere Seite: nur das Nachziehbein über die Hürde, Knie seitlich nach vorn ziehen.','das Knie vor dem Körper wieder aufgesetzt wird', 10],
+  ['hu_1','Rhythmus mit Hindernissen','Niedrige Hindernisse mit drei Schritten dazwischen überlaufen, Abstand verkürzt.','der Rhythmus ohne Trippeln durchgehalten wird', 12],
+  ['hu_3','Ganze Hürde niedrig','Drei bis fünf niedrige Hürden mit verkürztem Abstand, Schwung- und Nachziehbein zusammen.','die Hürde flach überquert wird, ohne zu springen', 15],
+  ['hurdle_run','Wettkampfabstand','Abstand und Höhe schrittweise zur Wettkampfnorm erhöhen.','drei Hürden im Wettkampfabstand im Dreier-Rhythmus gelingen', 15]]},
+ {id:'r_ss', name:'Sprintstart', from:0, to:7, steps:[
+  ['falling','Fallstart','Aus dem aufrechten Stand nach vorn fallen lassen und loslaufen.','der erste Schritt unter dem Körper landet und nicht davor', 8],
+  ['reaction','Starts aus verschiedenen Lagen','Aus Bauchlage, Sitz oder Liegestütz auf Signal starten.','alle sofort reagieren und flach beschleunigen', 10],
+  ['ms_1','Hochstart','Schrittstellung, Gewicht vorn, gegengleicher Arm vorn. Auf Kommando starten.','der Start ohne Zurücknehmen der Arme oder Beine kommt', 8],
+  ['ss_1','Auf die Plätze','Block einstellen, Hände hinter der Linie, hinteres Knie am Boden, Blick zum Boden.','die Position ruhig und gleich gelingt', 10],
+  ['ss_2','Fertig','Hüfte etwas höher als die Schultern, Gewicht auf den Händen, Beine vorgespannt.','die Hüfte hoch kommt, ohne nach vorn zu rutschen', 10],
+  ['ss_3','Abdruck und Beschleunigung','Kräftig aus beiden Blöcken drücken, flach bleiben, Oberkörper richtet sich erst nach etwa 20 m auf.','der Körper eine Linie vom Fuß bis Kopf bildet', 15]]},
+ {id:'r_st', name:'Staffelwechsel', from:0, to:7, steps:[
+  ['rel_stand','Übergabe im Stand','Hintereinander stehen, auf „Hopp“ Arm nach hinten, Stab von unten in die Hand.','der Stab ohne Hinschauen übergeben wird', 8],
+  ['rel_walk','Übergabe im Gehen und Traben','Zu zweit im Gehen, dann im Traben. Rufen, Arm hoch, übergeben.','die Übergabe ohne Tempoverlust klappt', 10],
+  ['rel_mark','Ablaufmarke','Ablaufmarke legen, Läufer startet, wenn der Ankommende die Marke erreicht.','der Ablaufende nicht zurückschaut', 12],
+  ['relay','Wechsel im Wechselraum','Mit Tempo im Wechselraum übergeben, Marke anpassen.','der Stab im ersten Drittel des Raums wechselt', 15],
+  ['ag_relaylong','Ganze Staffel','4 × 50 m oder 4 × 100 m mit allen Wechseln und Zeit.','alle Wechsel ohne Stocken gelingen', 15]]},
+ {id:'r_ku', name:'Kugelstoß', from:1, to:7, steps:[
+  ['mbput','Stoß mit Medizinball','Beidarmig von der Brust stoßen, dann einarmig. Ellbogen hoch.','gestoßen und nicht geworfen wird', 10],
+  ['ku_4','Standstoß frontal','Kugel am Hals, frontal zur Stoßrichtung, aus den Beinen stoßen.','die Kugel am Hals bleibt, bis die Beine strecken', 10],
+  ['ku_3','Standstoß aus der Kraftposition','Seitlich zur Stoßrichtung, Gewicht hinten, Hüfte zuerst drehen, dann stoßen.','die Hüfte vor dem Arm arbeitet', 12],
+  ['ku_2','Angleiten ohne Kugel','Rücken zur Stoßrichtung, flach nach hinten gleiten, Fuß landet unter dem Körper.','das Gleiten flach bleibt und in der Kraftposition endet', 12],
+  ['ku_1','Angleiten mit Stoß','Ganze Bewegung mit leichter Kugel: Ausgang, Angleiten, Kraftposition, Stoß.','ohne Pause aus dem Gleiten gestoßen wird', 15]]},
+ {id:'r_sp', name:'Schlagwurf und Speer', from:0, to:7, steps:[
+  ['throwwall','Schlagwurf an die Wand','Tennisball mit hohem Ellbogen an die Wand werfen, viele Wiederholungen.','der Ellbogen über Schulterhöhe ist', 10],
+  ['sp_4','Wurf aus dem Stand','Schrittstellung, Wurfarm lang nach hinten, aus Hüfte und Schulter werfen.','der Wurf über den Kopf und nicht seitlich kommt', 10],
+  ['sp_2','Abspreizen im Gehen','Im Gehen den Wurfarm lang nach hinten führen, Schultern seitlich.','der Arm gestreckt hinten bleibt', 10],
+  ['sp_3','Impuls- und Stemmschritt','Aus drei Schritten mit Impulsschritt in den Stemmschritt, Körper als Bogen.','das Stemmbein fest aufsetzt und der Körper sich spannt', 12],
+  ['sp_1','Wurf mit Anlauf','Kurzer Anlauf, Abspreizen, Impulsschritt, Abwurf. Erst mit Ball, dann mit Speer ab passender Altersklasse.','der Wurf aus dem Anlauf ohne Abbremsen kommt', 15]]}
+];
+const BAUSTEINE = [
+ {id:'b_warmk', name:'Aufwärmen Kinder', from:0, to:2, items:['n_gampel','e1','n_tbtoss','n_kkcone']},
+ {id:'b_warmj', name:'Aufwärmen Jugend', from:2, to:7, items:['e0','e3','e1','e4']},
+ {id:'b_kopf', name:'Koordination plus Kopf', from:0, to:7, items:['n_kkcross','n_kkdice','n_kkcard','n_kkmirror']},
+ {id:'b_tball', name:'Tennisball-Koordination', from:0, to:7, items:['n_tbtoss','n_tbclap','n_tbpart','n_tbjug']},
+ {id:'b_sprint', name:'Sprintblock', from:2, to:7, items:['n_abcsprint','n_fall','e9','e10']},
+ {id:'b_agame', name:'Ausdauerspiele', from:0, to:3, items:['n_gtrans','n_gmem','n_ghase']},
+ {id:'b_ga', name:'Grundlage locker', from:3, to:7, items:['e54','n_ni','e66']},
+ {id:'b_kraft0', name:'Kraft ohne Gewichte', from:0, to:7, items:['e39','e41','e42','n_animal']},
+ {id:'b_end', name:'Abschluss', from:0, to:7, items:['e65','e66','e69']}
+];
+
 const EXIC = {}; ICO.EX.forEach(e=>{ EXIC[e.id] = e; });
 const XTRA = {};   // Zusatz je Bibliotheks-ID: {ic, fl:[], how}
 LIB0X.forEach((r,i)=>{ XTRA['e'+i] = {ic:r[0], fl:r[1].split(' ').filter(Boolean), how:r[2], ov:r[3]||null}; });
 LIBN.forEach(e=>{ XTRA[e.id] = {ic:e.ic, fl:e.fl.split(' ').filter(Boolean), how:e.how}; });
+/* Reihen-Schritte als Bibliothekseinträge (in der Liste nur über die Suche) */
+const SERLIB = [];
+REIHEN.forEach(r=>r.steps.forEach((st,i)=>{ const id = r.id + '_' + (i+1);
+  SERLIB.push({id, sp:'technik', name:r.name + ' ' + (i+1) + ': ' + st[1], min:st[4], place:'both', from:r.from, to:r.to, note:'Reihe ' + r.name + ', Schritt ' + (i+1) + ' von ' + r.steps.length, ser:r.id, step:i});
+  XTRA[id] = {ic:st[0], fl:[], how:st[2], ok:st[3]}; }));
+const serById = id => REIHEN.find(r=>r.id===id);
 const PICCACHE = {};
 function picSvg(ic){
   const k = ic || '_';
@@ -1161,8 +1395,18 @@ function normalize(o){
       const base = {sp:r[0], name:r[1], min:r[2], place:r[3], from:ov.from!=null?ov.from:r[4], to:ov.to!=null?ov.to:r[5], note:r[6]};
       const e = o.lib.find(z=>z.id===id && !z.own); if (e) Object.assign(e, base);
       else if (!have.has(id) && o._fresh) o.lib.push(Object.assign({id, own:false, off:false}, base)); });
+    SERLIB.forEach(n=>{ const e = o.lib.find(z=>z.id===n.id); if (e) Object.assign(e, n, {own:false}); else o.lib.push(Object.assign({own:false, off:false}, n)); });
     LIBN.forEach(n=>{ if (!have.has(n.id)) o.lib.push({id:n.id, sp:n.sp, name:n.name, min:n.min, place:n.place, from:n.from, to:n.to, note:n.note, own:false, off:false}); else { const e = o.lib.find(z=>z.id===n.id); Object.assign(e, {sp:n.sp, name:n.name, min:n.min, place:n.place, from:n.from, to:n.to, note:n.note}); } });
   }
+  { const sr = (o.series && typeof o.series === 'object') ? o.series : {}; o.series = {};
+    Object.keys(sr).forEach(gid=>{ if (!o.groups.some(g=>g.id===gid) || !sr[gid] || typeof sr[gid] !== 'object') return;
+      o.series[gid] = {};
+      Object.keys(sr[gid]).forEach(rid=>{ const r = serById(rid), v = sr[gid][rid]; if (!r || !v || typeof v !== 'object') return;
+        const ok = (Array.isArray(v.ok) ? v.ok : []).map(Number).filter(i=>i>=0 && i<r.steps.length);
+        const rep = {}; if (v.rep && typeof v.rep === 'object') for (const k in v.rep){ const i = +k; if (i>=0 && i<r.steps.length) rep[i] = clamp(+v.rep[k]||0, 0, 99); }
+        o.series[gid][rid] = {cur:clamp(+v.cur||0, 0, r.steps.length), ok:[...new Set(ok)], rep, start:String(v.start||'').slice(0,10)}; }); }); }
+  o.blocks = (Array.isArray(o.blocks) ? o.blocks : []).filter(b=>b && Array.isArray(b.items))
+    .map(b=>({id:b.id||uid(), name:String(b.name||'Baustein').slice(0,40), items:b.items.map(String).slice(0,20)})).slice(0,40);
   o.peaks = (Array.isArray(o.peaks)?o.peaks:[]).filter(p=>p && /^\d{4}-\d{2}-\d{2}$/.test(p.date))
     .map(p=>({id:p.id||uid(), name:String(p.name||'Höhepunkt').slice(0,40), date:p.date, grp:p.grp||'all'}));
   o.units = (o.units && typeof o.units === 'object') ? o.units : {};
@@ -1575,6 +1819,7 @@ function libFiltered(){
   const q = db.s.q.trim().toLowerCase();
   return db.lib.filter(e=>{
     if (e.off) return false;
+    if (e.ser && !q) return false;
     if (db.s.sp !== 'all' && e.sp !== db.s.sp) return false;
     if (db.s.fit && !gs.every(gg=>fits(e, gg, pl))) return false;
     if (q && !(e.name.toLowerCase().includes(q) || e.note.toLowerCase().includes(q) || xOf(e).how.toLowerCase().includes(q))) return false;
@@ -1614,7 +1859,7 @@ function renderTL(){
     return `<div class="ti" style="border-left-color:${sp.c}" data-i="${i}">
       ${e ? `<button class="th" type="button" data-view="${e.id}" aria-label="Anleitung">${picSvg(xOf(e).ic)}</button>` : ''}
       <div class="tm">${it.min}<span>ab ${h?h+':'+String(m).padStart(2,'0'):m+' min'}</span></div>
-      <div class="tn"><b>${esc(e ? e.name : 'Übung gelöscht')}</b><span>${sp.n}${e && e.note ? ' · ' + esc(e.note) : ''}</span></div>
+      <div class="tn"><b>${esc(e ? e.name : 'Übung gelöscht')}</b><span>${sp.n}${e && e.note ? ' · ' + esc(e.note) : ''}</span>${e && e.ser ? serChips(e) : ''}</div>
       <div class="st"><button type="button" data-plus="${i}" aria-label="5 Minuten mehr">＋</button><button type="button" data-minus="${i}" aria-label="5 Minuten weniger">−</button></div>
       <button class="icon-btn" type="button" data-up="${i}" aria-label="nach oben">↑</button>
       <button class="icon-btn" type="button" data-down="${i}" aria-label="nach unten">↓</button>
@@ -1622,6 +1867,11 @@ function renderTL(){
       <button class="grip" type="button" data-drag="tl:${i}" aria-label="verschieben">⣿</button>
     </div>`;
   }).join('');
+}
+function serChips(e){
+  const gs = shareGroups(group().id, db.s.week, curDay), st = gs.map(g=>serOf(g.id, e.ser)).find(Boolean);
+  const ok = st && st.ok.includes(e.step);
+  return `<span class="serchips"><button type="button" class="schip${ok?' on':''}" data-serok="${e.ser}:${e.step}">${ok ? '✓ sitzt' : 'sitzt'}</button><button type="button" class="schip" data-serrep="${e.ser}:${e.step}">wiederholen</button></span>`;
 }
 function addEx(exId, index){
   const g = group(); if (curDay === null) return;
@@ -1631,7 +1881,95 @@ function addEx(exId, index){
   if (index == null || index >= u.items.length) u.items.push(it); else u.items.splice(index, 0, it);
   save(); renderUnit(); renderWeek();
 }
-function renderUnit(){ renderUnitHead(); renderLib(); renderTL(); }
+function renderUnit(){ renderUnitHead(); renderBlocks(); renderSerNow(); renderLib(); renderTL(); renderSeries(); }
+
+/* ---------- Bausteine ---------- */
+function blockList(){
+  const gs = curDay ? shareGroups(group().id, db.s.week, curDay) : [group()];
+  const fitsAge = b => gs.every(g=>g.age >= b.from && g.age <= b.to);
+  return BAUSTEINE.filter(fitsAge).map(b=>Object.assign({own:false}, b)).concat(db.blocks.map(b=>Object.assign({own:true}, b)));
+}
+function blockItems(b){ return b.items.map(exById).filter(e=>e && !e.off); }
+function renderBlocks(){
+  const box = $('#blkList'); if (!box) return;
+  const list = blockList();
+  box.innerHTML = list.length ? list.map(b=>{ const it = blockItems(b), m = it.reduce((a,e)=>a+e.min,0);
+    return `<div class="blkw"><button type="button" class="blk${b.own?' own':''}" data-blk="${b.id}"${curDay===null?' disabled':''}>
+      <span class="strip">${it.slice(0,4).map(e=>picSvg(xOf(e).ic)).join('')}</span><b>${esc(b.name)}</b><span class="m">${it.length} Übungen · ${m} min</span></button>
+      ${b.own ? `<button type="button" class="blkdel" data-blkdel="${b.id}" aria-label="Baustein ${esc(b.name)} löschen">×</button>` : ''}</div>`; }).join('')
+    : '<div class="empty">Kein Baustein passt zu dieser Gruppe.</div>';
+}
+function addBlock(id){
+  const b = blockList().find(x=>x.id===id); if (!b || curDay === null) return;
+  const g = group(), u = unit(g.id, db.s.week, curDay, true), it = blockItems(b);
+  it.forEach(e=>u.items.push({id:uid(), exId:e.id, min:e.min}));
+  save(); renderUnit(); renderWeek();
+  flash($('#unitMsg'), '„' + b.name + '“ eingefügt: ' + it.length + ' Übungen.');
+}
+
+/* ---------- Methodische Reihen ---------- */
+const serOf = (gid, rid) => (db.series[gid] || {})[rid] || null;
+function serStart(gid, rid){ (db.series[gid] = db.series[gid] || {})[rid] = {cur:0, ok:[], rep:{}, start:iso(new Date())}; }
+function serNext(r, st){ for (let i=0;i<r.steps.length;i++) if (!st.ok.includes(i)) return i; return r.steps.length; }
+function serMark(rid, i, ok){
+  const r = serById(rid); if (!r) return;
+  const gs = curDay ? shareGroups(group().id, db.s.week, curDay) : [group()];
+  let hit = gs.filter(g=>serOf(g.id, rid));
+  if (!hit.length){ serStart(group().id, rid); hit = [group()]; }
+  hit.forEach(g=>{ const st = serOf(g.id, rid);
+    if (ok){ if (!st.ok.includes(i)) st.ok.push(i); st.cur = serNext(r, st); }
+    else { st.rep[i] = (st.rep[i]||0) + 1; st.cur = Math.min(st.cur, i); st.ok = st.ok.filter(x=>x !== i); } });
+  save();
+}
+function serAddStep(rid, i){
+  if (curDay === null){ flash($('#serMsg'), 'Erst unter Einheit oder Woche einen Trainingstag wählen.'); return false; }
+  const g = group(); if (!serOf(g.id, rid)) serStart(g.id, rid);
+  addEx(rid + '_' + (i+1), null); return true;
+}
+function serStateTxt(r, st){
+  if (!st) return 'nicht gestartet';
+  if (st.cur >= r.steps.length) return 'alle Schritte sitzen';
+  return 'Schritt ' + (st.cur+1) + ' von ' + r.steps.length;
+}
+function renderSerNow(){
+  const box = $('#serNow'); if (!box) return;
+  const g = group(), act = REIHEN.filter(r=>serOf(g.id, r.id));
+  if (!act.length){ box.innerHTML = `<p class="note" style="margin:0">Keine Reihe aktiv. Unter <a href="#reihen" data-goto="reihen">Reihen</a> eine Reihe für ${esc(g.name)} starten.</p>`; return; }
+  box.innerHTML = act.map(r=>{ const st = serOf(g.id, r.id), i = st.cur;
+    if (i >= r.steps.length) return `<div class="sercard done"><div class="sc-t"><b>${esc(r.name)}</b><span>alle Schritte sitzen</span></div></div>`;
+    const x = XTRA[r.id + '_' + (i+1)];
+    return `<div class="sercard"><button class="th" type="button" data-view="${r.id}_${i+1}" aria-label="Anleitung">${picSvg(x.ic)}</button>
+      <div class="sc-t"><b>${esc(r.name)} · ${i+1}/${r.steps.length}</b><span>${esc(r.steps[i][1])}</span></div>
+      <button class="btn small primary" type="button" data-seradd="${r.id}:${i}"${curDay===null?' disabled':''}>In Einheit</button></div>`; }).join('');
+}
+function renderSeries(){
+  const out = $('#serOut'); if (!out) return;
+  const g = group();
+  $('#serLead').textContent = 'Schrittfolgen vom Leichten zum Schweren. Der Stand wird je Gruppe gespeichert, gerade für ' + g.name + '.';
+  out.innerHTML = REIHEN.map(r=>{
+    const st = serOf(g.id, r.id), fit = g.age >= r.from && g.age <= r.to;
+    const n = st ? st.ok.length : 0;
+    const steps = r.steps.map((s2,i)=>{ const ok = st && st.ok.includes(i), cur = st && st.cur === i, rep = st && st.rep[i];
+      return `<button type="button" class="sst${ok?' ok':''}${cur?' cur':''}" data-view="${r.id}_${i+1}" aria-label="Schritt ${i+1}: ${esc(s2[1])}">
+        ${picSvg(s2[0])}<small><b>${i+1}</b> ${esc(s2[1])}</small><i>${ok ? '✓ sitzt' : cur ? 'dran' + (rep ? ' · ' + rep + '× wiederholt' : '') : ''}</i></button>`; }).join('');
+    let act = '';
+    if (!st) act = `<button class="btn small primary" type="button" data-serstart="${r.id}">Für ${esc(g.name)} starten</button>`;
+    else {
+      const i = st.cur;
+      if (i < r.steps.length) act = `<button class="btn small primary" type="button" data-seradd="${r.id}:${i}"${curDay===null?' disabled':''}>Schritt ${i+1} in Einheit</button>
+        <button class="btn small" type="button" data-serok="${r.id}:${i}">Sitzt</button>
+        <button class="btn small" type="button" data-serrep="${r.id}:${i}">Wiederholen</button>`;
+      act += `<button class="btn small danger" type="button" data-serreset="${r.id}">Zurücksetzen</button>`;
+    }
+    return `<div class="block serblk${fit ? '' : ' unfit'}">
+      <div class="block-head"><h3>${esc(r.name)}</h3><span class="tag">${ageText(r)} · ${serStateTxt(r, st)}</span></div>
+      ${st ? `<div class="serbar"><i style="width:${Math.round(n / r.steps.length * 100)}%"></i></div>` : ''}
+      ${fit ? '' : `<p class="note" style="margin:4px 0 0">Für ${esc(g.name)} ${g.age < r.from ? 'erst ab ' + AGES[r.from] : 'nur bis ' + AGES[r.to]} vorgesehen.</p>`}
+      <div class="serstrip">${steps}</div>
+      <div class="btns">${act}</div></div>`;
+  }).join('');
+}
+
 function openExView(id){
   const e = exById(id); if (!e) return;
   const g = group(), x = xOf(e), sp = spOf(e.sp);
@@ -1643,7 +1981,8 @@ function openExView(id){
       <div class="pv-meta">${sp.n} · ${e.min} min · ${ageText(e)}${e.place!=='both' ? ' · ' + PLACE[e.place] : ''}${e.own ? ' · eigene Übung' : ''}</div></div></div>
     ${why ? `<div class="pv-rule bad"><b>Passt nicht zu ${esc(gs.map(x=>x.name).join(' + '))}</b>Diese Übung ist ${why} vorgesehen.</div>` : ''}
     <p class="pv-how">${esc(x.how || e.note || 'Keine Anleitung hinterlegt.')}</p>
-    ${x.how && e.note ? `<p class="pv-note">Merkpunkt: ${esc(e.note)}</p>` : ''}
+    ${x.ok ? `<div class="pv-rule ok"><b>Sitzt, wenn</b>${esc(x.ok)}.</div>` : ''}
+    ${x.how && e.note ? `<p class="pv-note">${e.ser ? '' : 'Merkpunkt: '}${esc(e.note)}</p>` : ''}
     ${rules}
     <div class="btns">
       ${curDay !== null ? `<button class="btn primary" type="button" data-pvadd="${e.id}">Zur Einheit hinzufügen</button>` : ''}
@@ -1734,7 +2073,7 @@ function fillSuggestion(){
   const g = group(); if (curDay === null) return;
   const mon = weekMon(), u = unit(g.id, db.s.week, curDay, true);
   const pl = placeOf(u, mon, curDay), t = dayTargets(g, mon, curDay);
-  const pool = k => db.lib.filter(e=>e.sp===k && fits(e, g, pl));
+  const pool = k => db.lib.filter(e=>e.sp===k && !e.ser && fits(e, g, pl));
   const used = new Set(), out = [];
   ['warm', ...MAIN, 'end'].forEach(k=>{
     let left = t[k] || 0;
@@ -1780,7 +2119,7 @@ function renderExAdmin(){
   if (!$('#exSp').innerHTML) $('#exSp').innerHTML = SP.map(x=>`<option value="${x.k}">${x.n}</option>`).join('');
   $('#exChips').innerHTML = [['all','Alle','']].concat(SP.map(x=>[x.k,x.n,x.c]))
     .map(([k,n,c])=>`<button type="button" class="qchip${db.s.exSp===k?' on':''}" data-exsp="${k}">${c?`<i class="sw" style="background:${c}"></i>`:''}${n}</button>`).join('');
-  const list = db.lib.filter(e=>db.s.exSp==='all' || e.sp===db.s.exSp);
+  const list = db.lib.filter(e=>!e.ser && (db.s.exSp==='all' || e.sp===db.s.exSp));
   const bySp = {};
   list.forEach(e=>{ (bySp[e.sp] = bySp[e.sp] || []).push(e); });
   $('#exOut').innerHTML = SP.filter(x=>bySp[x.k]).map(x=>{
@@ -1889,11 +2228,38 @@ on('#unitNote','input',e=>{
 on('#spChips','click',e=>{ const b = e.target.closest('[data-sp]'); if (!b) return; db.s.sp = b.dataset.sp; save(); renderLib(); });
 on('#libSearch','input',e=>{ db.s.q = e.target.value; save(); renderLib(); });
 on('#fitOnly','change',e=>{ db.s.fit = e.target.checked; save(); renderLib(); });
+on('#blkList','click',e=>{
+  const d = e.target.closest('[data-blkdel]');
+  if (d){ const b = db.blocks.find(x=>x.id===d.dataset.blkdel); if (b && confirm('Baustein „' + b.name + '“ löschen?')){ db.blocks = db.blocks.filter(x=>x !== b); save(); renderBlocks(); } return; }
+  const b = e.target.closest('[data-blk]'); if (b) addBlock(b.dataset.blk);
+});
+on('#saveBlock','click',()=>{
+  const g = group(); if (curDay === null) return;
+  const u = unit(g.id, db.s.week, curDay);
+  if (!u || !u.items.length){ flash($('#unitMsg'), 'Die Einheit ist noch leer.'); return; }
+  const name = (prompt('Name für den Baustein:', 'Eigener Baustein') || '').trim(); if (!name) return;
+  db.blocks.push({id:uid(), name:name.slice(0,40), items:u.items.map(it=>it.exId).slice(0,20)});
+  save(); renderBlocks(); flash($('#unitMsg'), 'Als Baustein gespeichert. Er steht jetzt bei jeder Einheit zur Auswahl.');
+});
+function serClick(e){
+  const v = e.target.closest('[data-view]'); if (v){ openExView(v.dataset.view); return true; }
+  const go = e.target.closest('[data-goto]'); if (go){ e.preventDefault(); goTo(go.dataset.goto); return true; }
+  const a = e.target.closest('[data-seradd]'); if (a){ const [rid, i] = a.dataset.seradd.split(':'); if (serAddStep(rid, +i)){ renderSeries(); flash($('#serMsg'), 'Schritt ' + (+i+1) + ' ist in der Einheit am ' + DAYS[curDay-1] + '.'); } return true; }
+  const ok = e.target.closest('[data-serok]'); if (ok){ const [rid, i] = ok.dataset.serok.split(':'); serMark(rid, +i, true); renderSeries(); renderUnit(); return true; }
+  const rp = e.target.closest('[data-serrep]'); if (rp){ const [rid, i] = rp.dataset.serrep.split(':'); serMark(rid, +i, false); renderSeries(); renderUnit(); flash($('#serMsg'), 'Bleibt dran: Schritt ' + (+i+1) + ' wird wiederholt.'); return true; }
+  const s0 = e.target.closest('[data-serstart]'); if (s0){ serStart(group().id, s0.dataset.serstart); save(); renderSeries(); renderSerNow(); return true; }
+  const rs = e.target.closest('[data-serreset]'); if (rs){ const r = serById(rs.dataset.serreset); if (r && confirm('Reihe „' + r.name + '“ für ' + group().name + ' zurücksetzen?')){ delete db.series[group().id][r.id]; save(); renderSeries(); renderSerNow(); } return true; }
+  return false;
+}
+on('#serOut','click', serClick);
+on('#serNow','click', serClick);
+on('#serNowBox','click', e=>{ const go = e.target.closest('.block-head [data-goto]'); if (go){ e.preventDefault(); goTo(go.dataset.goto); } });
 on('#libList','click',e=>{ const v = e.target.closest('[data-view]'); if (v){ openExView(v.dataset.view); return; } const b = e.target.closest('[data-add]'); if (!b) return; addEx(b.dataset.add, null); });
 on('#libList','pointerdown', onGripDown);
 on('#timeline','pointerdown', onGripDown);
 on('#timeline','click',e=>{
   const v = e.target.closest('[data-view]'); if (v){ openExView(v.dataset.view); return; }
+  if (e.target.closest('[data-serok],[data-serrep]')){ serClick(e); return; }
   const g = group(); if (curDay === null) return;
   const u = unit(g.id, db.s.week, curDay); if (!u) return;
   const b = e.target.closest('button'); if (!b) return;

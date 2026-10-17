@@ -220,6 +220,15 @@ ul.steps li::before{counter-increment:st;content:counter(st);position:absolute;l
 .var span{display:block;font-size:14.5px;color:var(--muted);margin-top:2px}
 .safe{border-left:6px solid var(--ink)}
 h2 .sub{display:block;font-family:var(--body);font-size:14px;font-weight:500;color:var(--muted);margin-top:4px;line-height:1.4}
+.phases h3{margin:0 0 4px}
+.phs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;list-style:none;padding:0;margin:8px 0 0;counter-reset:ph}
+.phs li{border:1px solid #DEDEDC;border-radius:10px;padding:6px 8px 9px;background:#fff;min-width:0;position:relative}
+.phs .ph-ic{color:#2B2B2B}
+.phs .ph-ic svg{width:100%;height:auto;display:block}
+.phs b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:18px;line-height:1.1;margin-top:2px}
+.phs b i{font-style:normal;color:#D7191C;margin-right:4px}
+.phs span{display:block;font-size:14px;line-height:1.35;color:#4A4A4A}
+@media (max-width:640px){ .phs{grid-template-columns:repeat(2,minmax(0,1fr))} }
 </style>
 <style id="dtv-appbar">
 .appbar{display:flex;align-items:center;gap:6px;background:#2B2B2B;color:#fff;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));overflow-x:auto;scrollbar-width:none;position:relative;z-index:30}
@@ -307,6 +316,16 @@ body.running .appbar,body.running .subbar{display:none}
       </svg>
     </div>
     <p class="cap">Gleicher Anlauf, gleiches Tempo, nur der Absprung ist anders: flach nach vorn gegen nach oben abgesprungen. Mehr Flugzeit bedeutet mehr Weite.</p>
+  </div>
+
+  <div class="block phases">
+    <h3>Bildfolge</h3>
+    <ol class="phs">
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M-8 -30.4L-18.1 -14.3L-36.8 -17.6"/><path d="M-4.3 -51.6L6.5 -42.6L13 -53.9"/></g><path d="M-8 -30.4L-3.8 -54.1"/><path d="M-8 -30.4L9.6 -23.3L3.7 -5.2"/><path d="M-4.3 -51.6L-14.7 -42.2L-6.3 -32.3"/><circle cx="-2.1" cy="-63.9" r="6.5" fill="currentColor" stroke="none"/><path d="M-30 -60h-9M-28 -53h-12M-30 -46h-8" stroke-width="2.4" opacity=".6"/><path d="M-56 4H40" stroke-width="2" stroke-dasharray="4 4" opacity=".7"/></g></svg></div><b><i>1</i>Anlauf</b><span>Gleichmäßig steigern, die letzten Schritte am schnellsten.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M-11 -7H19" stroke-width="4"/><path d="M-2 -6.5A6 6 0 0 0 10 -6.5" stroke-width="3.2" fill="currentColor" fill-opacity=".3"/><g opacity=".4"><path d="M19.4 -44.6L10.5 -27.9L4 -10"/><path d="M20.2 -66.1L31.6 -74.1L36.1 -86.4"/></g><path d="M19.4 -44.6L20.3 -68.6"/><path d="M19.4 -44.6L38.3 -46.6L42.3 -28"/><path d="M20.2 -66.1L9.4 -57.1L5 -44.9"/><circle cx="19.9" cy="-78.6" r="6.5" fill="currentColor" stroke="none"/><g opacity=".7"><path d="M18 -72L30 -96" stroke-width="2.6"/><path d="M30.2 -91L30 -96L25.9 -93.1" stroke-width="2.6"/></g></g></svg></div><b><i>2</i>Absprung</b><span>Fuß aktiv aufsetzen, Knie und Arme nach oben.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.763)" stroke-width="6.5"><path d="M-6 1Q27 9 60 1Z" fill="currentColor" fill-opacity=".28" stroke="none"/><path d="M-12 0H-6" stroke-width="3"/><g opacity=".4"><path d="M6 -56.8L-2.3 -39.7L-20.2 -33.2"/><path d="M8.2 -78.2L15.2 -90.3L16.4 -103.3"/></g><path d="M6 -56.8L8.5 -80.7"/><path d="M6 -56.8L25 -56.2L22.3 -37.3"/><path d="M8.2 -78.2L13 -91.4L15.3 -104.2"/><circle cx="9.6" cy="-90.6" r="6.5" fill="currentColor" stroke="none"/><path d="M-56 -10 Q-20 -40 10 -36" stroke-width="2" stroke-dasharray="3 3" opacity=".7"/></g></svg></div><b><i>3</i>Flug</b><span>Schrittstellung halten, nicht nach vorn kippen.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M-40 1Q8 9 56 1Z" fill="currentColor" fill-opacity=".28" stroke="none"/><path d="M-46 0H-40" stroke-width="3"/><g opacity=".4"><path d="M10 -4.6L28.9 -2.6L47.8 -1.2"/><path d="M20.8 -23.2L8 -17.5L0.3 -7"/></g><path d="M10 -4.6L22 -25.3"/><path d="M10 -4.6L29 -3.2L47.9 -2.6"/><path d="M20.8 -23.2L7.6 -18.4L-0.8 -8.4"/><circle cx="27" cy="-34" r="6.5" fill="currentColor" stroke="none"/><g opacity=".7"><path d="M-30 -56Q-12 -66 0 -44" stroke-width="2.6"/><path d="M-4.2 -46.7L0 -44L0 -49" stroke-width="2.6"/></g></g></svg></div><b><i>4</i>Landung</b><span>Beine vor, Arme zurück, nach vorn durchrutschen.</span></li>
+    </ol>
   </div>
 
   <details class="block">
@@ -400,6 +419,16 @@ body.running .appbar,body.running .subbar{display:none}
     <p class="cap">Von oben gesehen. Die Punkte sind Hütchen, mit denen sich der Bogen im Training markieren lässt.</p>
   </div>
 
+  <div class="block phases">
+    <h3>Bildfolge</h3>
+    <ol class="phs">
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M-58 4 Q-10 8 10 -2 T40 -16" stroke-width="2.4" stroke-dasharray="4 4" opacity=".7"/><path d="M30 0V-36M58 0V-36" stroke-width="3"/><path d="M30 -30H58" stroke-width="2.2" stroke-dasharray="4 2"/><g opacity=".4"><path d="M-14 -32.6L-22.9 -15.8L-41.9 -15.8"/><path d="M-8.8 -53.5L1.9 -44.5L8.4 -55.7"/></g><path d="M-14 -32.6L-8.2 -55.9"/><path d="M-14 -32.6L2.5 -23.1L-4 -5.2"/><path d="M-8.8 -53.5L-18.7 -43.6L-10.3 -33.6"/><circle cx="-5.8" cy="-65.6" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>1</i>Bogenanlauf</b><span>Erst gerade, dann Bogen, in die Kurve lehnen.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.713)" stroke-width="6.5"><path d="M30 0V-36M58 0V-36" stroke-width="3"/><path d="M30 -30H58" stroke-width="2.2" stroke-dasharray="4 2"/><g opacity=".4"><path d="M0 -44.1L-2 -25.2L-3.3 -6.2"/><path d="M-0.8 -65.6L4 -78.7L5.8 -91.6"/></g><path d="M0 -44.1L-0.8 -68.1"/><path d="M0 -44.1L18.7 -47.4L22 -28.7"/><path d="M-0.8 -65.6L2.9 -79.1L4 -92.1"/><circle cx="-1.9" cy="-78" r="6.5" fill="currentColor" stroke="none"/><g opacity=".7"><path d="M-16 -90L-16 -112" stroke-width="2.6"/><path d="M-13.6 -107.6L-16 -112L-18.4 -107.6" stroke-width="2.6"/></g></g></svg></div><b><i>2</i>Absprung</b><span>Außenbein, Knie und Arme hoch, nach oben springen.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><rect x="-34" y="-12" width="84" height="12" rx="2.5" fill="currentColor" fill-opacity=".18" stroke-width="2.4"/><path d="M-30 0V-46M44 0V-46" stroke-width="3"/><path d="M-30 -40H44" stroke-width="2.2" stroke-dasharray="4 2"/><g opacity=".4"><path d="M8 -44L26.1 -49.9L33.8 -32.5"/><path d="M-12.8 -49.6L-23.8 -58.2L-35.3 -64.3"/></g><path d="M8 -44L-15.2 -50.2"/><path d="M8 -44L26.4 -48.9L32.9 -31.1"/><path d="M-12.8 -49.6L-23.5 -58.6L-34.8 -65.1"/><circle cx="-22.8" cy="-56.6" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>3</i>Über die Latte</b><span>Rücken zur Latte, Hüfte hoch, Kopf zurück.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><rect x="-50" y="-14" width="100" height="14" rx="2.5" fill="currentColor" fill-opacity=".18" stroke-width="2.4"/><g opacity=".4"><path d="M4 -18L11.7 -35.4L27.1 -46.5"/><path d="M-17.5 -17.2L-22.3 -30.4L-32.2 -38.8"/></g><path d="M4 -18L-20 -17.2"/><path d="M4 -18L13.5 -34.5L30 -44"/><path d="M-17.5 -17.2L-24.5 -29.4L-35.7 -35.9"/><circle cx="-30" cy="-17.5" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>4</i>Landung</b><span>Kinn zur Brust, auf dem oberen Rücken landen.</span></li>
+    </ol>
+  </div>
+
   <details class="block">
     <summary><h3>Ablauf</h3></summary>
     <div class="inner">
@@ -482,6 +511,16 @@ body.running .appbar,body.running .subbar{display:none}
       </svg>
     </div>
     <p class="cap">Je flacher die Körperlinie in den ersten Schritten, desto mehr Kraft geht nach vorn statt nach oben.</p>
+  </div>
+
+  <div class="block phases">
+    <h3>Bildfolge</h3>
+    <ol class="phs">
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M-14 0L-5 0L-5 -7Z" fill="currentColor" fill-opacity=".5" stroke-width="2"/><path d="M-34 0L-25 0L-25 -7Z" fill="currentColor" fill-opacity=".5" stroke-width="2"/><path d="M30 1V-4" stroke-width="3"/><g opacity=".4"><path d="M7.7 -20.6L5.7 -1.7L-13.3 -1.7"/><path d="M27.1 -30L27.1 -16L27.1 -3"/></g><path d="M7.7 -20.6L29.3 -31.1"/><path d="M7.7 -20.6L23.5 -9.9L6.7 -1"/><path d="M27.1 -30L27.5 -16L28 -3"/><circle cx="37.4" cy="-37" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>1</i>Auf die Plätze</b><span>Hände hinter der Linie, hinteres Knie am Boden.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M-14 0L-5 0L-5 -7Z" fill="currentColor" fill-opacity=".5" stroke-width="2"/><path d="M-34 0L-25 0L-25 -7Z" fill="currentColor" fill-opacity=".5" stroke-width="2"/><path d="M30 1V-4" stroke-width="3"/><g opacity=".4"><path d="M6.6 -23.3L0.7 -5.3L-18 -2"/><path d="M27.1 -30L27.1 -16L27.1 -3"/></g><path d="M6.6 -23.3L29.4 -30.8"/><path d="M6.6 -23.3L18.8 -8.8L7.1 6.2"/><path d="M27.1 -30L27.5 -16L28 -3"/><circle cx="38.3" cy="-35.5" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>2</i>Fertig</b><span>Hüfte über Schulterhöhe, Gewicht auf die Hände.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M-34 0L-25 0L-25 -7Z" fill="currentColor" fill-opacity=".5" stroke-width="2"/><path d="M30 1V-4" stroke-width="3"/><g opacity=".4"><path d="M4.8 -30.8L-7.9 -16.7L-22 -4"/><path d="M20.8 -45.2L34.6 -47.7L41.1 -58.9"/></g><path d="M4.8 -30.8L22.7 -46.9"/><path d="M4.8 -30.8L23.7 -32.8L31.5 -15.5"/><path d="M20.8 -45.2L9.3 -37.2L7.1 -24.4"/><circle cx="29.6" cy="-54.1" r="6.5" fill="currentColor" stroke="none"/><path d="M-40 -70h-9M-38 -63h-12M-40 -56h-8" stroke-width="2.4" opacity=".6"/></g></svg></div><b><i>3</i>Abdruck</b><span>Aus beiden Blöcken drücken, Körper in einer Linie.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M10 -27.5L-2.2 -13L-20.1 -6.5"/><path d="M20.1 -46.5L33.9 -44.1L42.2 -54.1"/></g><path d="M10 -27.5L21.3 -48.7"/><path d="M10 -27.5L28.7 -24.2L28.7 -5.2"/><path d="M20.1 -46.5L9.4 -37.5L13.8 -25.3"/><circle cx="25.3" cy="-57.9" r="6.5" fill="currentColor" stroke="none"/><path d="M-26 -66h-9M-24 -59h-12M-26 -52h-8" stroke-width="2.4" opacity=".6"/><path d="M-56 4H50" stroke-width="2" stroke-dasharray="4 4" opacity=".7"/></g></svg></div><b><i>4</i>Beschleunigung</b><span>Flach bleiben, erst nach und nach aufrichten.</span></li>
+    </ol>
   </div>
 
   <details class="block">
@@ -668,6 +707,16 @@ body.running .appbar,body.running .subbar{display:none}
     <p class="note">Die genauen Wettkampfmaße je Altersklasse stehen auf der <a href="masse.html#huerden">Maße-Seite</a>.</p>
   </div>
 
+  <div class="block phases">
+    <h3>Bildfolge</h3>
+    <ol class="phs">
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M34 0V-40M48 0V-40" stroke-width="3.2"/><path d="M33 -40H49" stroke-width="4.5"/><path d="M31 0H37M45 0H51" stroke-width="3.2"/><g opacity=".4"><path d="M-14 -30.4L-24.1 -14.3L-42.8 -17.6"/><path d="M-10.3 -51.6L0.5 -42.6L7 -53.9"/></g><path d="M-14 -30.4L-9.8 -54.1"/><path d="M-14 -30.4L3.6 -23.3L-2.3 -5.2"/><path d="M-10.3 -51.6L-20.7 -42.2L-12.3 -32.3"/><circle cx="-8.1" cy="-63.9" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>1</i>Anlauf</b><span>Mit Tempo und festem Schrittrhythmus auf die Hürde.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M34 0V-40M48 0V-40" stroke-width="3.2"/><path d="M33 -40H49" stroke-width="4.5"/><path d="M31 0H37M45 0H51" stroke-width="3.2"/><g opacity=".4"><path d="M-3.6 -36.2L-12.5 -19.5L-22 -3"/><path d="M7.2 -54.9L21 -57.3L33.6 -60.4"/></g><path d="M-3.6 -36.2L8.4 -57"/><path d="M-3.6 -36.2L15.1 -39.5L27.3 -25"/><path d="M7.2 -54.9L-2.7 -45L-0.5 -32.1"/><circle cx="13.4" cy="-65.7" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>2</i>Angriff</b><span>Knie zuerst, Oberkörper geht nach vorn.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M-6 0V-40M8 0V-40" stroke-width="3.2"/><path d="M-7 -40H9" stroke-width="4.5"/><path d="M-9 0H-3M5 0H11" stroke-width="3.2"/><g opacity=".4"><path d="M-2 -53.3L-20.7 -50L-17.4 -31.2"/><path d="M10 -71.1L23.8 -73.5L36.6 -75.8"/></g><path d="M-2 -53.3L11.4 -73.2"/><path d="M-2 -53.3L16.9 -55.2L35.8 -57.2"/><path d="M10 -71.1L0.1 -61.2L2.4 -48.4"/><circle cx="17" cy="-81.4" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>3</i>Überquerung</b><span>Flach über die Hürde, Arm gegengleich.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M-40 0V-40M-26 0V-40" stroke-width="3.2"/><path d="M-41 -40H-25" stroke-width="4.5"/><path d="M-43 0H-37M-29 0H-23" stroke-width="3.2"/><g opacity=".4"><path d="M8 -41.2L26.7 -37.9L14.5 -23.3"/><path d="M13.2 -62.1L4.2 -51.3L6.5 -38.5"/></g><path d="M8 -41.2L13.8 -64.5"/><path d="M8 -41.2L9.3 -22.2L9.3 -3.2"/><path d="M13.2 -62.1L25.3 -55.1L38.1 -57.3"/><circle cx="15.5" cy="-74.3" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>4</i>Landung</b><span>Nachziehbein seitlich vor, sofort weiterlaufen.</span></li>
+    </ol>
+  </div>
+
   <details class="block">
     <summary><h3>Ablauf</h3></summary>
     <div class="inner">
@@ -757,6 +806,16 @@ body.running .appbar,body.running .subbar{display:none}
     <p class="cap">Zu flach abgegeben fällt die Kugel früh. Der Abgabepunkt liegt hoch, also gestreckt über der Schulter.</p>
   </div>
 
+  <div class="block phases">
+    <h3>Bildfolge</h3>
+    <ol class="phs">
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M-14 -41.2L3.9 -34.7L21.7 -28.2"/><path d="M-32.2 -52.6L-39.2 -40.5L-41.5 -27.7"/></g><path d="M-14 -41.2L-34.4 -53.9"/><path d="M-14 -41.2L-15.3 -22.2L-15.3 -3.2"/><path d="M-32.2 -52.6L-41.2 -41.9L-47.7 -53.1"/><circle cx="-43" cy="-58.9" r="6.5" fill="currentColor" stroke="none"/><circle cx="-37.4" cy="-51.9" r="3.6" fill="currentColor" stroke="none"/><path d="M44 1V-4" stroke-width="3"/></g></svg></div><b><i>1</i>Ausgang</b><span>Rücken zur Stoßrichtung, Kugel am Hals.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M4 -31.9L22.7 -28.6L41.7 -28.6"/><path d="M-16.2 -39.3L-18.6 -25.5L-14.2 -13.3"/></g><path d="M4 -31.9L-18.6 -40.1"/><path d="M4 -31.9L-10.6 -19.7L-1.1 -3.2"/><path d="M-16.2 -39.3L-25.2 -28.5L-31.7 -39.8"/><circle cx="-27.9" cy="-43.5" r="6.5" fill="currentColor" stroke="none"/><circle cx="-21.6" cy="-38.1" r="3.6" fill="currentColor" stroke="none"/><path d="M44 1V-4" stroke-width="3"/><g opacity=".7"><path d="M-36 -10L-6 -10" stroke-width="2.6"/><path d="M-10.4 -7.6L-6 -10L-10.4 -12.4" stroke-width="2.6"/></g></g></svg></div><b><i>2</i>Angleiten</b><span>Flach rückwärts gleiten, Fuß unter den Körper.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M6 -38.7L-7.2 -25L-13.7 -7.1"/><path d="M-2.7 -58.3L10.4 -63.1L16.9 -74.3"/></g><path d="M6 -38.7L-3.8 -60.6"/><path d="M6 -38.7L15.5 -22.2L16.8 -3.2"/><path d="M-2.7 -58.3L-14.9 -51.3L-17.1 -64.1"/><circle cx="-6.9" cy="-70.1" r="6.5" fill="currentColor" stroke="none"/><circle cx="0.2" cy="-58.6" r="3.6" fill="currentColor" stroke="none"/><path d="M44 1V-4" stroke-width="3"/></g></svg></div><b><i>3</i>Kraftposition</b><span>Hüfte dreht zuerst, Kugel bleibt hinten.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(49.6 88) scale(0.76)" stroke-width="6.5"><g opacity=".4"><path d="M14 -39L5.7 -22L2.4 -3.2"/><path d="M19.2 -59.9L32.9 -57L45.7 -59.2"/></g><path d="M14 -39L19.8 -62.3"/><path d="M14 -39L23.5 -22.6L23.5 -3.6"/><path d="M19.2 -59.9L29.6 -69.3L36.1 -80.5"/><circle cx="22.2" cy="-72" r="6.5" fill="currentColor" stroke="none"/><circle cx="38.1" cy="-82.5" r="3.6" fill="currentColor" stroke="none"/><g opacity=".7"><path d="M44 -90L58 -104" stroke-width="2.6"/><path d="M56.6 -99.2L58 -104L53.2 -102.6" stroke-width="2.6"/></g><path d="M44 1V-4" stroke-width="3"/></g></svg></div><b><i>4</i>Ausstoß</b><span>Aus den Beinen, Ellbogen hoch, zum Schluss die Hand.</span></li>
+    </ol>
+  </div>
+
   <details class="block">
     <summary><h3>Ablauf</h3></summary>
     <div class="inner">
@@ -842,6 +901,16 @@ body.running .appbar,body.running .subbar{display:none}
       </svg>
     </div>
     <p class="cap">Der gestrichelte Bogen ist der Zugweg des Arms. Je länger und höher er verläuft, desto mehr Weg hat das Gerät zum Beschleunigen.</p>
+  </div>
+
+  <div class="block phases">
+    <h3>Bildfolge</h3>
+    <ol class="phs">
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M-6 -30.4L-16.1 -14.3L-34.8 -17.6"/><path d="M-2.3 -51.6L8.5 -42.6L15 -53.9"/></g><path d="M-6 -30.4L-1.8 -54.1"/><path d="M-6 -30.4L11.6 -23.3L5.7 -5.2"/><path d="M-2.3 -51.6L-9.3 -63.7L-2.8 -75"/><circle cx="-0.1" cy="-63.9" r="6.5" fill="currentColor" stroke="none"/><path d="M-26.7 -73.3L29.2 -77.2" stroke-width="2.6"/><path d="M-30 -60h-9M-28 -53h-12M-30 -46h-8" stroke-width="2.4" opacity=".6"/></g></svg></div><b><i>1</i>Anlauf</b><span>Gerät über der Schulter, locker steigern.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M0 -39.7L-12.2 -25.1L-18.7 -7.2"/><path d="M-4.5 -60.7L8.7 -65.5L19.9 -72"/></g><path d="M0 -39.7L-5 -63.1"/><path d="M0 -39.7L16.5 -30.2L13.2 -11.4"/><path d="M-4.5 -60.7L-18.3 -63.1L-31.2 -64.5"/><circle cx="-6" cy="-73.1" r="6.5" fill="currentColor" stroke="none"/><path d="M-48.9 -61.4L6.2 -71.1" stroke-width="2.6"/></g></svg></div><b><i>2</i>Abspreizen</b><span>Wurfarm lang nach hinten, Schultern seitlich.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M4 -36.5L-10.6 -24.3L-20.1 -7.8"/><path d="M-3.4 -56.7L8.8 -63.7L17.1 -73.7"/></g><path d="M4 -36.5L-4.2 -59.1"/><path d="M4 -36.5L16.2 -22L19.5 -3.2"/><path d="M-3.4 -56.7L-17.1 -59.2L-30.1 -60.5"/><circle cx="-5.3" cy="-69" r="6.5" fill="currentColor" stroke="none"/><path d="M-47.5 -56.2L6.8 -69.7" stroke-width="2.6"/><g opacity=".7"><path d="M-30 -30Q-14 -34 -4 -22" stroke-width="2.6"/><path d="M-8.7 -23.8L-4 -22L-5 -26.9" stroke-width="2.6"/></g></g></svg></div><b><i>3</i>Stemmschritt</b><span>Stemmbein fest, Körper spannt wie ein Bogen.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(48.9 88) scale(0.701)" stroke-width="6.5"><g opacity=".4"><path d="M6 -38.7L-3.5 -22.2L-7.5 -3.7"/><path d="M10.5 -59.7L24.3 -57.3L32.6 -47.3"/></g><path d="M6 -38.7L11 -62.2"/><path d="M6 -38.7L15.5 -22.2L15.5 -3.2"/><path d="M10.5 -59.7L15.3 -72.9L23.6 -82.8"/><circle cx="13.1" cy="-72" r="6.5" fill="currentColor" stroke="none"/><path d="M10.5 -87.6L63.1 -68.5" stroke-width="2.6"/><g opacity=".7"><path d="M30 -104L52 -114" stroke-width="2.6"/><path d="M49 -110L52 -114L47 -114.4" stroke-width="2.6"/></g></g></svg></div><b><i>4</i>Abwurf</b><span>Über den Kopf, Ellbogen hoch, nach vorn oben.</span></li>
+    </ol>
   </div>
 
   <details class="block">
@@ -935,6 +1004,16 @@ body.running .appbar,body.running .subbar{display:none}
     <p class="cap">Je höher ein Punkt liegt, desto schneller war der Abschnitt. Wer zu schnell startet, wird auf der zweiten Runde deutlich langsamer. Unterm Strich ist die gleichmäßige Einteilung schneller.</p>
   </div>
 
+  <div class="block phases">
+    <h3>Bildfolge</h3>
+    <ol class="phs">
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M30 1V-4" stroke-width="3"/><g opacity=".4"><path d="M0 -36.5L-9.5 -20.1L-19 -3.6"/><path d="M10.7 -55.1L22.9 -48.1L35.1 -52.6"/></g><path d="M0 -36.5L12 -57.3"/><path d="M0 -36.5L12.2 -22L8.9 -3.2"/><path d="M10.7 -55.1L1.8 -44.4L4 -31.6"/><circle cx="15.4" cy="-66.7" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>1</i>Start</b><span>Hochstart, ruhig in die erste Kurve.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M0 -36.6L-7.1 -19L-25.5 -14.1"/><path d="M2.2 -58L10.9 -46.9L21.1 -54.9"/></g><path d="M0 -36.6L2.5 -60.5"/><path d="M0 -36.6L12.7 -22.5L4.7 -5.2"/><path d="M2.2 -58L-7.1 -47.6L3.5 -40.1"/><circle cx="3.6" cy="-70.4" r="6.5" fill="currentColor" stroke="none"/><path d="M-56 4H50" stroke-width="2" stroke-dasharray="4 4" opacity=".7"/></g></svg></div><b><i>2</i>Laufen</b><span>Aufrecht und locker, Fuß unter dem Körper.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><path d="M-58 2Q0 12 58 2M-58 7Q0 15 58 7" stroke-width="2.2" opacity=".6"/><g opacity=".22"><g opacity=".4"><path d="M-18 -36.6L-25.1 -19L-43.5 -14.1"/><path d="M-15.8 -58L-7.1 -46.9L3.1 -54.9"/></g><path d="M-18 -36.6L-15.5 -60.5"/><path d="M-18 -36.6L-5.3 -22.5L-13.3 -5.2"/><path d="M-15.8 -58L-25.1 -47.6L-14.5 -40.1"/><circle cx="-14.4" cy="-70.4" r="6.5" fill="currentColor" stroke="none"/></g><g opacity=".4"><path d="M18 -36.6L10.9 -19L-7.5 -14.1"/><path d="M20.2 -58L28.9 -46.9L39.1 -54.9"/></g><path d="M18 -36.6L20.5 -60.5"/><path d="M18 -36.6L30.7 -22.5L22.7 -5.2"/><path d="M20.2 -58L10.9 -47.6L21.5 -40.1"/><circle cx="21.6" cy="-70.4" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><b><i>3</i>Position</b><span>Außen an der Schulter laufen, nicht einsperren lassen.</span></li>
+      <li><div class="ph-ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.767)" stroke-width="6.5"><g opacity=".4"><path d="M4 -30.4L-6.1 -14.3L-24.8 -17.6"/><path d="M7.7 -51.6L18.5 -42.6L25 -53.9"/></g><path d="M4 -30.4L8.2 -54.1"/><path d="M4 -30.4L21.6 -23.3L15.7 -5.2"/><path d="M7.7 -51.6L-2.7 -42.2L5.7 -32.3"/><circle cx="9.9" cy="-63.9" r="6.5" fill="currentColor" stroke="none"/><path d="M-26 -64h-9M-24 -57h-12M-26 -50h-8" stroke-width="2.4" opacity=".6"/><path d="M50 -110V4" stroke-width="2.4" stroke-dasharray="3 3" opacity=".7"/></g></svg></div><b><i>4</i>Endspurt</b><span>Armeinsatz, ab etwa 200 m vor dem Ziel steigern.</span></li>
+    </ol>
+  </div>
+
   <details class="block">
     <summary><h3>Ablauf</h3></summary>
     <div class="inner">
@@ -1002,7 +1081,7 @@ body.running .appbar,body.running .subbar{display:none}
 </section>
 </main>
 
-<footer>Stand der Zusammenstellung: September 2026 <span class="ver">Technik · Version 2026-09-26</span></footer>
+<footer>Stand der Zusammenstellung: September 2026 <span class="ver">Technik · Version 2026-10-17 · Bildfolgen</span></footer>
 
 <script>
 (function(){
