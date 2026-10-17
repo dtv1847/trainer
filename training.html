@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="de" data-app="trainer" class="no-js">
+<head>
+<script>document.documentElement.classList.add("app")</script>
+<meta charset="utf-8">
+<script>document.documentElement.className="js";</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#D7191C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DTV1847 Trainer" data-old="DTV1847-tr">
+<link rel="apple-touch-icon" href="dtv-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Dürener TV 1847 Track &amp; Field – Trainingszeiten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F1F1F0; --paper:#FFFFFF; --ink:#2B2B2B; --muted:#6A6A6A; --line:#DEDEDC;
+  --red:#D7191C; --red-deep:#A81216; --track-deep:#B51518; --m-gelb:#F2C200;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+a{color:var(--red-deep)}
+:focus-visible{outline:3px solid var(--m-gelb);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* Kopf */
+.brand{background:#fff;display:flex;align-items:center;gap:14px;padding:14px 16px 12px;max-width:760px;margin:0 auto}
+.brand img{height:78px;width:auto;flex:0 0 auto}
+.wordmark{flex:1;min-width:0;max-width:430px;height:auto;display:block}
+.wm-club{font-family:var(--cond);font-weight:700;font-size:34px;fill:var(--ink)}
+.wm-tf{font-family:var(--cond);font-weight:600;font-size:17px;fill:var(--red)}
+.wm-line{stroke:var(--red);stroke-width:2}
+.hero{background:var(--red);color:#fff;padding:16px 16px 0}
+.hero-inner{max-width:760px;margin:0 auto}
+.hero h1{font-family:var(--cond);font-weight:700;font-size:38px;line-height:1;margin:0;letter-spacing:.2px}
+.hero p{margin:6px 0 14px;font-size:15px;opacity:.95}
+.lanes{height:38px;margin:0 -16px;background:repeating-linear-gradient(to bottom, rgba(255,255,255,.92) 0 2px, var(--track-deep) 2px 12px);position:relative}
+.lanes::after{content:"";position:absolute;left:68%;top:0;bottom:0;width:4px;background:#fff}
+
+.no-js .only-js{display:none!important}
+.js .nojs-banner{display:none}
+.nojs-banner{background:var(--ink);color:#fff;padding:12px 16px;font-size:14.5px}
+
+/* Feste Leiste */
+.picker{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line)}
+.picker-inner{display:flex;gap:12px;align-items:stretch;padding:10px 12px 8px;max-width:760px;margin:0 auto}
+.bib{position:relative;flex:0 0 auto;min-width:108px;max-width:42%;border:2px solid var(--ink);border-top:7px solid var(--red);border-radius:6px;padding:5px 10px 5px;text-align:center;background:#fff}
+.bib::before,.bib::after{content:"";position:absolute;top:4px;width:6px;height:6px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1px var(--muted)}
+.bib::before{left:5px}.bib::after{right:5px}
+.bib-code{font-family:var(--cond);font-weight:700;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.bib-sub{font-size:11.5px;color:var(--muted);line-height:1.2;margin-top:3px}
+.controls{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{text-align:center;padding:7px 4px;font-weight:600;cursor:pointer;font-size:15px}
+.seg input:checked + label{background:var(--ink);color:#fff}
+.seg input:focus-visible + label{outline:3px solid var(--m-gelb);outline-offset:-3px}
+select,input[type=text],input[type=number],input[type=date],textarea{
+  width:100%;min-width:0;font:600 16px var(--body);color:var(--ink);background:#fff;
+  border:1.5px solid var(--ink);border-radius:6px;padding:7px 10px;min-height:40px;-webkit-appearance:none;appearance:none}
+select{padding-right:30px;text-overflow:ellipsis;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+select:disabled{opacity:.55}
+textarea{font:500 14px ui-monospace,Menlo,Consolas,monospace;min-height:130px;resize:vertical}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+nav.jump{display:flex;gap:6px;overflow-x:auto;padding:0 12px 10px;max-width:760px;margin:0 auto;scrollbar-width:none}
+nav.jump::-webkit-scrollbar{display:none}
+nav.jump a{flex:0 0 auto;text-decoration:none;color:var(--ink);font-weight:600;font-size:14px;padding:5px 12px;border-radius:999px;background:var(--bg)}
+nav.jump a.on{background:var(--red);color:#fff}
+nav.jump a.ext{background:#fff;border:1px solid var(--line)}
+
+/* Inhalt */
+main{max-width:760px;margin:0 auto;padding:6px 12px 40px}
+section{scroll-margin-top:calc(var(--stick,150px) + 6px);padding-top:22px}
+h2{font-family:var(--cond);font-weight:700;font-size:30px;line-height:1;margin:0 0 4px}
+.lead{margin:0 0 12px;color:var(--muted);font-size:14.5px}
+h3{font-family:var(--cond);font-weight:600;font-size:21px;line-height:1.1;margin:0}
+h4{margin:16px 0 8px;font-size:15px}
+.block{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px;margin:0 0 10px}
+.block.coded{border-left:6px solid var(--red)}
+.block-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.tag{font-size:12.5px;color:var(--muted)}
+.note{font-size:13.5px;color:var(--muted);margin:8px 0 0}
+.warn{font-size:13.5px;color:var(--red-deep);margin:8px 0 0}
+.info{background:#fff;border:1px solid var(--line);border-left:6px solid var(--red);border-radius:10px;padding:12px 14px;margin:0 0 10px;font-size:14.5px}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{background:var(--bg);border-radius:8px;padding:9px 12px}
+.tile .name{font-size:14px;color:var(--muted);font-weight:600}
+.tile .val{font-family:var(--cond);font-weight:700;font-size:38px;line-height:1.05;font-variant-numeric:tabular-nums}
+.tile .unit{font-size:18px;font-weight:600;color:var(--muted)}
+.tile .det{font-size:12.5px;color:var(--muted)}
+
+details.block{padding:0}
+details.block > summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+details.block > summary::-webkit-details-marker{display:none}
+details.block > summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg);margin-top:-4px;flex:0 0 auto}
+details.block[open] > summary::after{transform:rotate(-135deg);margin-top:4px}
+details.block > .inner{padding:0 14px 14px}
+.sum{display:flex;flex-direction:column;gap:1px;min-width:0}
+
+/* Formulare */
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f > span{font-size:12.5px;color:var(--muted);font-weight:500}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px 8px}
+.fg .full{grid-column:1 / -1}
+.chk{display:flex;align-items:center;gap:8px;font-size:15px;min-height:40px;cursor:pointer}
+.chk input{width:22px;height:22px;accent-color:var(--red);margin:0;flex:0 0 auto}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{font:600 15px var(--body);border:1.5px solid var(--ink);background:#fff;color:var(--ink);border-radius:6px;padding:8px 14px;cursor:pointer;min-height:40px}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn.danger{border-color:var(--red);color:var(--red-deep)}
+.btn.small{font-size:14px;padding:6px 11px;min-height:36px}
+.icon-btn{width:36px;height:36px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;flex:0 0 auto}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--red-deep);text-decoration:underline;cursor:pointer}
+.prow{display:grid;grid-template-columns:5.2rem 1fr auto 36px;gap:8px;align-items:end;padding:10px 0;border-top:1px solid var(--line)}
+.prow:first-child{border-top:0;padding-top:0}
+.prow .chk{min-height:40px;font-size:14px}
+.ok{color:#1E7A3F;font-size:13.5px;margin:8px 0 0}
+.met{color:#1E7A3F;font-weight:600;font-size:11.5px;display:block}
+.gapv{color:var(--muted);font-size:11.5px;display:block}
+
+ul.plain{margin:0;padding:0;list-style:none}
+ul.ents li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+ul.ents li:first-child{border-top:0}
+ul.ents li > span:first-child{flex:1;min-width:0}
+ul.ents small{display:block;color:var(--muted);font-size:12.5px}
+.et{font-family:var(--cond);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums}
+.editbox{background:var(--bg);border-radius:8px;padding:10px;margin-top:12px}
+
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.ov{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+table.ov th{text-align:left;font-weight:600;color:var(--muted);font-size:12.5px;padding:4px 6px 6px;white-space:nowrap}
+table.ov td{padding:7px 6px;border-top:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+table.ov td:first-child{font-weight:600;white-space:normal}
+table.ov small{color:var(--muted);font-size:11.5px}
+table.ov td.big{font-family:var(--cond);font-weight:700;font-size:22px}
+table.ov tr.grp td{background:var(--bg);font-family:var(--cond);font-weight:700;font-size:17px;padding:5px 6px;border-top:1px solid var(--line)}
+.prow{grid-template-columns:5.2rem auto 36px}
+.prow .pcell{grid-column:1 / -1;margin-top:2px}
+code{font-size:13px;background:var(--bg);padding:1px 4px;border-radius:4px}
+.ver{display:block;margin-top:6px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+footer{max-width:760px;margin:0 auto;padding:0 12px 40px;font-size:13px;color:var(--muted)}
+
+@media (max-width:360px){ .brand img{height:64px} .fg{grid-template-columns:1fr} }
+@media (min-width:600px){
+  .brand{padding:20px 24px 16px;gap:20px}
+  .brand img{height:104px}
+  .hero{padding:24px 24px 0}
+  .lanes{margin:0 -24px}
+  .hero h1{font-size:52px}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+}
+@media (prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+
+/* ---- v2: Rechner mit Schiebereglern ---- */
+.picker .seg label{padding:6px 4px}
+.result{text-align:center;padding:4px 0 12px;border-bottom:1px solid var(--line)}
+.res-label{font-size:14px;color:var(--muted);font-weight:600}
+.res-val{font-family:var(--cond);font-weight:700;font-size:76px;line-height:1;font-variant-numeric:tabular-nums;margin-top:2px}
+.res-val small{font-size:30px;color:var(--muted);font-weight:600}
+.res-det{font-size:14px;color:var(--muted)}
+.res-empty{font-size:15px;color:var(--muted);padding:18px 0}
+.sl-head{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 2px}
+.sl-head span{font-size:14px;color:var(--muted);font-weight:600}
+.sl-head output{font-family:var(--cond);font-weight:700;font-size:28px;line-height:1}
+.sl-row{display:grid;grid-template-columns:44px 1fr 44px;gap:10px;align-items:center}
+.step{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;font:600 24px/1 var(--body);color:var(--ink);cursor:pointer;padding:0}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:40px;background:transparent;margin:0;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(to right,var(--red) 0 var(--pct,50%),var(--line) var(--pct,50%) 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:#fff;border:3px solid var(--red);margin-top:-12px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:8px;border-radius:4px;background:var(--red)}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--red)}
+.qchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.safe{border-left:6px solid var(--ink)}
+.mchips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.mchips::-webkit-scrollbar{display:none}
+.mchips .qchip{flex:0 0 auto;margin:0}
+ul.pts{margin:0;padding:0;list-style:none}
+ul.pts li{padding:8px 0 8px 26px;border-top:1px solid var(--line);position:relative;font-size:15px}
+ul.pts li:first-child{border-top:0}
+ul.pts li::before{content:"";position:absolute;left:4px;top:15px;width:9px;height:9px;border-radius:50%;background:var(--red)}
+.mus{padding:9px 0;border-top:1px solid var(--line)}
+.mus:first-child{border-top:0;padding-top:0}
+.mus b{font-weight:600}
+.mus span{display:block;font-size:14px;color:var(--muted);margin-top:1px}
+.rolehead{display:flex;align-items:center;gap:8px;margin:0 0 6px}
+.dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto}
+.dot.motor{background:var(--red)}
+.dot.stab{background:#2B6CB0}
+.dot.help{background:#8A8A87}
+.chain{display:block;width:100%;height:auto;margin:2px 0 6px}
+.chain text{font-family:var(--cond);font-weight:600;font-size:12px;fill:var(--ink)}
+.chain text.s{font-family:var(--body);font-weight:500;font-size:10.5px;fill:var(--muted)}
+.exlist{margin:0;padding:0;list-style:none}
+.exlist li{padding:8px 0;border-top:1px solid var(--line);font-size:14.5px}
+.exlist li:first-child{border-top:0}
+.exlist b{font-weight:600}
+.exlist em{font-style:normal;color:var(--muted);font-size:13px;display:block;margin-top:1px}
+.qchip{font:600 14px var(--body);border:0;background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;min-height:34px;cursor:pointer}
+.qchip.on{background:var(--ink);color:#fff}
+.pchips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.pchip{border:0;background:var(--bg);border-radius:8px;padding:6px 4px 4px;text-align:center;font:inherit;color:var(--ink);cursor:pointer}
+.pchip b{display:block;font-size:12.5px;color:var(--muted);font-weight:600}
+.pchip span{font-family:var(--cond);font-weight:700;font-size:23px;font-variant-numeric:tabular-nums}
+.pchip.on{background:var(--ink);color:#fff}
+.pchip.on b{color:#D8D8D8}
+.refline{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;margin-top:14px}
+.refline > span{font-size:14px;color:var(--muted);font-weight:600}
+.grp-title{font-size:13px;color:var(--muted);font-weight:600;margin:12px 0 0;text-transform:none}
+.steps-list{margin:0 0 10px;padding-left:20px;font-size:14px}
+.steps-list li{margin:3px 0}
+@media (min-width:600px){ .pchips{grid-template-columns:repeat(6,1fr)} }
+</style>
+<style id="dtv-appbar">
+.appbar{display:flex;align-items:center;gap:6px;background:#2B2B2B;color:#fff;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));overflow-x:auto;scrollbar-width:none;position:relative;z-index:30}
+.appbar::-webkit-scrollbar{display:none}
+.appbar a{color:#fff;text-decoration:none;white-space:nowrap;flex:0 0 auto}
+.appbar .ab-home{display:flex;align-items:center;gap:7px;font:700 17px 'Barlow Condensed',system-ui,sans-serif;letter-spacing:.3px;margin-right:6px}
+.appbar .ab-home img{width:30px;height:30px;border-radius:7px;background:#fff}
+.appbar .ab-t{font:600 15px 'Barlow',system-ui,sans-serif;padding:8px 12px;border-radius:999px;opacity:.85}
+.appbar .ab-t.on{background:#D7191C;opacity:1}
+html[data-app] .brand{display:none!important}
+html[data-app] nav.jump a.ext{display:none!important}
+body.running .appbar{display:none}
+</style>
+</head>
+<body>
+<nav class="appbar" aria-label="Trainer-App"><a class="ab-home" href="index.html"><img src="dtv-icon.png" alt="">DTV 1847</a><a class="ab-t" href="plan.html">Planung</a><a class="ab-t" href="zirkel.html">Zirkel</a><a class="ab-t on" href="training.html">Athleten</a><a class="ab-t" href="technik.html">Technik</a><a class="ab-t" href="masse.html">Maße</a></nav>
+
+<div class="nojs-banner">Diese Seite braucht JavaScript. Bitte über den Link in Safari öffnen, nicht in der Dateivorschau.</div>
+<header>
+  <div class="brand">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARUAAAEsCAMAAADaRde1AAAAwFBMVEX9/PzZFRgAAAAuLy5dXV2fn5/kXF35+flhJydwcHDuoKGoqKiWlpaiHiClpKVra2vT0tPpfoBqampAQD7ePkE/QD5AP0A/PkA+QECq/6q/wMDogH/0vsA/P38AVQAA//9VAABVAFVmZpl+foB/f4B/f/9/g399gHx/gICAfn6Af36AgH6+wMDeQD/BvsH//38AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB2xCmnAAAAMHRSTlP//wD++f3/D/8D/w6h/2SmTv92///+///5A////wQDAQMDBZv/Ajy7tG/WgX7/SwKbLPIUAAAR8UlEQVR42uXd52KkOBIA4LKQUBPctO2Z293bvZzz+7/dAe1ulHMAzK9djwN8XVUSkhCAzAdFaMRnOyjqzFcNdpTmdIeVxaKyREpzQpb18w5V6egpUZrmPSKDBnQ9J4qNxaTSoa457TEFqnRowM3XZIGvitLgq77kwldFWVk6T5UBUQ7lcpaDZfm3jgXcUF5fznJwLLf5Qt1V6GlRBJZBzQJfK1IULJ2jylyZT4wisFBVtIASZTozykuPbSzwBVEAhBvo/1lVxLGDM6KILL/vLCoiyuVsKC2AyDJJnVxQDL19ARQgRhZBZaDnRvkGoGDBkzGDhAGV06G8AGhZqE6lQ9fmq6AILCPHAjwK/jooJhb4Qii9oAJYYFGoDOj2xVAklk5SEVCa06G0ABaW7U4RvjSKjgW+NoqGBT4LLT312IHU/OhZhqfKjBJ0m9yD19HvEUVguY8rQATKCxxFxXxejcQyq/wlFOUwKrYTE1jorEKDUY6iYk90cb0CRKAcRMWl+gnjCtCFoxxDxa1J4FgG4Nvky8vZVFrHk+Mmz2aVMfjm5wAqrijsDTSmwM2InU7FGYVRwbe5DerYiY7XDCn7MKmh4n56W2gQ2gE/p3xJdhrtvvv5xlCZVeZgGdPdAe1KBUJCZaIdAuHW8HIilT4oVJa1uPf7oCnZGMKOVPqwUFkGE0AcR3g9i4pXUyDfHS7He6oU2o1KCxDWAFFmfCVVsOxFxQsFuAZoG4ujf0sULDtR+Y8XCltrO3aEkllGegYVv073du2fi02fMx+JUmgfKp63IkyorGXlocLOMF8Or+KJsiXQSLmZD67bf3QVz0H2LYGea+TgOck8JUmhHaj0waGCqTR3uAXLxfxn+ufRWlSe36huPB//+pYU5Q2CQ+X6WE7JrEnQ1lsTfmtSMQfO9kvqdVTEfm0nqHRUW2/Nf6h1UOmNKn1VFMLfAvEq1JBCHkNsnMovputus6h4o7AJRAd5VQ/V1luPkUe+rphypM1RmP1RQK61rArbZXn1q+q9RqU1qfQZykoACttZkVf1mFLImqytTeVbEZUeohJoW9DPrhZkUsj3M9D0V0xJkr6shKBwXTiqXFk6BhYW5qo1Kn2BshKEAqoEYlUMHbm1wyV05NTBUk+lDUIhymczuVix3AuJ19EqgoX/gqF2pC4rYShcAmlUzPdCrSFfqqsEogAz4YHsa7PdVOSeGP89hjRJXGwhVmXUPd1g6t5qLlEqLPz3fHNQaWuiEPXTqsKTML4qvVlFHxFpi20oiqasCCr03VBYMqlUa5N5Ff3zQYOxsISoaGtqymIbjsL2Vv5geMLOkEJJVRIW2wgUouru51fR3gk9v/5Wq03mVaj+WTL2Vii1Spup2Mag6MqKoML2WJKovFhVaqKob4IUT2Pe9OVWpdI6q/R5ii0kURE3qAHtDiOXJCqay09VbONQiG4jlmOrQCoV87PvzGRZGhV1AUlUbPtIFeyoMjAbAiRWaZMX21iUTWWyxYq+dxukom6EkhTbt1iUZ7H9uAp7sIB+P7TEKn3istJCMhVp1ytJhXqpvFlVlGGRQCUBCjuMYNxTg3b6RiidSoJimwBF299X7WA0pVVpjSq12uT1+LOzCrN8/ZKkrjjdJ1RBUU8FlVF5Man0NVGYhlncNE5WGXSzH7EqfbJi2ydWGW0qA9M0p1GRAyO22CZC2RpmELeMA8Nmi69pVUD+oW81UbZxhMEeK6lV5AYnrti2kFoFW1Won8qbj0qboqykQyH67fkV+1BOaVVekqp8gzoqdEqbQRJCVLGFPCrUPVYuaVSeZeSX+J4t5FCZqG0fSk+VNx8ViC62fUoVrN+DXqEyJlZpdSp9VZTdqLRxxTYtSmUV7Yx8W6tN9lfpMqr0McU2NUpGFZc2SCgkgcU2OQp7c1hVBSKKLeRU+U0FFf6bwootZFXpqqq0ocUWDqXiVG25LwYV2/7UKn1Ysc2CUl2lV6n0lVH2owIhxbaFc6q0KpW2MsqeVPyLLWRXqXMfxH7VWwV2ojLlVPEttlBChdZR2Sw8VfqMKsQnVmjq0Wx1xWxro4SO2yYazVaruEyQ/Qw7UaHJZ8k05aFmm+w98zEUUumroxxUBYqpDA4rNXKo9P7FFrIfPipd4vUr6mz4Vh8FmPeeDCjlWqe3UJWqbbK4UiO1Su+o8uJZVkqgeKwA81xDmUmlhbIq1KZC86j0PsW2DIr7GkrquTY7i0ohFPdVyL4r1qWU0F1361FsYW8qg98zH20OlVIo8Gth/9ZUzwfJKaHNEediC+UOzdPMcc+StYoP302lrdwm2xoh5+cO220YDfp2/r9emRLaC+/dEqgkyqZChMLipmI91zaRyhtUUcHGsbhZ5UdVsbX+/herSuui0hZF0Y8lgMtjh6H7xekuuN8Hir7ciirvqjvm0L0FdeW23QnKdn/4booVTX+/d82fOJXiKFy5Rb47jbijGFR6W1mBiiqmPTV+Um8e0bqmj6NKX79NVpTbwfAub1+VXjdi0OqrRr8XFM3OgqKKen9O7QkrNsR2UWn3gqLbLs5pZ7RWfajbEf2/mn7QpfkhBM8HIbmGWDQqg3kXvYxHy1z6esgkzPsHMdG6aX7aSUWzix67ofhrHZTn85G6s9f8O18lSEhhodpd9EgdFenisS79n7tgGD94ww+Kf8C6DyWtlUCKT86Coo4WhalVhUmhjqp3/R2qqCiuAZvSR5slTYCKepSSy6AqZaVXXD1W5j5/6AcciV2FyL98VO76y24y0tRF4VWw5cKkCwQPFWDfSEZV+/HXKCs/Ky8eq6sKYRto7FBstSqWSSGntxSUaJNxY1URQt6h2DqoEPN+/F26lx7GonAXJvZCsE5FlVprZ3g7jHDj1gpB1QRy6aWJ5YL4qGjCiVg6/U+VgV6/lw4VbUENUdFq2cLJ8E4YmuwtdglQglSw8W7A8KNbMUdUUimeQL2+P1JUBevfNTUnUGGVXtF5wxEqHmVF03XeUgjsryUr1nvDzysOUHEpK1gJR+Q7RHiESuEEapWfYAIV7Fls+RT67N4+Y+W9aKi08klhiFLBHiraoacrFysUle3CtfJJYYhTcSgr1p5O88/Pjhx8JtB/iyaQ/FERyK+CrXdQj3shcHlHTlaU9ZwIRKr4FFusDaLHcAJUGESQThabSqabCg4vtsC/3Y95w/n1h3IJJE79YAxlVexD/VD8dlmaDyOQQCWm2MopBGuo3MrV2t5lIsJbJaqsyCkE/Nr97CotZFX5CFQR3gUJ/MhK7gRqIY9KXLGVXrwL/MrjS1WUeBUSVGylegv8aw5fi7bJ6VTiii13477UW5gboFupzgqEqICDSmyxFertosL0ay91UcwqRH91LmXFkmTsjfMA5W4M+0AV4ZIbgwoJLLbiKAsUq7Uuq5mIcUZVvxwjuqzwKfRbMLzYvDiKZuiIndsiLkO77r9a0woBKnNj6LbCmFjWJDATqsRzHM5aetgFPsDMo15qo+guz7Z+hb1i3Sowe+lhCgsUGVlxXYtOXNc6YW0h1ZUYe+lhUgiKjGJDpAqYVzqxZUUTEw6lh1Upsb4JolX46UXNFX84qLjMoeEBjC+qLoxiOnfDmjiukGLz7IbL7SO+wZS9BeoTqBBTAnEQmnhyWXT6lBthyp1APmvRiSUa1DnUeKg4LUkeIXdZ8XqSkJiDQc3CF9LGPGvqpDJB5rLi93yYrRenZOFLhlrFpawwz1BlVvF8aI5YVpYSoljaxtdXfAAVSKDCF1n9onOTitMK/1IqkEAFN+qRBHG+sQEHFccHQLKqQAoVbWxg5c8oVYifStZq26dQkcdTsDo4sCFXnMqKsmV+rY9iVNF9RQiOCJVtT7B8KiFPEipUDI+3EFXJsPfzXHr8uVSCHmQPUNnu6e5Hw/2/T7FlHorZ/vtSHyVKxbBe37PYzip57oMCtzxIrYKDiu1EYcwyFAe7VHErK8sI5ZBDBXai8uFRbNlHYrKMUALsKla8y0oWlX43Ko3zxAg/0ZxhjD9iy4M8seJUbPkZ1eQTqjH7QIT04uzzPtjrhhnf0ACpn4CJ2oYoj4pLsSXcyjhIvAA5bm+mLCp+o5P3VT2JHwyC2io/aFWwa62dVdKuX4HqKr+yjOvaQgWjz7VO6daVwp5ViFOorDuOAPfAVFOv+clXVzyeBnk8vgso3cK4+L2ZcsSKzxO9j12vgN/5K6ayJNiwKkes+KxGeDymOqvQ3zEpdKnUJudTcSi2jfg8JqBEwZJkE8kcKh7LebhnybjG+VIRpY4KaaSdaaSnpgKDBfaqYi8rcqgonrC71EOporKFyveR3xGAqyyXaig5VKzFlhl3eO7sBPKeTv451O9YxVZWcKPfaYR9mZJ3sKTbWbO8CrsMZNtd8LmnBvp7aLAk3G40vYqtrDSNabcrdmdOP5aUu10bVBrDfLxBxVJWcKN8tRKodvz1yaGkW4CbZt/lrSMhWoWoQ4XbA2y7SfRggVIq4pSXm4q5rDAoN/VOrmE5BLlVuOXHhGDbdq68Su+UbY34jmZ2H0o6MmdQA8W8Asxhf05JxVhsWWGqe0sB91yzWw71BVTAtu2oaXzFVFYIlz+dfofom18OJd8CnHjszmlpau0qjbr9kXZyHRCbQ6/FUcJWIfPHRbkQihhRMDK9gcsvhzK8liNoxbqhrhi6NlxRMb8Fknqw5HhXiW7qhrjVFP0ktBHlKr4E0vS2NgsL5DhI1M7zzG/A3K8jhkrb/ElCkd5+0lHiVlqg+OG92b7LrLLqTd6q96iyOaRngUMfPIoUKvIbQ/kubnNKFHNRUb5dlt0pWlda+rOgNP9SoShUuIlnNct5UCakPBQqlN06QcXSngYF065zVBF6LYY3Eh8fRZk/ahU0sNv3iA3RsVG4Nvkm9mmNKvzAnMByHpSrDkWjslRcDctpUJp/IO2hUZn7uGxDtLGcB+UdeassneBJwdKfBmXUFFqjitj1v7OcB4Uo7n4cVMSu/8JyHhRsRDGoiCyXY7fJIsqAwlSkaDlL582KYlTh5+QPzeKHYlaRWMjXQLGozCx/PQGLiNKhOJVTRMuPvihWleOzCFtC2dPHRUViwQdHsUeKi8qxWXgU4hQpTioSy8dB62wzmnu0fioSy2GKCz/j+I6c0sdV5aAsQkl5R51bpLiqSHfQRyguAsrVNVDcVZZ7oulYLFhE8ThcVWSWfWeRsIoBU5RFBf2E6HiY4iKgTI4tsr/KMk00NsfIIiF7JuRRUzxVlrb+ig+QRWL2jKjzQ/FSQbTj1hPuNFzEMxyQ9wF+3z630NO+m2hpsRhF2VWWpmhsdpxFYqB4l5QgFVVx2U+4EPHMrgiViJX5rwxScdlLuIinNYWIhKmsMlL2kv1VlOWR7a6gSidnUf00kk7oitBQNlaQeLdYO42kQAnOnnCVtYke9xMuRA4UGpo9MSrL3xz2Ei7SeSydlKFCrNyzaBLP54PsweRKwxrkBCrrp3GVT4lULijLcreY7IlVUYdL0fJCFIGC4g+I+/H5BkAOl2Iussna9Ay1VdZwGeu4KEyWQOnqx8p6AzDfAXwv7qIyGWkalHiV+3ko0iiri8pkSZ4/IrQTlTWRVWmUzYWo/lZ0c5xaZY2Xm+pR0hzttNJkTFJlE6to0yi5i9JkSZ6Oot2p3NNI6fKdZOzHrq8jGNKapFRZ40VZXlIFDFH/7pQFJYPKMgeAbmqX+BtHg0mH0I5V7p+ZJl6iAoZofuVIUydPDpV7Q6CLl1AYTZik67VlV7G4+MPowuSeOxQdROXpooH57gFDdEGX0ySTyrO+aPfZcYIh2njLa5JNZY6Xbu2/YP17FcxbHhC96HTLa5JR5d5Oo9uETW+cIN4ka4nNU2OLqNxHGYyJpIoZYoqvNXXQQNGBVT4LL71ZYOarJVaRpXeymuQmKaDymUjGCvO4aAvcPXUKmJRQ+ay81kyykKyD1EMRk0Iqj4C5BcF84OlaLkxKqiwXFQaDyUqScEhpVypLk7TCLDUGO2cOXfomQ4fQWVWeMHPxnawweIkS+giyU6usJeYOc7sa2mH82QrPJBShL6CyXuu9SsxVRlFm8Fxdb/dvo7TK6VVS2XJpLjPD+EinD7yIfFJ0FFU7AFU8HjLzf1zHiUzjU2RAVY//A06XwnjiVfSoAAAAAElFTkSuQmCC" alt="Wappen Dürener TV 1847">
+    <svg class="wordmark" viewBox="0 0 300 62" role="img" aria-label="Dürener TV 1847 Track &amp; Field">
+      <text x="0" y="32" textLength="300" lengthAdjust="spacingAndGlyphs" class="wm-club">DÜRENER TV 1847</text>
+      <line x1="0" y1="50" x2="52" y2="50" class="wm-line"/>
+      <text x="150" y="57" text-anchor="middle" textLength="176" lengthAdjust="spacingAndGlyphs" class="wm-tf">TRACK &amp; FIELD</text>
+      <line x1="248" y1="50" x2="300" y2="50" class="wm-line"/>
+    </svg>
+  </div>
+  <div class="hero">
+    <div class="hero-inner">
+      <h1>Trainingszeiten</h1>
+      <p>Vorgaben in Prozent der Bestleistung</p>
+    </div>
+    <div class="lanes" aria-hidden="true"></div>
+  </div>
+</header>
+
+<div class="picker only-js">
+  <div class="picker-inner">
+    <div class="bib" aria-live="polite">
+      <div class="bib-code" id="bibCode">–</div>
+      <div class="bib-sub" id="bibSub">&nbsp;</div>
+    </div>
+    <div class="controls">
+      <label for="selA" class="sr">Athlet</label>
+      <select id="selA"></select>
+      <div class="seg" role="radiogroup" aria-label="Bereich">
+        <input type="radio" name="disc" id="discS" value="sprint"><label for="discS">Sprint</label>
+        <input type="radio" name="disc" id="discL" value="run"><label for="discL">Lauf</label>
+      </div>
+    </div>
+  </div>
+  <nav class="jump" aria-label="Bereiche">
+    <a href="#rechner">Rechner</a>
+    <a href="#plan">Plan</a>
+    <a href="#gruppe">Gruppe</a>
+    <a href="#normen">Normen</a>
+    <a href="#athletik">Athletik</a>
+    <a href="#athleten">Athleten</a>
+    <a href="#daten">Daten</a>
+    <a href="masse.html" class="ext">Maße</a>
+    <a href="technik.html" class="ext">Technik</a>
+  </nav>
+</div>
+
+<main class="only-js">
+
+<!-- ============ RECHNER ============ -->
+<section id="rechner">
+  <h2>Rechner</h2>
+  <p class="warn" id="storageWarn" hidden></p>
+  <div class="block">
+    <div id="calcResult" class="result" aria-live="polite"></div>
+
+    <div class="sl-head"><span>Distanz</span><output id="dOut"></output></div>
+    <div class="sl-row">
+      <button class="step" type="button" id="dMinus" aria-label="Distanz verringern">−</button>
+      <input type="range" id="dRange" aria-label="Distanz">
+      <button class="step" type="button" id="dPlus" aria-label="Distanz erhöhen">+</button>
+    </div>
+    <div class="qchips" id="dChips"></div>
+    <label class="chk" id="flyWrap"><input type="checkbox" id="cFly"> fliegend</label>
+
+    <div class="sl-head"><span>Intensität</span><output id="pOut"></output></div>
+    <div class="sl-row">
+      <button class="step" type="button" id="pMinus" aria-label="Prozent verringern">−</button>
+      <input type="range" id="pRange" aria-label="Prozent">
+      <button class="step" type="button" id="pPlus" aria-label="Prozent erhöhen">+</button>
+    </div>
+    <div class="pchips" id="pChips"></div>
+
+    <div class="refline">
+      <span>Referenz</span>
+      <select id="refSel" aria-label="Referenzleistung"></select>
+    </div>
+    <div class="btns"><button class="btn small" type="button" id="toPlan">In den Plan übernehmen</button></div>
+    <p class="ok" id="toPlanMsg" hidden></p>
+  </div>
+
+  <details class="block">
+    <summary><h3>Berechnung</h3></summary>
+    <div class="inner">
+      <p class="f" style="margin:0 0 6px"><span>Prozent bedeutet</span></p>
+      <div class="seg" role="radiogroup" aria-label="Rechenart">
+        <input type="radio" name="mode" id="modeSpeed" value="speed"><label for="modeSpeed">Tempo</label>
+        <input type="radio" name="mode" id="modeTime" value="time"><label for="modeTime">Zeitaufschlag</label>
+      </div>
+      <p class="note" id="modeNote"></p>
+      <p class="f" style="margin:14px 0 6px"><span>Genauigkeit im Sprint</span></p>
+      <div class="seg" role="radiogroup" aria-label="Genauigkeit">
+        <input type="radio" name="dec" id="dec1" value="1"><label for="dec1">0,1 s</label>
+        <input type="radio" name="dec" id="dec2" value="2"><label for="dec2">0,01 s</label>
+      </div>
+      <h4>Referenz automatisch</h4>
+      <p class="note" style="margin-top:0">Der Rechner nimmt die Leistung mit der nächstliegenden Strecke. Bei gleicher Strecke zählt zuerst die Saisonbestleistung, dann die Bestleistung, dann ein Test. Im Sprint werden fliegende Strecken nur aus fliegenden Tests gerechnet, wenn welche eingetragen sind.</p>
+      <h4>Sprint</h4>
+      <p class="note" style="margin-top:0">Grundzeit = Referenzzeit × Strecke ÷ Referenzstrecke, also gleiches Durchschnittstempo.</p>
+      <h4>Lauf</h4>
+      <p class="note" style="margin-top:0">Längere Strecken werden langsamer gelaufen. Darum rechnet der Lauf-Bereich mit der Formel nach Riegel: Grundzeit = Referenzzeit × (Strecke ÷ Referenzstrecke) hoch Ermüdungsfaktor.</p>
+      <label class="f" style="max-width:220px;margin-top:8px"><span>Ermüdungsfaktor (üblich 1,06)</span>
+        <select id="kSel"><option value="1.04">1,04 (sehr ausdauernd)</option><option value="1.05">1,05</option><option value="1.06">1,06 (Standard)</option><option value="1.07">1,07</option><option value="1.08">1,08 (eher schnell, wenig Ausdauer)</option></select>
+      </label>
+    </div>
+  </details>
+</section>
+
+<!-- ============ PLAN ============ -->
+<section id="plan">
+  <h2>Plan</h2>
+  <p class="lead">Gespeicherte Strecken mit mehreren Prozenten für den gewählten Athleten.</p>
+  <div id="planOut"></div>
+  <div class="btns" style="margin:0 0 12px"><button class="btn small" id="sharePlan" type="button">Plan teilen</button></div>
+  <details class="block" id="planEdit">
+    <summary><h3>Strecken bearbeiten</h3></summary>
+    <div class="inner">
+      <div id="planRows"></div>
+      <div class="btns"><button class="btn small" id="addRow" type="button">+ Strecke</button></div>
+      <p class="note">Prozente antippen, mehrere sind möglich. Zwischenwerte wie 92 % kommen über den Rechner mit „In den Plan übernehmen“ dazu. Sprint und Lauf haben getrennte Pläne.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ GRUPPE ============ -->
+<section id="gruppe">
+  <h2>Gruppe</h2>
+  <p class="lead">Eine Strecke für alle Athleten, jeweils aus ihrer eigenen Leistung.</p>
+  <div class="block">
+    <div class="fg">
+      <label class="f full"><span>Referenz</span><select id="gRef"></select></label>
+      <label class="f"><span>Strecke (m)</span><input type="number" inputmode="decimal" min="1" id="gD"></label>
+      <label class="chk" id="gFlyWrap"><input type="checkbox" id="gFly"> fliegend</label>
+      <div class="f full"><span>Prozent</span><div class="qchips" id="gPChips"></div></div>
+    </div>
+  </div>
+  <div class="block" id="groupOut"></div>
+  <div class="btns" style="margin:0"><button class="btn small" id="shareGroup" type="button">Gruppe teilen</button></div>
+</section>
+
+
+<!-- ============ NORMEN ============ -->
+<section id="normen">
+  <h2>Normen</h2>
+  <p class="lead">Kaderrichtwerte des DLV für Landeskader und NK2, verglichen mit den Leistungen des gewählten Athleten.</p>
+  <div class="block">
+    <div class="qchips" id="nChips"></div>
+  </div>
+  <div id="normOut"></div>
+  <details class="block safe">
+    <summary><h3>Was die Werte bedeuten</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0">Grundlage sind die bundeseinheitlichen Kaderrichtwerte für Landeskader und Nachwuchskader 2 (Stand 2025/2026), zugeordnet nach Alter im laufenden Jahr. Die Jahrgangszuordnung verschiebt sich jede Saison, die Werte solltest du deshalb vor jeder Saison mit der aktuellen DLV-Übersicht abgleichen.</p>
+      <p class="note"><b>Ein Richtwert allein ergibt keine Kaderberufung.</b> Dazu kommen der einheitliche Landeskadertest, bei AK 14 und 15 zusätzlich Blockrichtwerte, sowie die Entscheidung des Landesverbands. NK1 und Perspektivkader sind Bundeskadernormen und beginnen erst ab 17 Jahren, die sind hier nicht enthalten.</p>
+      <p class="note">Gehen-Disziplinen sind nicht hinterlegt. Bei den Hürden der Frauen gelten in U18 und U20 unterschiedliche Höhen, das steht als Hinweis an der Norm.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ ATHLETIK ============ -->
+<section id="athletik">
+  <h2>Athletik</h2>
+  <p class="lead">Welche Muskeln eine Bewegung antreiben, welche sie stabilisieren und was sich dafür trainieren lässt.</p>
+  <div class="block">
+    <div class="mchips" id="mvChips"></div>
+  </div>
+  <div id="mvOut"></div>
+
+  <details class="block">
+    <summary><h3>Warum Stabilität überhaupt zählt</h3></summary>
+    <div class="inner">
+      <p style="margin-top:0">Kraft entsteht am Boden und muss durch den Körper bis ins Gerät oder in den Schritt wandern. Jedes Gelenk auf diesem Weg ist eine Übergabestelle. Gibt ein Abschnitt nach, versickert dort ein Teil der Kraft, und der Rest der Kette muss mehr leisten.</p>
+      <p>Ein schwacher Rumpf ist deshalb selten ein Bauchproblem. Er zeigt sich als flacher Absprung, als Wurf nur aus dem Arm oder als Hüfte, die im Sprint absackt. Stabilisatoren machen keine Bewegung, sie verhindern eine: das Einknicken, das Wegkippen, das Ausweichen.</p>
+      <p class="note">Faustregel für die Korrektur: Wenn die Technik in der zweiten Hälfte einer Serie zerfällt, fehlt meistens keine Technik, sondern Haltekraft.</p>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Basisprogramm für alle</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0">15 bis 20 Minuten, zwei- bis dreimal pro Woche, ohne Zusatzgewicht. Deckt die Stellen ab, die in fast jeder Disziplin gebraucht werden.</p>
+      <ul class="exlist">
+        <li><b>Unterarmstütz, vorn und seitlich</b><em>3 × 20 bis 40 s je Seite. Gerade Linie von Kopf bis Ferse, Po nicht hochschieben.</em></li>
+        <li><b>Hüftheben, beidbeinig und einbeinig</b><em>3 × 10. Hüfte ganz strecken, Rippen unten lassen.</em></li>
+        <li><b>Ausfallschritte</b><em>3 × 8 je Seite. Knie bleibt über dem Fuß und kippt nicht nach innen.</em></li>
+        <li><b>Fußgelenksprünge</b><em>3 × 15. Nur aus dem Fuß, Knie fast gestreckt, kurzer Bodenkontakt.</em></li>
+        <li><b>Einbeinstand mit Augen zu</b><em>3 × 20 s je Seite. Trainiert den Fuß und die seitliche Hüfte.</em></li>
+        <li><b>Medizinball über den Kopf und seitlich</b><em>3 × 8. Kraft von unten anschieben, nicht nur mit den Armen.</em></li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="block safe">
+    <summary><h3>Alter und Sicherheit</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0"><b>U8 bis U12:</b> Athletik als Spiel. Klettern, Hangeln, Hüpfen, Purzelbaum, Tauziehen, Partnerübungen. Kein Gerätetraining, keine Zusatzlast, keine Serien bis zur Erschöpfung.</p>
+      <p class="note"><b>U14 und U16:</b> Die Übungen des Basisprogramms sauber lernen, mit dem eigenen Körpergewicht. Hier entscheidet die Bewegungsqualität, nicht die Wiederholungszahl. Sprünge dosieren, der Körper wächst gerade.</p>
+      <p class="note"><b>Ab U18:</b> Zusatzlast erst, wenn die Technik der Übung ohne Gewicht sitzt, und nur mit ausgebildeter Anleitung.</p>
+      <p class="warn">Kein Maximalkrafttraining mit hohen Lasten bei Jugendlichen ohne Trainerlizenz und ärztliche Freigabe. Schmerz ist immer ein Abbruchgrund, Muskelkater am Folgetag nicht. Nach Wachstumsschüben klagen viele über Ferse oder Knie, dann Sprungbelastung reduzieren.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ ATHLETEN ============ -->
+<section id="athleten">
+  <h2>Athleten</h2>
+  <p class="lead">Leistungen ansehen, ergänzen und korrigieren. Für die Erstanlage vieler Athleten gibt es unter Daten den Import.</p>
+  <details class="block" id="newAthBox">
+    <summary><h3>Athlet anlegen</h3></summary>
+    <div class="inner">
+      <div class="fg">
+        <label class="f full"><span>Name</span><input type="text" id="naName" autocomplete="off"></label>
+        <label class="f"><span>Jahrgang (optional)</span><input type="number" inputmode="numeric" id="naJg" placeholder="z. B. 2010"></label>
+        <label class="f"><span>Geschlecht (optional)</span><select id="naG"><option value="">–</option><option value="m">männlich</option><option value="w">weiblich</option></select></label>
+      </div>
+      <div class="btns"><button class="btn primary" id="naAdd" type="button">Anlegen</button></div>
+      <p class="warn" id="naErr" hidden></p>
+    </div>
+  </details>
+  <div id="athList"></div>
+</section>
+
+<!-- ============ DATEN ============ -->
+<section id="daten">
+  <h2>Daten</h2>
+  <p class="lead">Erstanlage, DLV-Aktualisierung und Sicherung.</p>
+  <div class="info">Alle Einträge liegen nur im Browser dieses Geräts. Auf dem iPhone haben Safari und die App auf dem Home-Bildschirm getrennte Speicher, darum am besten immer denselben Weg nutzen.</div>
+  <p class="warn" id="storageWarn2" hidden></p>
+
+  <details class="block">
+    <summary><h3>Erstanlage aus Excel</h3></summary>
+    <div class="inner">
+      <ol class="steps-list">
+        <li>Vorlage herunterladen und in Excel öffnen, oder eigene Tabelle mit gleichen Spaltenköpfen nutzen.</li>
+        <li>Eine Zeile pro Athlet, Zeiten als <code>12,34</code> oder <code>2:05,30</code>. Leere Zellen werden übersprungen.</li>
+        <li>Die Tabelle mit Kopfzeile markieren, kopieren und unten einfügen, oder die CSV-Datei direkt laden.</li>
+      </ol>
+      <div class="btns" style="margin:0 0 10px">
+        <button class="btn small" type="button" id="tplBtn">Vorlage herunterladen</button>
+        <button class="btn small" type="button" id="csvBtn">CSV-Datei laden</button>
+        <input type="file" id="csvFile" accept=".csv,.txt,text/csv,text/plain" hidden>
+      </div>
+      <div class="fg">
+        <label class="f"><span>Art der Zeiten</span><select id="xKind"><option value="SB">Saisonbestleistung</option><option value="PB">Bestleistung</option></select></label>
+        <label class="f"><span>Saison</span><input type="number" inputmode="numeric" id="xSeason"></label>
+      </div>
+      <label class="f" style="margin-top:10px"><span>Tabelle</span>
+        <textarea id="xArea" placeholder="Name&#9;Jahrgang&#9;Geschlecht&#9;100 m&#9;200 m&#9;800 m&#10;Max Muster&#9;2010&#9;m&#9;12,21&#9;25,00&#9;"></textarea>
+      </label>
+      <div class="btns"><button class="btn primary" id="xBtn" type="button">Übernehmen</button></div>
+      <p class="ok" id="xMsg" hidden></p>
+      <p class="note">Spalten, die erkannt werden: Name (oder Vorname und Nachname), Jahrgang, Geschlecht und alle Spalten mit einer Streckenangabe wie <code>100 m</code>, <code>30 m fl</code>, <code>1500 m</code> oder <code>5 km</code>. Auch Zeilen im Format <code>Name; Disziplin; Zeit; Art; Datum</code> funktionieren.</p>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Aus DLV-Bestenliste aktualisieren</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0"><b>Am einfachsten:</b> Die Export-Datei (CSV) der Bestenliste direkt laden. Sie enthält alle Disziplinen auf einmal. Übernommen werden Sprint- und Laufstrecken einschließlich Straße, andere Disziplinen werden übersprungen.</p>
+      <div class="btns" style="margin:0 0 6px">
+        <button class="btn primary" type="button" id="dlvFileBtn">DLV-Export laden</button>
+        <input type="file" id="dlvFile" accept=".csv,text/csv,text/plain" hidden>
+      </div>
+      <p class="ok" id="dlvFileMsg" hidden></p>
+      <h4>Oder Tabelle kopieren</h4>
+      <ol class="steps-list">
+        <li>Bestenliste öffnen, Altersklasse, Disziplin und Jahr wählen, bei „Name &amp; Vereinsuche“ Dürener TV eintragen.</li>
+        <li>Die Ergebnistabelle markieren und kopieren. Am Computer geht das am einfachsten.</li>
+        <li>Hier die gleiche Disziplin wählen, einfügen und übernehmen. Pro Disziplin einmal wiederholen.</li>
+      </ol>
+      <div class="fg">
+        <label class="f"><span>Disziplin</span><select id="dlvDisc"></select></label>
+        <label class="f"><span>Art</span><select id="dlvKind"><option value="auto">automatisch</option><option value="SB">Saisonbestleistung</option><option value="PB">Bestleistung</option></select></label>
+        <label class="f"><span>Verein enthält</span><input type="text" id="dlvClub" value="Dürener TV"></label>
+        <label class="f"><span>Geschlecht (neue)</span><select id="dlvG"><option value="">–</option><option value="m">männlich</option><option value="w">weiblich</option></select></label>
+      </div>
+      <label class="f" style="margin-top:10px"><span>Kopierte Tabelle</span><textarea id="dlvArea"></textarea></label>
+      <div class="btns"><button class="btn primary" id="dlvBtn" type="button">Übernehmen</button></div>
+      <p class="ok" id="dlvMsg" hidden></p>
+      <p class="note">Art, Verein und Geschlecht gelten auch für den Export. „Automatisch“ trägt Leistungen aus dem laufenden Jahr als Saisonbestleistung ein, ältere als Bestleistung. Ist schon eine Zeit gespeichert, gewinnt die schnellere. Athleten werden über den Namen zugeordnet, der Jahrgang wird ergänzt.</p>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Sicherung</h3>
+    <p class="note">Regelmäßig sichern und bei Bedarf an andere Trainer schicken. Beim Laden einer Sicherung werden die aktuellen Daten ersetzt.</p>
+    <div class="btns">
+      <button class="btn" id="exportBtn" type="button">Sicherung speichern</button>
+      <button class="btn" id="importBtn" type="button">Sicherung laden</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </div>
+    <p class="ok" id="dataMsg" hidden></p>
+  </div>
+
+  <div class="block">
+    <h3>Neu beginnen</h3>
+    <div class="btns">
+      <button class="btn" id="demoBtn" type="button">Beispieldaten laden</button>
+      <button class="btn danger" id="clearBtn" type="button">Alle Daten löschen</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="only-js">Die Vorgaben sind Richtwerte und ersetzen nicht das Auge des Trainers. <span class="ver">Trainer · Version 2026-09-26</span></footer>
+
+<script>
+(function(){
+const KEY = 'dtv-training-v1';
+const Y = new Date().getFullYear();
+const $ = s => document.querySelector(s);
+const on = (sel, ev, fn, opt) => { const el = $(sel); if (el) el.addEventListener(ev, fn, opt); };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const num = (n,d) => n.toLocaleString('de-DE',{minimumFractionDigits:d, maximumFractionDigits:d});
+const byName = (x,y) => x.name.localeCompare(y.name,'de');
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+
+const MOVES_KEYS = ['sprint','absprung','wurf','stoss','huerden','lauf'];
+const CFG = {
+  sprint:{dMin:20, dMax:300, dStep:10, dChips:[30,60,80,100,150,200,300], pMin:50, pMax:100, pStep:5, pChips:[60,70,80,90,95,100]},
+  run:   {dMin:100, dMax:5000, dStep:100, dChips:[200,400,800,1000,2000,3000], pMin:60, pMax:110, pStep:1, pChips:[80,85,90,95,100,105]}
+};
+const FIELD = [['TWEI|m','Weitsprung'],['THOC|m','Hochsprung'],['TDRE|m','Dreisprung'],['TSTA|m','Stabhochsprung'],
+  ['TKUG_3000|m','Kugelstoß 3 kg'],['TKUG_4000|m','Kugelstoß 4 kg'],['TKUG_5000|m','Kugelstoß 5 kg'],['TKUG_6000|m','Kugelstoß 6 kg'],['TKUG_7260|m','Kugelstoß 7,26 kg'],
+  ['TDIS_0750|m','Diskus 0,75 kg'],['TDIS_1000|m','Diskus 1 kg'],['TDIS_1500|m','Diskus 1,5 kg'],['TDIS_1750|m','Diskus 1,75 kg'],['TDIS_2000|m','Diskus 2 kg'],
+  ['THAM_3000|m','Hammer 3 kg'],['THAM_4000|m','Hammer 4 kg'],['THAM_5000|m','Hammer 5 kg'],['THAM_6000|m','Hammer 6 kg'],
+  ['TSPE_0400|m','Speer 400 g'],['TSPE_0500|m','Speer 500 g'],['TSPE_0600|m','Speer 600 g'],['TSPE_0700|m','Speer 700 g'],['TSPE_0800|m','Speer 800 g'],
+  ['TBAL_0200|m','Ballwurf 200 g'],
+  ['H80|s','80 m Hürden'],['H100|s','100 m Hürden'],['H110|s','110 m Hürden'],['H300|s','300 m Hürden'],['H400|s','400 m Hürden']];
+const DISC = {
+  Sprint:[['20|1','20 m fliegend'],['30|1','30 m fliegend'],['30|0','30 m aus dem Start'],['60|0','60 m'],['80|0','80 m'],['100|0','100 m'],['150|0','150 m'],['200|0','200 m'],['300|0','300 m'],['400|0','400 m']],
+  Lauf:[['800|0','800 m'],['1000|0','1.000 m'],['1500|0','1.500 m'],['2000|0','2.000 m'],['3000|0','3.000 m'],['5000|0','5.000 m'],['10000|0','10.000 m']]
+};
+const discOptions = (sel, custom) => Object.entries(DISC).map(([g,list])=>`<optgroup label="${g}">${list.map(([v,l])=>`<option value="${v}"${v===sel?' selected':''}>${l}</option>`).join('')}</optgroup>`).join('')
+  + (custom ? `<optgroup label="Sprung, Wurf und Hürden">${FIELD.map(([v,l])=>`<option value="${v}"${v===sel?' selected':''}>${l}</option>`).join('')}</optgroup>` : '')
+  + (custom ? `<option value="custom"${sel==='custom'?' selected':''}>Eigene Strecke …</option>` : '');
+const fieldLabel = v => (FIELD.find(x=>x[0]===v) || [,''])[1];
+const isRun = e => e.d >= 800;
+
+/* ---------- Speicher ---------- */
+let storageOk = true;
+try { localStorage.setItem('dtv-test','1'); localStorage.removeItem('dtv-test'); } catch(e){ storageOk = false; }
+
+function normEntry(e){
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(e.date||'') ? e.date : '';
+  const kind = ['SB','PB','Test'].includes(e.kind) ? e.kind : 'SB';
+  const season = +e.season || (date ? +date.slice(0,4) : Y);
+  if (e.ev) return {id:e.id||uid(), ev:String(e.ev), label:String(e.label||e.ev), unit:(e.unit==='pts'||e.unit==='s') ? e.unit : 'm', v:+e.v, d:0, fly:false, t:0, kind, date, season};
+  return {id:e.id||uid(), d:+e.d, fly:!!e.fly, t:+e.t, kind, date, season};
+}
+const defPlan = () => ({
+  sprint:[{id:uid(),d:100,fly:false,p:[80,90]},{id:uid(),d:150,fly:false,p:[60,70]}],
+  run:[{id:uid(),d:400,fly:false,p:[90,95]},{id:uid(),d:1000,fly:false,p:[85,90]}]
+});
+const normRows = rows => (Array.isArray(rows)?rows:[]).filter(r=>r && +r.d>0).map(r=>({id:r.id||uid(), d:+r.d, fly:!!r.fly, p:(Array.isArray(r.p)?r.p:[]).map(Number).filter(v=>v>=30&&v<=120)}));
+function normalize(o){
+  o = (o && typeof o === 'object') ? o : {};
+  o.athletes = Array.isArray(o.athletes) ? o.athletes.filter(a=>a && a.name) : [];
+  o.athletes.forEach(a=>{
+    a.id = a.id || uid(); a.name = String(a.name).slice(0,60);
+    a.jg = +a.jg || null; a.g = (a.g==='m'||a.g==='w') ? a.g : '';
+    a.entries = (Array.isArray(a.entries) ? a.entries : []).filter(e=>e && ((e.ev && +e.v>0) || (+e.d>0 && +e.t>0))).map(normEntry);
+    a.refS = a.refS || null; a.refL = a.refL || null; a.dlv = a.dlv || null; delete a.ref;
+  });
+  const dp = defPlan();
+  if (Array.isArray(o.plan)) o.plan = {sprint:o.plan, run:dp.run};
+  o.plan = (o.plan && typeof o.plan==='object') ? o.plan : dp;
+  o.plan.sprint = o.plan.sprint ? normRows(o.plan.sprint) : dp.sprint;
+  o.plan.run = o.plan.run ? normRows(o.plan.run) : dp.run;
+  const s = Object.assign({disc:'sprint', mode:'speed', dec:1, k:1.06, sel:null}, o.s||{});
+  s.calc = Object.assign({sprint:{d:100,p:80,fly:false}, run:{d:1000,p:90,fly:false}}, s.calc||{});
+  s.norm = Object.assign({lk:true, nk2:false, all:false}, s.norm||{});
+  if (!MOVES_KEYS.includes(s.mv)) s.mv = 'sprint';
+  s.grp = Object.assign({sprint:{ref:'auto', d:150, fly:false, p:[60,70]}, run:{ref:'auto', d:1000, fly:false, p:[85,90]}}, s.grp||{});
+  ['sprint','run'].forEach(k=>{ const g = s.grp[k]; g.p = Array.isArray(g.p) ? g.p.map(Number).filter(v=>v>=30&&v<=120) : parsePercents(g.p); if (!g.p.length) g.p = k==='run' ? [85,90] : [60,70]; });
+  ['gRef','gD','gFly','gP'].forEach(k=>delete s[k]);
+  if (!['sprint','run'].includes(s.disc)) s.disc = 'sprint';
+  o.s = s;
+  return o;
+}
+function load(){
+  if (!storageOk) return normalize(null);
+  try { const raw = localStorage.getItem(KEY); return normalize(raw ? JSON.parse(raw) : null); }
+  catch(e){ return normalize(null); }
+}
+function save(){
+  if (!storageOk) return;
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){ storageOk = false; renderStorageWarn(); }
+}
+let db = load();
+
+/* ---------- Zeiten ---------- */
+function parseTime(str){
+  let s = String(str==null?'':str).trim().replace(/\*/g,'').replace(/\s+/g,'').replace(/s$/i,'').replace(',', '.');
+  if (!s) return NaN;
+  if (s.includes(':')){
+    const parts = s.split(':').map(Number);
+    if (parts.some(v=>isNaN(v))) return NaN;
+    return parts.reduce((acc,v)=>acc*60+v, 0);
+  }
+  const n = Number(s);
+  return isFinite(n) && n > 0 ? n : NaN;
+}
+function parseMark(str){
+  let s = String(str==null?'':str).trim().replace(/\s/g,'').replace(/m$/i,'');
+  if (s.includes(',') && s.includes('.')) s = s.replace(/\./g,'').replace(',','.');
+  else s = s.replace(',','.');
+  const n = parseFloat(s);
+  return isFinite(n) && n > 0 ? n : NaN;
+}
+/* Zeiteingabe: akzeptiert 14,2 / 14.2 / 2:05,30 / 2,05,30 / 1:37:13 / 1,37,13.
+   Bei mehreren Lesarten entscheidet die Strecke, welche plausibel ist. */
+function parseTimeFlex(str, d){
+  const s = String(str==null?'':str).trim().replace(/\*/g,'').replace(/\s/g,'').replace(/s$/i,'');
+  if (!s || !/^\d[\d:.,]*$/.test(s)) return NaN;
+  if (s.includes(':')) return parseTime(s);
+  const parts = s.split(/[.,]/);
+  if (parts.some(p=>p === '' || !/^\d+$/.test(p))) return NaN;
+  const n = parts.map(Number), c = [];
+  if (n.length === 1) c.push(n[0]);
+  else if (n.length === 2){
+    c.push(Number(parts[0] + '.' + parts[1]));
+    if (n[1] < 60) c.push(n[0]*60 + n[1]);
+  } else if (n.length === 3){
+    if (n[1] < 60) c.push(n[0]*60 + n[1] + Number('0.' + parts[2]));
+    if (n[1] < 60 && n[2] < 60) c.push(n[0]*3600 + n[1]*60 + n[2]);
+  } else if (n.length === 4){
+    if (n[1] < 60 && n[2] < 60) c.push(n[0]*3600 + n[1]*60 + n[2] + Number('0.' + parts[3]));
+  }
+  const ok = c.filter(t=>t > 0);
+  if (!ok.length) return NaN;
+  if (!(d > 0)) return ok[0];
+  const good = ok.filter(t=> d/t >= 0.8 && d/t <= 13);
+  return (good.length ? good : ok)[0];
+}
+const evDist = ev => { const m = String(ev).match(/^H(\d+)/); return m ? +m[1] : 0; };
+function valueKind(sel){ const m = String(sel).match(/\|(m|s|pts)$/); return m ? m[1] : 's'; }
+function updateValueField(form){
+  if (!form) return;
+  const selEl = form.querySelector('[data-f="disc"]'); if (!selEl) return;
+  const sel = selEl.value, k = valueKind(sel);
+  const inp = form.querySelector('[data-f="t"]'), lab = form.querySelector('[data-vlabel]');
+  if (!inp || !lab) return;
+  if (k === 'm'){
+    lab.textContent = /^(THOC|TSTA)/.test(sel) ? 'Höhe in Metern' : 'Weite in Metern';
+    inp.placeholder = /^(THOC|TSTA)/.test(sel) ? '1,45' : '5,42';
+  } else {
+    lab.textContent = 'Zeit';
+    inp.placeholder = '14,20';
+  }
+}
+function fmtT(t, dec){
+  const f = Math.pow(10,dec);
+  const v = Math.round(t*f)/f;
+  if (v < 60) return num(v,dec);
+  const h = Math.floor(v/3600);
+  const m = Math.floor((v - h*3600)/60);
+  const s = Math.round((v - h*3600 - m*60)*f)/f;
+  const ss = (s < 10 ? '0' : '') + num(s,dec);
+  return h ? h + ':' + String(m).padStart(2,'0') + ':' + ss : m + ':' + ss;
+}
+/* Anzeige einer Zielzeit: Sprint mit Einstellung, Lauf ab 1 Minute auf ganze Sekunden */
+function outT(t, disc){
+  if (disc==='run') return t < 60 ? {v:fmtT(t,1), u:' s'} : {v:fmtT(t,0), u:''};
+  return {v:fmtT(t, db.s.dec), u: t < 60 ? ' s' : ''};
+}
+const outStr = (t,disc) => { const o = outT(t,disc); return o.v + o.u; };
+const value = e => e.ev ? e.v : e.t;
+const higherIsBetter = e => !!(e.ev && e.unit !== 's');
+const runs = a => a ? a.entries.filter(e=>!e.ev) : [];
+function evLabel(e){ return e.label || e.ev; }
+function fmtVal(e){
+  if (!e.ev) return fmtT(e.t,2);
+  if (e.unit==='pts') return num(e.v,0) + ' P.';
+  if (e.unit==='s') return fmtT(e.v,2);
+  return num(e.v,2) + ' m';
+}
+const dLabel = (d,fly) => d===21097.5 ? 'Halbmarathon' : d===42195 ? 'Marathon' : num(d, d%1 ? 1 : 0) + ' m' + (fly ? ' fliegend' : '');
+const pLabel = p => num(p, p%1 ? 1 : 0) + ' %';
+const kindLabel = e => e.kind==='SB' ? 'SB ' + e.season : e.kind;
+function fmtDate(iso){ const [y,m,d] = iso.split('-'); return d+'.'+m+'.'+y; }
+const PCT = {sprint:[50,55,60,65,70,75,80,85,90,95,100], run:[60,65,70,75,80,85,90,95,100,105,110]};
+function pctChips(list, attr){
+  const all = [...new Set(PCT[db.s.disc].concat(list))].sort((x,y)=>x-y);
+  return all.map(p=>`<button type="button" class="qchip${list.includes(p)?' on':''}" ${attr}="${p}">${pLabel(p)}</button>`).join('');
+}
+function togglePct(list, p){
+  const i = list.indexOf(p);
+  if (i >= 0) list.splice(i,1); else { list.push(p); list.sort((x,y)=>x-y); }
+  return list;
+}
+function ageBucket(a){
+  if (!a.jg) return 999;
+  const age = Y - a.jg;
+  if (age <= 7) return 8; if (age <= 9) return 10; if (age <= 11) return 12;
+  if (age <= 13) return 14; if (age <= 15) return 16; if (age <= 17) return 18; if (age <= 19) return 20;
+  if (age <= 22) return 23; if (age < 30) return 29;
+  return Math.floor(age/5)*5;
+}
+function classLabel(a){ return classCode(a) || 'Ohne Jahrgang'; }
+function sortByClass(list){
+  return list.slice().sort((x,y)=> ageBucket(x)-ageBucket(y) || (x.g||'z').localeCompare(y.g||'z') || byName(x,y));
+}
+function parsePercents(s){ return String(s).replace(/,/g,' ').split(/[^0-9.]+/).map(parseFloat).filter(v=>v>=30 && v<=120).slice(0,8); }
+function rank(e){ return e.kind==='SB' && e.season===Y ? 0 : e.kind==='PB' ? 1 : e.kind==='SB' ? 2 : 3; }
+function pick(list){ return list.slice().sort((x,y)=> rank(x)-rank(y) || x.t-y.t)[0] || null; }
+function sortEntries(list){ return list.slice().sort((x,y)=> (x.d-y.d) || (x.fly-y.fly) || rank(x)-rank(y) || x.t-y.t); }
+
+function classCode(a){
+  if (!a.jg) return '';
+  const age = Y - a.jg; const G = a.g==='m' ? 'M' : a.g==='w' ? 'W' : '';
+  if (age < 3 || age > 110) return '';
+  if (age <= 11) return (G ? G+'K' : '') + 'U' + (age<=7 ? 8 : age<=9 ? 10 : 12);
+  if (age <= 19) return (G ? G+'J' : '') + 'U' + (age<=13 ? 14 : age<=15 ? 16 : age<=17 ? 18 : 20);
+  if (age <= 22) return G + 'U23';
+  if (age < 30) return G==='M' ? 'Männer' : G==='W' ? 'Frauen' : 'Aktive';
+  return (G || 'AK') + (Math.floor(age/5)*5);
+}
+
+/* ---------- Rechnung ---------- */
+function current(){ return db.athletes.find(a=>a.id===db.s.sel) || [...db.athletes].sort(byName)[0] || null; }
+function autoRef(a, d, fly, disc){
+  if (!a || !runs(a).length) return null;
+  let pool = runs(a).filter(e => disc==='run' ? isRun(e) : !isRun(e));
+  if (!pool.length) pool = runs(a);
+  if (disc==='sprint'){
+    const same = pool.filter(e=>e.fly===!!fly);
+    if (same.length) pool = same;
+  }
+  return pool.slice().sort((x,y)=>{
+    const dx = Math.abs(Math.log(d/x.d)), dy = Math.abs(Math.log(d/y.d));
+    return (Math.round(dx*1000) - Math.round(dy*1000)) || (y.d - x.d) || rank(x)-rank(y) || x.t-y.t;
+  })[0];
+}
+function chosenRef(a, d, fly, disc){
+  if (!a) return null;
+  const ov = runs(a).find(e=>e.id===(disc==='run' ? a.refL : a.refS));
+  return ov || autoRef(a, d, fly, disc);
+}
+function baseTime(ref, d, disc){
+  const r = d / ref.d;
+  return disc==='run' ? ref.t * Math.pow(r, db.s.k) : ref.t * r;
+}
+function applyP(base, p){ return db.s.mode==='speed' ? base / (p/100) : base * (1 + (100-p)/100); }
+function target(ref, d, p, disc){ return applyP(baseTime(ref,d,disc), p); }
+function warnings(ref, d, fly, disc){
+  const w = [];
+  if (disc==='sprint' && ref.fly !== !!fly) w.push(ref.fly ? 'Referenz ist fliegend gemessen, die Strecke nicht.' : 'Referenz ist aus dem Start, die Strecke fliegend.');
+  const r = d / ref.d;
+  if (disc==='sprint' && (r > 2 || r < 0.5)) w.push('Strecke weit von der Referenz entfernt. Nur grober Anhalt.');
+  if (disc==='run' && (r > 4 || r < 0.25)) w.push('Strecke weit von der Referenz entfernt. Nur grober Anhalt.');
+  if (disc==='sprint' && isRun(ref)) w.push('Referenz ist eine Laufstrecke.');
+  if (disc==='run' && !isRun(ref)) w.push('Referenz ist eine Sprintstrecke. Für Läufer besser eine Zeit ab 800 m eintragen.');
+  return w;
+}
+function paceText(t, d){
+  const per400 = t / d * 400, perKm = t / d * 1000;
+  return (per400 < 60 ? num(Math.round(per400*10)/10,1) + ' s' : fmtT(per400,0)) + ' pro 400 m, ' + fmtT(perKm,0) + ' pro km';
+}
+const refText = ref => `${dLabel(ref.d,ref.fly)} ${kindLabel(ref)}: ${fmtT(ref.t,2)}`;
+
+/* ---------- Anzeige ---------- */
+function renderStorageWarn(){
+  const msg = 'Speichern ist hier nicht möglich (z. B. privater Modus oder Dateivorschau). Einträge gehen beim Schließen verloren.';
+  ['#storageWarn','#storageWarn2'].forEach(id=>{ const el=$(id); el.hidden = storageOk; el.textContent = msg; });
+}
+
+function renderPicker(){
+  const selA = $('#selA'), a = current();
+  $('#discS').checked = db.s.disc==='sprint'; $('#discL').checked = db.s.disc==='run';
+  if (!a){
+    selA.innerHTML = '<option>Noch keine Athleten</option>'; selA.disabled = true;
+    $('#bibCode').textContent = '–'; $('#bibSub').textContent = 'Athlet anlegen';
+    return;
+  }
+  selA.disabled = false;
+  selA.innerHTML = [...db.athletes].sort(byName).map(x=>`<option value="${x.id}"${x.id===a.id?' selected':''}>${esc(x.name)}</option>`).join('');
+  const c = db.s.calc[db.s.disc];
+  const ref = chosenRef(a, c.d, c.fly, db.s.disc);
+  const cc = classCode(a);
+  $('#bibCode').textContent = ref ? fmtT(ref.t, 2) : '–';
+  $('#bibCode').style.fontSize = $('#bibCode').textContent.length > 5 ? '24px' : '';
+  $('#bibSub').innerHTML = ref ? `${dLabel(ref.d,ref.fly)}, ${esc(kindLabel(ref))}${cc ? '<br>'+esc(cc) : ''}` : esc(cc || 'keine Leistung');
+}
+
+function setPct(r){ const p = (r.value - r.min) / (r.max - r.min) * 100; r.style.setProperty('--pct', p + '%'); }
+function setupCalcControls(){
+  const disc = db.s.disc, cfg = CFG[disc], c = db.s.calc[disc];
+  c.d = clamp(Math.round(c.d / cfg.dStep) * cfg.dStep, cfg.dMin, cfg.dMax);
+  c.p = clamp(c.p, cfg.pMin, cfg.pMax);
+  const dr = $('#dRange'), pr = $('#pRange');
+  dr.min = cfg.dMin; dr.max = cfg.dMax; dr.step = cfg.dStep; dr.value = c.d;
+  pr.min = cfg.pMin; pr.max = cfg.pMax; pr.step = cfg.pStep; pr.value = c.p;
+  $('#flyWrap').hidden = disc!=='sprint';
+  $('#cFly').checked = disc==='sprint' && !!c.fly;
+}
+
+function renderCalc(){
+  const disc = db.s.disc, cfg = CFG[disc], c = db.s.calc[disc], a = current();
+  const fly = disc==='sprint' && !!c.fly;
+  setPct($('#dRange')); setPct($('#pRange'));
+  $('#dOut').textContent = dLabel(c.d, fly);
+  $('#pOut').textContent = pLabel(c.p);
+  $('#dChips').innerHTML = cfg.dChips.map(d=>`<button type="button" class="qchip${d===c.d?' on':''}" data-d="${d}">${num(d,0)} m</button>`).join('');
+  const res = $('#calcResult'), refSel = $('#refSel');
+  const ref = a ? chosenRef(a, c.d, fly, disc) : null;
+  if (!a){
+    res.innerHTML = `<div class="res-empty">Noch keine Athleten. <button class="linkbtn" type="button" data-go="daten">Import</button> oder <button class="linkbtn" type="button" data-go="athleten">Athlet anlegen</button>.</div>`;
+  } else if (!ref){
+    res.innerHTML = `<div class="res-empty">Für ${esc(a.name)} ist noch keine Leistung eingetragen. <button class="linkbtn" type="button" data-go="athleten" data-open="${a.id}">Leistung eintragen</button></div>`;
+  } else {
+    const t = target(ref, c.d, c.p, disc), o = outT(t, disc);
+    const det = disc==='run' ? paceText(t, c.d) : num(c.d/t,2) + ' m/s';
+    const w = warnings(ref, c.d, fly, disc).map(x=>`<p class="warn">${x}</p>`).join('');
+    res.innerHTML = `<div class="res-label">${esc(a.name)}: ${dLabel(c.d,fly)} bei ${pLabel(c.p)}</div>
+      <div class="res-val">${o.v}<small>${o.u}</small></div>
+      <div class="res-det">${det}</div>
+      <div class="res-det">aus ${esc(refText(ref))}</div>${w}`;
+  }
+  $('#pChips').innerHTML = cfg.pChips.map(p=>{
+    const v = ref ? outStr(target(ref, c.d, p, disc), disc) : '–';
+    return `<button type="button" class="pchip${p===c.p?' on':''}" data-p="${p}"><b>${pLabel(p)}</b><span>${v}</span></button>`;
+  }).join('');
+  if (a && runs(a).length){
+    const ovId = disc==='run' ? a.refL : a.refS;
+    const auto = autoRef(a, c.d, fly, disc);
+    refSel.disabled = false;
+    refSel.innerHTML = `<option value="">Automatisch${auto ? ' ('+esc(dLabel(auto.d,auto.fly))+')' : ''}</option>` +
+      sortEntries(runs(a)).map(e=>`<option value="${e.id}"${e.id===ovId?' selected':''}>${esc(refText(e))}</option>`).join('');
+  } else {
+    refSel.disabled = true; refSel.innerHTML = '<option>Automatisch</option>';
+  }
+  renderPicker();
+}
+
+function renderPlan(){
+  const disc = db.s.disc, out = $('#planOut'), a = current();
+  $('#sharePlan').hidden = true;
+  const rows = db.plan[disc].filter(r=>r.p.length);
+  if (!a || !runs(a).length){ out.innerHTML = `<div class="info">Sobald für den Athleten Lauf- oder Sprintleistungen eingetragen sind, erscheinen hier die Vorgaben.</div>`; return; }
+  if (!rows.length){ out.innerHTML = '<div class="info">Noch keine Strecken im Plan. Unten hinzufügen oder im Rechner „In den Plan übernehmen“.</div>'; return; }
+  out.innerHTML = rows.map(row=>{
+    const fly = disc==='sprint' && row.fly;
+    const ref = chosenRef(a, row.d, fly, disc);
+    const tiles = row.p.map(p=>{
+      const t = target(ref,row.d,p,disc), o = outT(t,disc);
+      const det = disc==='run' ? fmtT(t/row.d*1000,0) + ' pro km' : num(row.d/t,2) + ' m/s';
+      return `<div class="tile"><div class="name">${pLabel(p)}</div><div class="val">${o.v}<span class="unit">${o.u}</span></div><div class="det">${det}</div></div>`;
+    }).join('');
+    const w = warnings(ref,row.d,fly,disc).map(x=>`<p class="warn">${x}</p>`).join('');
+    return `<div class="block coded"><div class="block-head"><h3>${dLabel(row.d,fly)}</h3><span class="tag">aus ${esc(refText(ref))}</span></div><div class="tiles">${tiles}</div>${w}</div>`;
+  }).join('');
+  $('#sharePlan').hidden = false;
+}
+
+function renderPlanRows(){
+  const disc = db.s.disc;
+  $('#planRows').innerHTML = db.plan[disc].length ? db.plan[disc].map(r=>`
+    <div class="prow" data-id="${r.id}">
+      <label class="f"><span>Strecke (m)</span><input type="number" inputmode="decimal" min="1" value="${r.d}" data-k="d"></label>
+      ${disc==='sprint' ? `<label class="chk"><input type="checkbox" data-k="fly"${r.fly?' checked':''}> fl.</label>` : '<span></span>'}
+      <button class="icon-btn" type="button" data-del-row="${r.id}" aria-label="Strecke entfernen">×</button>
+      <div class="pcell"><div class="qchips">${pctChips(r.p, 'data-rp')}</div></div>
+    </div>`).join('') : '<p class="note" style="margin-top:0">Noch keine Strecken.</p>';
+}
+
+function renderSettings(){
+  $('#modeSpeed').checked = db.s.mode==='speed'; $('#modeTime').checked = db.s.mode==='time';
+  $('#dec1').checked = db.s.dec===1; $('#dec2').checked = db.s.dec===2;
+  $('#kSel').value = String(db.s.k);
+  $('#modeNote').innerHTML = db.s.mode==='speed'
+    ? 'Prozent der Geschwindigkeit: Zeit = Grundzeit ÷ Prozent. Beispiel 200 m in 25,00 s: 100 m Grundzeit 12,50 s, bei 80 % also 12,50 ÷ 0,80 = <b>15,63 s</b>.'
+    : 'Prozentualer Zeitaufschlag: Zeit = Grundzeit × (2 − Prozent). Beispiel 200 m in 25,00 s: 100 m Grundzeit 12,50 s, bei 80 % also 12,50 × 1,20 = <b>15,00 s</b>.';
+}
+
+function renderGroup(init){
+  const disc = db.s.disc, g = db.s.grp[disc];
+  if (init){ $('#gD').value = g.d; $('#gFly').checked = !!g.fly; }
+  $('#gFlyWrap').hidden = disc!=='sprint';
+  $('#gPChips').innerHTML = pctChips(g.p, 'data-gp');
+  const map = new Map();
+  db.athletes.forEach(a=>runs(a).forEach(e=>{ if (disc==='run' ? isRun(e) : !isRun(e)) map.set(e.d+'|'+(e.fly?1:0), dLabel(e.d,e.fly)); }));
+  const keys = [...map.keys()].sort((x,y)=>{ const [d1,f1]=x.split('|').map(Number), [d2,f2]=y.split('|').map(Number); return d1-d2 || f1-f2; });
+  if (g.ref!=='auto' && !keys.includes(g.ref)) g.ref = 'auto';
+  $('#gRef').innerHTML = `<option value="auto">Automatisch (nächste Strecke je Athlet)</option>` + keys.map(k=>`<option value="${k}"${k===g.ref?' selected':''}>${map.get(k)}</option>`).join('');
+  const out = $('#groupOut'), ps = g.p, d = +g.d, fly = disc==='sprint' && !!g.fly;
+  $('#shareGroup').hidden = true;
+  if (!db.athletes.length){ out.innerHTML = '<p class="note" style="margin:0">Noch keine Athleten.</p>'; return; }
+  if (!(d>0) || !ps.length){ out.innerHTML = '<p class="note" style="margin:0">Strecke eintragen und mindestens einen Prozentwert wählen.</p>'; return; }
+  let h = `<div class="block-head"><h3>${dLabel(d,fly)}</h3><span class="tag">${disc==='run'?'Lauf':'Sprint'}</span></div>`;
+  h += `<div class="tw"><table class="ov"><thead><tr><th>Athlet</th><th>Referenz</th>${ps.map(p=>`<th>${pLabel(p)}</th>`).join('')}</tr></thead><tbody>`;
+  let last = null;
+  groupRows().forEach(({a, ref})=>{
+    const lbl = classLabel(a);
+    if (lbl !== last){ h += `<tr class="grp"><td colspan="${ps.length+2}">${esc(lbl)}</td></tr>`; last = lbl; }
+    h += `<tr><td>${esc(a.name)}</td><td>${ref ? fmtT(ref.t,2)+'<br><small>'+esc(dLabel(ref.d,ref.fly)+' '+kindLabel(ref))+'</small>' : '–'}</td>${ps.map(p=>`<td class="big">${ref ? outT(target(ref,d,p,disc),disc).v : '–'}</td>`).join('')}</tr>`;
+  });
+  out.innerHTML = h + '</tbody></table></div>';
+  $('#shareGroup').hidden = false;
+}
+function groupRows(){
+  const disc = db.s.disc, g = db.s.grp[disc], d = +g.d, fly = disc==='sprint' && !!g.fly;
+  return sortByClass(db.athletes).map(a=>{
+    let ref;
+    if (g.ref==='auto'){ ref = autoRef(a, d, fly, disc); if (ref && (disc==='run') !== isRun(ref)) ref = null; }
+    else { const [rd, rf] = g.ref.split('|').map(Number); ref = pick(runs(a).filter(e=>e.d===rd && e.fly===!!rf)); }
+    return {a, ref};
+  });
+}
+
+const openSet = new Set(), editSet = new Set();
+let lastDisc = '200|0', lastKind = 'SB';
+function renderAthletes(){
+  const list = $('#athList');
+  if (!db.athletes.length){ $('#newAthBox').open = true; list.innerHTML = ''; return; }
+  if (!openSet.has('new')) $('#newAthBox').open = false;
+  list.innerHTML = [...db.athletes].sort(byName).map(a=>{
+    const cc = classCode(a), ents = sortEntries(a.entries);
+    const meta = [cc, a.jg ? 'Jg. '+a.jg : '', ents.length + (ents.length===1 ? ' Leistung' : ' Leistungen')].filter(Boolean).join(', ');
+    const groupHtml = (title, arr) => arr.length ? `<p class="grp-title">${title}</p><ul class="plain ents">${arr.map(e=>`<li><span>${e.ev ? esc(evLabel(e)) : dLabel(e.d,e.fly)}<small>${esc(kindLabel(e))}${e.date?', '+fmtDate(e.date):''}</small></span><span class="et">${fmtVal(e)}</span><button class="icon-btn" type="button" data-del-entry="${a.id}|${e.id}" aria-label="Leistung löschen">×</button></li>`).join('')}</ul>` : '';
+    return `<details class="block" data-ath="${a.id}"${openSet.has(a.id)?' open':''}>
+      <summary><span class="sum"><h3>${esc(a.name)}</h3><span class="tag">${esc(meta)}</span></span></summary>
+      <div class="inner">
+        ${ents.length ? groupHtml('Sprint', ents.filter(e=>!e.ev && !isRun(e))) + groupHtml('Lauf', ents.filter(e=>!e.ev && isRun(e))) + groupHtml('Sprung, Wurf und Hürden', a.entries.filter(e=>e.ev)) : '<p class="note" style="margin-top:0">Noch keine Leistungen.</p>'}
+        <h4>Leistung eintragen</h4>
+        <div class="fg" data-form="${a.id}">
+          <label class="f"><span>Disziplin</span><select data-f="disc">${discOptions(lastDisc, true)}</select></label>
+          <label class="f"><span data-vlabel>Zeit</span><input type="text" inputmode="decimal" placeholder="14,20" data-f="t"></label>
+          <label class="f" data-cust hidden><span>Strecke (m)</span><input type="number" inputmode="decimal" min="1" data-f="d"></label>
+          <label class="chk" data-cust hidden><input type="checkbox" data-f="fly"> fliegend</label>
+          <label class="f"><span>Art</span><select data-f="kind"><option value="SB"${lastKind==='SB'?' selected':''}>SB (Saison)</option><option value="PB"${lastKind==='PB'?' selected':''}>PB</option><option value="Test"${lastKind==='Test'?' selected':''}>Test</option></select></label>
+          <label class="f"><span>Datum (optional)</span><input type="date" data-f="date"></label>
+        </div>
+        <div class="btns"><button class="btn primary" type="button" data-add-entry="${a.id}">Eintragen</button></div>
+        <p class="warn" data-err="${a.id}" hidden></p>
+        <div class="btns">
+          <button class="btn small" type="button" data-use="${a.id}">Im Rechner wählen</button>
+          <button class="btn small" type="button" data-edit="${a.id}">Bearbeiten</button>
+        </div>
+        <div class="editbox" data-editbox="${a.id}"${editSet.has(a.id)?'':' hidden'}>
+          <div class="fg">
+            <label class="f full"><span>Name</span><input type="text" value="${esc(a.name)}" data-e="name"></label>
+            <label class="f"><span>Jahrgang</span><input type="number" inputmode="numeric" value="${a.jg||''}" data-e="jg"></label>
+            <label class="f"><span>Geschlecht</span><select data-e="g"><option value="">–</option><option value="m"${a.g==='m'?' selected':''}>männlich</option><option value="w"${a.g==='w'?' selected':''}>weiblich</option></select></label>
+          </div>
+          <div class="btns">
+            <button class="btn primary small" type="button" data-save-ath="${a.id}">Speichern</button>
+            <button class="btn danger small" type="button" data-del-ath="${a.id}">Athlet löschen</button>
+          </div>
+        </div>
+      </div>
+    </details>`;
+  }).join('');
+}
+
+/* ---------- Kaderrichtwerte ---------- */
+const NORMS = {"m":{"LK":{"14":{"L100":12.0,"H80":11.8,"L800":130.0,"L3000":610.0,"THOC":1.76,"TSTA":3.2,"TWEI":5.8,"TDRE":11.8,"TKUG":{"v":13.25,"ev":"TKUG_4000","note":"4,0 kg"},"TDIS":{"v":40.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":40.0,"ev":"THAM_4000","note":"4,0 kg"},"TSPE":{"v":45.0,"ev":"TSPE_0600","note":"600 g"},"MK":{"v":4700,"note":"Neunkampf"}},"15":{"L100":11.6,"L300":37.5,"H80":11.2,"H300":41.3,"L800":124.0,"L3000":580.0,"HI1500":295.0,"THOC":1.85,"TSTA":3.6,"TWEI":6.2,"TDRE":12.5,"TKUG":{"v":15.0,"ev":"TKUG_4000","note":"4,0 kg"},"TDIS":{"v":48.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":48.0,"ev":"THAM_4000","note":"4,0 kg"},"TSPE":{"v":52.0,"ev":"TSPE_0600","note":"600 g"},"MK":{"v":5000,"note":"Neunkampf"}},"16":{"L100":11.3,"L200":23.2,"L400":51.75,"H110":14.9,"H400":57.9,"L800":118.5,"L1500":250.0,"L3000":550.0,"HI2000":390.0,"THOC":1.92,"TSTA":4.1,"TWEI":6.55,"TDRE":13.4,"TKUG":{"v":15.25,"ev":"TKUG_5000","note":"5,0 kg"},"TDIS":{"v":45.0,"ev":"TDIS_1500","note":"1,5 kg"},"THAM":{"v":50.0,"ev":"THAM_5000","note":"5,0 kg"},"TSPE":{"v":54.0,"ev":"TSPE_0700","note":"700 g"},"MK":{"v":6250,"note":"Zehnkampf"}},"17":{"L100":11.1,"L200":22.6,"L400":50.5,"H110":14.5,"H400":56.2,"L800":116.5,"L1500":244.0,"L3000":535.0,"HI2000":380.0,"THOC":1.96,"TSTA":4.3,"TWEI":6.85,"TDRE":13.9,"TKUG":{"v":16.0,"ev":"TKUG_5000","note":"5,0 kg"},"TDIS":{"v":49.0,"ev":"TDIS_1500","note":"1,5 kg"},"THAM":{"v":56.0,"ev":"THAM_5000","note":"5,0 kg"},"TSPE":{"v":59.0,"ev":"TSPE_0700","note":"700 g"},"MK":{"v":6500,"note":"Zehnkampf"}},"18":{"L100":10.95,"L200":22.2,"L400":49.5,"H110":{"v":14.5,"note":"U20"},"H400":55.0,"L800":114.5,"L1500":237.0,"L3000":525.0,"L5000":915.0,"HI2000":370.0,"HI3000":585.0,"THOC":2.0,"TSTA":4.6,"TWEI":7.1,"TDRE":14.5,"TKUG":{"v":16.0,"ev":"TKUG_6000","note":"6,0 kg"},"TDIS":{"v":48.0,"ev":"TDIS_1750","note":"1,75 kg"},"THAM":{"v":55.0,"ev":"THAM_6000","note":"6,0 kg"},"TSPE":{"v":58.0,"ev":"TSPE_0800","note":"800 g"},"MK":{"v":6650,"note":"Zehnkampf"}}},"NK2":{"15":{"L100":10.95,"L300":35.5,"H80":10.6,"H300":39.5,"L800":119.0,"L3000":540.0,"HI1500":270.0,"THOC":1.95,"TSTA":4.2,"TWEI":6.7,"TDRE":13.3,"TKUG":{"v":16.0,"ev":"TKUG_4000","note":"4,0 kg"},"TDIS":{"v":53.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":58.0,"ev":"THAM_4000","note":"4,0 kg"},"TSPE":{"v":60.0,"ev":"TSPE_0600","note":"600 g"},"MK":{"v":5500,"note":"Neunkampf"}},"16":{"L100":10.85,"L200":22.0,"L400":48.8,"H110":14.3,"H400":54.6,"L800":114.0,"L3000":528.0,"HI2000":365.0,"THOC":2.03,"TSTA":4.5,"TWEI":6.9,"TDRE":14.0,"TKUG":{"v":15.5,"ev":"TKUG_5000","note":"5,0 kg"},"TDIS":{"v":50.0,"ev":"TDIS_1500","note":"1,5 kg"},"THAM":{"v":58.0,"ev":"THAM_5000","note":"5,0 kg"},"TSPE":{"v":60.0,"ev":"TSPE_0700","note":"700 g"},"MK":{"v":6800,"note":"Zehnkampf"}}}},"w":{"LK":{"14":{"L100":12.9,"H80":12.3,"L800":143.0,"L2000":425.0,"THOC":1.6,"TSTA":2.7,"TWEI":5.2,"TDRE":10.2,"TKUG":{"v":11.5,"ev":"TKUG_3000","note":"3,0 kg"},"TDIS":{"v":30.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":35.0,"ev":"THAM_3000","note":"3,0 kg"},"TSPE":{"v":36.0,"ev":"TSPE_0500","note":"500 g"},"MK":{"v":3500,"note":"Siebenkampf"}},"15":{"L100":12.6,"L300":42.0,"H80":12.0,"H300":46.0,"L800":140.0,"L3000":650.0,"HI1500":340.0,"THOC":1.65,"TSTA":3.0,"TWEI":5.4,"TDRE":10.8,"TKUG":{"v":12.5,"ev":"TKUG_3000","note":"3,0 kg"},"TDIS":{"v":34.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":42.0,"ev":"THAM_3000","note":"3,0 kg"},"TSPE":{"v":40.0,"ev":"TSPE_0500","note":"500 g"},"MK":{"v":3700,"note":"Siebenkampf"}},"16":{"L100":12.35,"L200":25.6,"L400":59.0,"H100":{"v":14.7,"note":"U18, U20: 15,25"},"H400":65.5,"L800":137.0,"L1500":290.0,"L3000":630.0,"HI2000":460.0,"THOC":1.69,"TSTA":3.2,"TWEI":5.5,"TDRE":11.35,"TKUG":{"v":13.5,"ev":"TKUG_3000","note":"3,0 kg"},"TDIS":{"v":37.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":45.0,"ev":"THAM_3000","note":"3,0 kg"},"TSPE":{"v":43.0,"ev":"TSPE_0500","note":"500 g"},"MK":{"v":4600,"note":"Siebenkampf"}},"17":{"L100":12.2,"L200":25.2,"L400":57.5,"H100":{"v":14.3,"note":"U18, U20: 14,80"},"H400":64.0,"L800":134.0,"L1500":282.5,"L3000":610.0,"HI2000":445.0,"THOC":1.71,"TSTA":3.4,"TWEI":5.65,"TDRE":11.7,"TKUG":{"v":14.25,"ev":"TKUG_3000","note":"3,0 kg"},"TDIS":{"v":40.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":52.0,"ev":"THAM_3000","note":"3,0 kg"},"TSPE":{"v":46.0,"ev":"TSPE_0500","note":"500 g"},"MK":{"v":4800,"note":"Siebenkampf"}},"18":{"L100":12.1,"L200":24.8,"L400":56.5,"H100":{"v":14.3,"note":"U20"},"H400":62.5,"L800":131.0,"L1500":275.0,"L3000":590.0,"L5000":1080.0,"HI2000":430.0,"HI3000":665.0,"THOC":1.73,"TSTA":3.6,"TWEI":5.8,"TDRE":12.05,"TKUG":{"v":13.5,"ev":"TKUG_4000","note":"4,0 kg"},"TDIS":{"v":43.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":50.0,"ev":"THAM_4000","note":"4,0 kg"},"TSPE":{"v":45.0,"ev":"TSPE_0600","note":"600 g"},"MK":{"v":4900,"note":"Siebenkampf"}}},"NK2":{"15":{"L100":12.35,"L300":40.0,"H80":11.45,"H300":44.0,"L800":136.0,"L2000":398.0,"L3000":630.0,"HI1500":308.0,"THOC":1.71,"TSTA":3.5,"TWEI":5.6,"TDRE":11.9,"TKUG":{"v":13.5,"ev":"TKUG_3000","note":"3,0 kg"},"TDIS":{"v":39.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":52.0,"ev":"THAM_3000","note":"3,0 kg"},"TSPE":{"v":45.0,"ev":"TSPE_0500","note":"500 g"},"MK":{"v":3900,"note":"Siebenkampf"}},"16":{"L100":12.1,"L200":24.7,"L400":55.75,"H100":13.85,"H400":62.5,"L800":133.0,"L3000":605.0,"HI2000":425.0,"THOC":1.73,"TSTA":3.7,"TWEI":5.8,"TDRE":12.2,"TKUG":{"v":14.5,"ev":"TKUG_3000","note":"3,0 kg"},"TDIS":{"v":42.0,"ev":"TDIS_1000","note":"1,0 kg"},"THAM":{"v":57.0,"ev":"THAM_3000","note":"3,0 kg"},"TSPE":{"v":47.0,"ev":"TSPE_0500","note":"500 g"},"MK":{"v":5150,"note":"Siebenkampf"}}}}};
+const NORM_ROWS = [['L100','100 m','s'],['L200','200 m','s'],['L300','300 m','s'],['L400','400 m','s'],
+  ['H80','80 m Hürden','s'],['H100','100 m Hürden','s'],['H110','110 m Hürden','s'],['H300','300 m Hürden','s'],['H400','400 m Hürden','s'],
+  ['L800','800 m','s'],['L1500','1.500 m','s'],['L2000','2.000 m','s'],['L3000','3.000 m','s'],['L5000','5.000 m','s'],
+  ['HI1500','1.500 m Hindernis','s'],['HI2000','2.000 m Hindernis','s'],['HI3000','3.000 m Hindernis','s'],
+  ['THOC','Hochsprung','m'],['TSTA','Stabhochsprung','m'],['TWEI','Weitsprung','m'],['TDRE','Dreisprung','m'],
+  ['TKUG','Kugelstoß','m'],['TDIS','Diskuswurf','m'],['THAM','Hammerwurf','m'],['TSPE','Speerwurf','m'],
+  ['MK','Mehrkampf','pts']];
+const normSpec = x => (x && typeof x === 'object') ? x : (x == null ? null : {v:x});
+function normAt(g, level, age, key){
+  const lv = NORMS[g] && NORMS[g][level] && NORMS[g][level][age];
+  return lv ? normSpec(lv[key]) : null;
+}
+function fmtNorm(v, unit){ return unit === 's' ? fmtT(v,2) : unit === 'pts' ? num(v,0) + ' P.' : num(v,2) + ' m'; }
+function bestFor(a, key, spec){
+  let list;
+  if (key === 'MK') list = a.entries.filter(e=>e.ev && /^M/.test(e.ev) && !/^MBL/.test(e.ev));
+  else if (/^HI/.test(key)) list = a.entries.filter(e=>e.ev && /^HI/.test(e.ev));
+  else if (/^H\d/.test(key)) list = a.entries.filter(e=>e.ev && e.ev.split('_')[0] === key);
+  else if (/^L\d/.test(key)){ const d = +key.slice(1); list = runs(a).filter(e=>e.d === d && !e.fly); }
+  else if (spec && spec.ev) list = a.entries.filter(e=>e.ev === spec.ev);
+  else list = a.entries.filter(e=>e.ev && e.ev.split('_')[0] === key);
+  if (!list.length) return null;
+  const hi = /^T/.test(key) || key === 'MK';
+  return list.slice().sort((x,y)=> hi ? value(y)-value(x) : value(x)-value(y))[0];
+}
+function normCell(spec, best, unit, key){
+  if (!spec) return '–';
+  let html = fmtNorm(spec.v, unit);
+  if (spec.note) html += '<br><small>' + esc(spec.note) + '</small>';
+  if (best){
+    const hi = /^T/.test(key) || key === 'MK';
+    const bv = value(best);
+    const met = hi ? bv >= spec.v : bv <= spec.v;
+    const gap = Math.abs(bv - spec.v);
+    html += met ? '<span class="met">erfüllt</span>'
+                : '<span class="gapv">noch ' + (unit === 's' ? num(gap, gap < 10 ? 2 : 0) + ' s' : unit === 'pts' ? num(gap,0) + ' P.' : num(gap,2) + ' m') + '</span>';
+  }
+  return html;
+}
+function renderNorms(){
+  const a = current(), n = db.s.norm, out = $('#normOut');
+  $('#nChips').innerHTML = [['lk','Landeskader'],['nk2','NK2'],['all','alle Disziplinen']]
+    .map(([k,l])=>`<button type="button" class="qchip${n[k]?' on':''}" data-n="${k}">${l}</button>`).join('');
+  if (!a){ out.innerHTML = '<div class="info">Noch keine Athleten.</div>'; return; }
+  if (!a.jg || !a.g){ out.innerHTML = `<div class="info">Für ${esc(a.name)} fehlt ${!a.jg ? 'der Jahrgang' : 'das Geschlecht'}. <button class="linkbtn" type="button" data-go="athleten" data-open="${a.id}">Jetzt ergänzen</button></div>`; return; }
+  const age = Y - a.jg;
+  if (age < 14 || age > 18){
+    out.innerHTML = `<div class="info">Für ${esc(a.name)} (${age} Jahre) gibt es in dieser Übersicht keine Richtwerte. Die Kaderrichtwerte für Landeskader und NK2 decken 14 bis 18 Jahre ab.</div>`;
+    return;
+  }
+  if (!n.lk && !n.nk2){ out.innerHTML = '<div class="info">Mindestens eine Kaderstufe einblenden.</div>'; return; }
+  const rows = NORM_ROWS.map(([key,label,unit])=>{
+    const lk = n.lk ? normAt(a.g,'LK',age,key) : null;
+    const nk = n.nk2 ? normAt(a.g,'NK2',age,key) : null;
+    if (!lk && !nk) return null;
+    const best = bestFor(a, key, lk || nk);
+    if (!best && !n.all) return null;
+    return {key,label,unit,lk,nk,best};
+  }).filter(Boolean);
+  if (!rows.length){
+    out.innerHTML = `<div class="info">Für ${esc(a.name)} gibt es noch keine Leistung in einer Disziplin mit Richtwert. Mit „alle Disziplinen“ siehst du trotzdem die Werte für ${age} Jahre.</div>`;
+    return;
+  }
+  let h = `<div class="block-head"><h3>${esc(a.name)}</h3><span class="tag">${esc(classCode(a))}, ${age} Jahre</span></div>`;
+  h += `<div class="tw"><table class="ov nw"><thead><tr><th>Disziplin</th><th>Leistung</th>${n.lk?'<th>Landeskader</th>':''}${n.nk2?'<th>NK2</th>':''}</tr></thead><tbody>`;
+  rows.forEach(r=>{
+    h += `<tr><td>${esc(r.label)}</td><td class="big">${r.best ? fmtVal(r.best) : '–'}${r.best ? '<br><small>'+esc(kindLabel(r.best))+'</small>' : ''}</td>`;
+    if (n.lk) h += `<td>${normCell(r.lk, r.best, r.unit, r.key)}</td>`;
+    if (n.nk2) h += `<td>${normCell(r.nk, r.best, r.unit, r.key)}</td>`;
+    h += '</tr>';
+  });
+  out.innerHTML = `<div class="block">${h}</tbody></table></div></div>`;
+}
+
+const MOVES = {"sprint": {"label": "Sprint", "sub": "Sprint, Antritt, Staffel", "chain": ["Fuß", "Wade", "Knie", "Hüfte", "Rumpf", "Arme"], "idea": "Vortrieb entsteht beim Druck gegen den Boden, nicht beim Nachvornziehen des Beins. Die Hüftstreckung ist der Motor, der Fuß gibt die Kraft ab. Die Kontaktzeit liegt bei etwa einer Zehntelsekunde, daher zählt, wie schnell Kraft kommt, nicht wie viel.", "motor": [["Gesäßmuskulatur", "streckt die Hüfte, der eigentliche Vortrieb"], ["Hintere Oberschenkel", "strecken die Hüfte mit und ziehen den Fuß aktiv nach unten"], ["Wade und Achillessehne", "federn den Bodenkontakt ab und geben ihn zurück"], ["Vordere Oberschenkel", "fangen die Landung ab und strecken das Knie beim Abdruck"]], "stab": [["Tiefe Bauchmuskeln und Rückenstrecker", "halten das Becken aufrecht, sonst sackt die Hüfte ab"], ["Seitliche Gesäßmuskulatur", "verhindert, dass das Becken zur Schwungbeinseite kippt"], ["Fußmuskulatur", "hält das Längsgewölbe, damit der Fuß nicht einsinkt"]], "help": [["Hüftbeuger", "bringt das Knie nach vorn oben"], ["Schulter und oberer Rücken", "Armarbeit gibt Rhythmus und hält den Oberkörper ruhig"]], "weak": "Die hinteren Oberschenkel sind die häufigste Verletzungsstelle im Sprint, weil sie beim Nachvornschwingen bremsen müssen. Zweite typische Schwachstelle ist der Rumpf: Wer nach 40 Metern in der Hüfte einknickt, verliert dort mehr Zeit als am Start.", "ex": [["Hüftheben einbeinig", "3 × 8 je Seite, Hüfte oben eine Sekunde halten"], ["Beinbeuger-Absenken (Nordic)", "ab U16, 3 × 5, sehr langsam absenken"], ["Fußgelenksprünge und Seilspringen", "3 × 20, kurzer Bodenkontakt, Knie fast gestreckt"], ["Ausfallschritte und Kniebeugen", "3 × 8, Knie über dem Fuß"], ["Unterarmstütz vorn und seitlich", "3 × 30 s, ohne Durchhängen"], ["Lauf-ABC", "Skippings und Anfersen als Technik, nicht als Kondition"]]}, "absprung": {"label": "Absprung", "sub": "Weit-, Hoch-, Dreisprung", "chain": ["Fuß", "Wade", "Knie", "Hüfte", "Rumpf", "Schwungarm"], "idea": "Der Absprung dauert etwa 0,12 Sekunden. In dieser Zeit wird kaum Kraft neu erzeugt, sondern der Anlaufschwung umgelenkt. Der Körper muss steif genug sein, damit er nicht einsackt: Was nachgibt, geht als Höhe verloren.", "motor": [["Wade und Achillessehne", "tragen die Hauptlast beim Abdruck und wirken wie eine Feder"], ["Vordere Oberschenkel", "fangen das Einsinken im Knie ab"], ["Gesäßmuskulatur", "streckt die Hüfte und richtet den Körper auf"]], "stab": [["Seitliche Gesäßmuskulatur", "hält das Knie in der Spur, damit es nicht nach innen kippt"], ["Schräge Bauchmuskeln", "verhindern die Drehung um die Längsachse in der Luft"], ["Fußmuskulatur", "stabilisiert das Sprunggelenk auf dem Balken"], ["Rückenstrecker", "hält den Oberkörper aufrecht, sonst kippt der Sprung nach vorn"]], "help": [["Hüftbeuger des Schwungbeins", "reißt das Knie nach oben, das bringt zusätzliche Höhe"], ["Schultern", "der Armeinsatz nach oben unterstützt den Absprung spürbar"]], "weak": "Kippt das Knie beim Absprung nach innen, fehlt fast immer die seitliche Hüfte. Zweite Stelle ist der Fuß: Wer wackelig auf dem Balken steht, bremst unbewusst ab. Achillessehne und Ferse melden sich bei zu viel Sprungvolumen, besonders im Wachstum.", "ex": [["Einbeinige Sprünge und Hüpfserien", "3 × 8 je Seite, leise landen"], ["Einbeinige Kniebeuge zum Kasten", "3 × 6 je Seite, Knie über dem zweiten Zeh"], ["Wadenheben einbeinig", "3 × 12, auch mit gebeugtem Knie"], ["Seitlicher Unterarmstütz mit Beinheben", "3 × 10 je Seite"], ["Niedersprünge vom Kasten", "ab U16, 3 × 5, sofort wieder abspringen"], ["Einbeinstand auf weichem Untergrund", "3 × 30 s je Seite"]]}, "wurf": {"label": "Wurf über Kopf", "sub": "Speer, Ball, Schlagwurf", "chain": ["Boden", "Beine", "Hüfte", "Rumpf", "Schulter", "Hand"], "idea": "Der Wurf beginnt am Boden. Beine und Hüfte drehen zuerst nach vorn, der Rumpf überträgt, der Arm kommt zuletzt und am schnellsten. Deshalb ist der Wurfarm der schwächste Teil der Kette, wenn der Rest nicht mitarbeitet.", "motor": [["Beinstreckmuskulatur", "baut den Druck gegen das Stemmbein auf"], ["Gesäß und Hüftdreher", "drehen das Becken in die Wurfrichtung"], ["Schräge Bauchmuskeln", "übertragen die Drehung vom Becken in den Brustkorb"], ["Breiter Rückenmuskel und Brustmuskel", "ziehen den Arm nach vorn"]], "stab": [["Gerade und tiefe Bauchmuskeln", "halten die Bogenspannung, ohne dass der untere Rücken überstreckt"], ["Schulterblattmuskeln", "geben dem Oberarm ein festes Widerlager"], ["Rotatorenmanschette", "zentriert den Oberarmkopf, schützt die Schulter"], ["Stemmbein", "blockiert die Vorwärtsbewegung, damit der Oberkörper überholt"]], "help": [["Trizeps und Unterarm", "der letzte Impuls über Ellenbogen und Handgelenk"], ["Hintere Schulter", "bremst den Arm nach dem Abwurf ab"]], "weak": "Schulterschmerzen beim Werfen kommen fast nie von einer zu schwachen Schulter, sondern von einem Rumpf, der die Kraft nicht überträgt, oder von einer Technik, bei der seitlich geschleudert wird. Bevor mehr Wurfumfang kommt, gehört die Rumpf- und Schulterblattarbeit ins Programm.", "ex": [["Medizinball über den Kopf nach vorn", "3 × 8, aus den Beinen anschieben"], ["Rotationswürfe gegen die Wand", "3 × 8 je Seite, Becken führt"], ["Außenrotation mit Gummiband", "3 × 12 je Seite, Ellenbogen am Körper"], ["Schulterblatt-Zug mit Band", "3 × 12, Schulterblätter nach hinten unten"], ["Seitlicher Unterarmstütz", "3 × 30 s je Seite"], ["Brücke und Hüftheben", "3 × 10, gegen das Hohlkreuz beim Abwurf"]]}, "stoss": {"label": "Stoß und Drehwurf", "sub": "Kugel, Diskus, Hammer", "chain": ["Boden", "Beine", "Hüfte", "Rumpf", "Brust", "Arm"], "idea": "Hier zählt, wie lange und wie kräftig das Gerät beschleunigt wird. Die Reihenfolge ist Bein, Hüfte, Brust, Arm. Wer mit dem Arm beginnt, verkürzt den Weg und verliert den größten Teil der möglichen Weite.", "motor": [["Beinstreckmuskulatur", "erzeugt den Druck aus der Auslage heraus"], ["Gesäß und Hüftdreher", "drehen die Hüfte unter dem Oberkörper durch"], ["Brustmuskel und vordere Schulter", "drücken das Gerät nach vorn oben"], ["Trizeps", "streckt den Arm im letzten Moment"]], "stab": [["Gesamte Rumpfmuskulatur", "überträgt die Beinkraft nach oben, hier geht sonst am meisten verloren"], ["Rückenstrecker", "hält die Auslage, ohne zusammenzusacken"], ["Standbein und Sprunggelenk", "halten den Druck, wenn sich der Körper dreht"]], "help": [["Handgelenk und Finger", "letzter Impuls beim Kugelstoß"], ["Schulterblattmuskeln", "geben dem Stoßarm Halt"]], "weak": "Typisch ist der reine Armstoß: Die Beine sind schon fertig, bevor der Arm kommt. Das ist meist ein Rhythmusproblem und ein Rumpfproblem zugleich. Bei Kindern zuerst den Standstoß und die Beinstreckung festigen, bevor Gewicht oder Technikvarianten kommen.", "ex": [["Kniebeuge und Frontkniebeuge", "3 × 8, Technik vor Gewicht, Zusatzlast ab U18"], ["Medizinballstoß aus der Hocke", "3 × 8, aus den Beinen heraus"], ["Rotation mit Band oder Partner", "3 × 10 je Seite"], ["Überkopfdrücken mit leichter Last", "3 × 10, Rippen unten lassen"], ["Unterarmstütz mit Zug", "3 × 8 je Seite, Hüfte bleibt ruhig"], ["Sprünge aus dem Stand", "3 × 6, für die schnelle Beinstreckung"]]}, "huerden": {"label": "Hürden", "sub": "Sprint- und Langhürden", "chain": ["Fuß", "Knie", "Hüfte", "Rumpf", "Schulter"], "idea": "Hürdenlauf ist Sprint plus Hüftbeweglichkeit. Die Muskeln sind dieselben wie beim Sprint, dazu kommt, dass die Hüfte in großer Öffnung noch Kraft bringen muss und der Rumpf die Drehung aushält.", "motor": [["Gesäß und hintere Oberschenkel", "wie im Sprint der Vortrieb zwischen den Hürden"], ["Hüftbeuger des Schwungbeins", "führt das Knie schnell und gerade nach vorn"], ["Wade", "kurzer, aktiver Bodenkontakt bei der Landung"]], "stab": [["Schräge Bauchmuskeln", "halten den Oberkörper gerade, obwohl die Beine asymmetrisch arbeiten"], ["Seitliche Gesäßmuskulatur", "stabilisiert das Standbein beim Überlaufen"], ["Rückenstrecker", "erlaubt die Vorlage, ohne einzuknicken"]], "help": [["Adduktoren", "führen das Nachziehbein seitlich an der Hürde vorbei"], ["Arme", "der Gegenarm balanciert das Schwungbein aus"]], "weak": "Steife Hüften zwingen zum Springen statt Überlaufen. Zweite Stelle sind die Adduktoren, die beim Nachziehbein in großer Öffnung arbeiten müssen. Beide brauchen Beweglichkeit mit Spannung, nicht nur Dehnen.", "ex": [["Hürdenmobilisation im Gehen", "3 × 6 je Seite, über und unter der Hürde"], ["Nachziehbein an der Hürde seitlich", "3 × 8 je Seite, im Gehen"], ["Schwungbein-Anheben mit Band", "3 × 10 je Seite"], ["Adduktoren kräftigen, Ball zwischen den Knien", "3 × 10 s halten"], ["Seitlicher Unterarmstütz", "3 × 30 s je Seite"], ["Sprintübungen wie im Sprintbereich", "Rhythmus hat Vorrang vor Höhe"]]}, "lauf": {"label": "Mittel und Lang", "sub": "ab 800 m", "chain": ["Fuß", "Wade", "Hüfte", "Rumpf", "Schulter"], "idea": "Hier geht es nicht um maximale Kraft, sondern darum, die Haltung über Hunderte von Schritten zu behalten. Ermüdet der Rumpf, kippt das Becken, der Schritt wird kürzer und der Fußaufsatz wandert nach vorn. Das kostet mehr Zeit als jede fehlende Wade.", "motor": [["Wade und Fuß", "geben bei jedem Schritt die Energie zurück, entscheidend für die Laufökonomie"], ["Gesäßmuskulatur", "streckt die Hüfte, hält den Schritt lang"], ["Hintere Oberschenkel", "ziehen den Fuß unter den Körper"]], "stab": [["Rumpf in der Ausdauer", "muss lange halten, nicht stark sein, deshalb längere Halteübungen"], ["Seitliche Gesäßmuskulatur", "hält das Becken waagerecht, gerade bei Müdigkeit"], ["Fußgewölbe", "verhindert das Einknicken nach innen"]], "help": [["Hüftbeuger", "bringt das Bein nach vorn, verkürzt sich beim vielen Sitzen"], ["Schulter und Nacken", "locker halten, verkrampfte Schultern kosten Energie"]], "weak": "Am Ende eines Laufs bricht zuerst die Haltung ein, nicht die Muskelkraft. Wer im Training nur läuft, hat oft eine schwache seitliche Hüfte. Das zeigt sich als absackendes Becken und als Knieschmerz an der Außenseite.", "ex": [["Unterarmstütz lang halten", "3 × 45 bis 60 s, Haltedauer statt Gewicht"], ["Seitstütz mit Beinheben", "3 × 12 je Seite"], ["Hüftheben einbeinig", "3 × 12 je Seite"], ["Wadenheben beidbeinig und einbeinig", "3 × 15"], ["Barfuß auf Rasen laufen", "5 bis 10 min, kräftigt den Fuß"], ["Lauf-ABC und Steigerungen", "für Schrittlänge und Haltung"]]}};
+function chainSvg(parts){
+  const W = 340, n = parts.length, gap = (W - 20) / n;
+  let h = `<svg class="chain" viewBox="0 0 ${W} 56" role="img" aria-label="Kraftweg von unten nach oben: ${parts.join(' zu ')}">`;
+  h += `<line x1="10" y1="22" x2="${W-10}" y2="22" stroke="#DEDEDC" stroke-width="2"/>`;
+  parts.forEach((t,i)=>{
+    const x = 10 + gap*i + gap/2;
+    h += `<circle cx="${x}" cy="22" r="7" fill="${i===0?'#2B2B2B':'#D7191C'}"/>`;
+    h += `<text x="${x}" y="46" text-anchor="middle">${esc(t)}</text>`;
+  });
+  h += `<text class="s" x="10" y="12">Boden</text><text class="s" x="${W-10}" y="12" text-anchor="end">Gerät oder Schritt</text></svg>`;
+  return h;
+}
+function renderMoves(){
+  const wrap = $('#mvChips'), out = $('#mvOut');
+  if (!wrap || !out) return;
+  const cur = db.s.mv && MOVES[db.s.mv] ? db.s.mv : 'sprint';
+  db.s.mv = cur;
+  wrap.innerHTML = Object.entries(MOVES).map(([k,v])=>`<button type="button" class="qchip${k===cur?' on':''}" data-mv="${k}">${esc(v.label)}</button>`).join('');
+  const m = MOVES[cur];
+  const group = (cls, title, list) => `<div class="block"><div class="rolehead"><span class="dot ${cls}"></span><h3>${title}</h3></div>${list.map(([a,b])=>`<div class="mus"><b>${esc(a)}</b><span>${esc(b)}</span></div>`).join('')}</div>`;
+  let h = `<div class="block coded"><div class="block-head"><h3>${esc(m.label)}</h3><span class="tag">${esc(m.sub)}</span></div>`;
+  h += chainSvg(m.chain);
+  h += `<p style="margin:6px 0 0">${esc(m.idea)}</p></div>`;
+  h += group('motor','Antrieb', m.motor);
+  h += group('stab','Stabilisieren', m.stab);
+  h += group('help','Unterstützen', m.help);
+  h += `<div class="block"><h3>Typische Schwachstelle</h3><p style="margin:6px 0 0">${esc(m.weak)}</p></div>`;
+  h += `<div class="block"><h3>Übungen</h3><ul class="exlist">${m.ex.map(([a,b])=>`<li><b>${esc(a)}</b><em>${esc(b)}</em></li>`).join('')}</ul><p class="note">Angaben sind Richtwerte für U16 und älter. Bei Jüngeren weniger Wiederholungen, dafür saubere Ausführung.</p></div>`;
+  out.innerHTML = h;
+}
+
+function refreshValueFields(){ document.querySelectorAll('[data-form]').forEach(updateValueField); }
+function renderAll(){
+  renderStorageWarn(); setupCalcControls(); renderCalc(); renderSettings(); renderPlan(); renderPlanRows(); renderGroup(true); renderNorms(); renderMoves(); renderAthletes(); refreshValueFields();
+}
+
+/* ---------- Leistungen zusammenführen ---------- */
+function normName(n){
+  n = String(n||'').replace(/\s+/g,' ').trim();
+  const m = n.match(/^([^,]+),\s*(.+)$/);
+  return m ? m[2] + ' ' + m[1] : n;
+}
+function findOrCreate(name, jg, g, dlvId){
+  name = normName(name).slice(0,60);
+  let a = dlvId ? db.athletes.find(x=>x.dlv===dlvId) : null;
+  if (!a) a = db.athletes.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if (!a){ a = {id:uid(), name, jg:null, g:'', entries:[], refS:null, refL:null, dlv:null}; db.athletes.push(a); }
+  if (dlvId && !a.dlv) a.dlv = dlvId;
+  if (!a.jg && jg>1900 && jg<=Y) a.jg = jg;
+  if (!a.g && (g==='m'||g==='w')) a.g = g;
+  return a;
+}
+function slot(x, e){ return (x.ev||null)===(e.ev||null) && x.d===e.d && x.fly===e.fly && x.kind===e.kind && (e.kind!=='SB' || x.season===e.season); }
+/* Rückgabe: 'new' | 'better' | 'same' */
+function mergeFaster(a, raw){
+  const e = normEntry(raw);
+  const better = (nv, ov) => higherIsBetter(e) ? nv > ov + 0.001 : nv < ov - 0.001;
+  if (e.kind==='Test'){
+    if (a.entries.some(x=>(x.ev||null)===(e.ev||null) && x.kind==='Test' && x.d===e.d && x.fly===e.fly && Math.abs(value(x)-value(e))<0.005 && x.date===e.date)) return 'same';
+    a.entries.push(e); return 'new';
+  }
+  const old = a.entries.find(x=>slot(x,e));
+  if (!old){ a.entries.push(e); return 'new'; }
+  if (better(value(e), value(old))){ if (old.ev) old.v = e.v; else old.t = e.t; old.date = e.date || old.date; return 'better'; }
+  return 'same';
+}
+const countText = c => [c.new ? c.new + ' neu' : '', c.better ? c.better + ' verbessert' : '', c.same ? c.same + ' unverändert' : ''].filter(Boolean).join(', ') || 'keine Änderungen';
+
+function germanDate(s){
+  s = (s||'').trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/);
+  if (!m) return '';
+  const y = m[3].length===2 ? '20'+m[3] : m[3];
+  return y + '-' + m[2].padStart(2,'0') + '-' + m[1].padStart(2,'0');
+}
+function discFromText(h){
+  const clean = String(h).replace(/(\d)\.(\d{3})/g,'$1$2');
+  const m = clean.match(/(\d+(?:[.,]\d+)?)\s*(km|m)?/i);
+  if (!m) return null;
+  let d = parseFloat(m[1].replace(',','.'));
+  if (/km/i.test(m[2]||'')) d *= 1000;
+  if (!(d>0)) return null;
+  return {d, fly:/fl/i.test(clean)};
+}
+function parseG(s){ s = String(s||'').trim().toLowerCase(); return /^(m|männlich|maennlich|mann|junge)/.test(s) ? 'm' : /^(w|f|weiblich|frau|mädchen)/.test(s) ? 'w' : ''; }
+
+/* Excel-Tabelle mit Kopfzeile oder Zeilen "Name; Disziplin; Zeit; Art; Datum" */
+function importTable(txt, kind, season){
+  const lines = txt.split(/\r?\n/).filter(l=>l.trim());
+  const c = {new:0, better:0, same:0}, bad = [];
+  if (!lines.length) return {c, bad};
+  const split = l => (l.includes('\t') ? l.split('\t') : l.split(';')).map(s=>s.trim().replace(/^"|"$/g,''));
+  const head = split(lines[0].replace(/^\uFEFF/,''));
+  const isHeader = head.some(h=>/^(name|nachname|vorname)$/i.test(h));
+  if (isHeader){
+    const cols = head.map(h=>{
+      if (/^name$/i.test(h)) return 'name';
+      if (/^nachname$/i.test(h)) return 'last';
+      if (/^vorname$/i.test(h)) return 'first';
+      if (/^(jahrgang|jg|geburtsjahr)$/i.test(h)) return 'jg';
+      if (/^(geschlecht|g|m\/w)$/i.test(h)) return 'g';
+      return discFromText(h);
+    });
+    lines.slice(1).forEach((line, i)=>{
+      const cells = split(line);
+      let name = '', first = '', last = '', jg = null, g = '';
+      cols.forEach((col, j)=>{
+        const v = cells[j] || '';
+        if (col==='name') name = v; else if (col==='first') first = v; else if (col==='last') last = v;
+        else if (col==='jg') jg = parseInt(v,10); else if (col==='g') g = parseG(v);
+      });
+      if (!name) name = (first + ' ' + last).trim();
+      if (!name){ bad.push(i+2); return; }
+      const a = findOrCreate(name, jg, g);
+      cols.forEach((col, j)=>{
+        if (!col || typeof col!=='object') return;
+        const t = parseTime(cells[j]);
+        if (!(t>0)) return;
+        c[mergeFaster(a, {d:col.d, fly:col.fly, t, kind: col.fly ? 'Test' : kind, season})]++;
+      });
+    });
+    return {c, bad};
+  }
+  lines.forEach((line, i)=>{
+    const [name, disc, time, k, date] = split(line);
+    const dd = discFromText(disc||''), t = parseTime(time);
+    if (!name || !dd || !(t>0)){ bad.push(i+1); return; }
+    const kk = (k||'').toUpperCase();
+    const a = findOrCreate(name);
+    c[mergeFaster(a, {d:dd.d, fly:dd.fly, t, kind: kk.startsWith('PB') ? 'PB' : kk.startsWith('T') ? 'Test' : 'SB', date:germanDate(date), season})]++;
+  });
+  return {c, bad};
+}
+
+/* DLV-Export als CSV-Datei (Spalten Id, DisciplineID, Firstname, Lastname, BestResultString, ...) */
+function parseCSV(text){
+  text = String(text).replace(/^\uFEFF/,'');
+  const first = text.split('\n')[0];
+  const sep = (first.split(';').length > first.split(',').length) ? ';' : ',';
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q){
+      if (ch === '"'){ if (text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += ch;
+    }
+    else if (ch === '"') q = true;
+    else if (ch === sep){ row.push(cell); cell = ''; }
+    else if (ch === '\n'){ row.push(cell); rows.push(row); row = []; cell = ''; }
+    else if (ch !== '\r') cell += ch;
+  }
+  if (cell !== '' || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+function dlvDistance(id){
+  let m;
+  if ((m = id.match(/^L(\d+)K(\d)$/))) return +m[1]*1000 + +m[2]*100;
+  if ((m = id.match(/^L(\d+)$/))) return +m[1];
+  if ((m = id.match(/^S(\d+)K$/))) return +m[1]*1000;
+  if (id === 'SHAL') return 21097.5;
+  if (id === 'SMAR') return 42195;
+  return null;
+}
+const isDlvExport = text => { const h = String(text).slice(0,600); return /DisciplineID/.test(h) && /BestResultString/.test(h); };
+function importDlvExport(text, kindSel, club, gFallback){
+  const rows = parseCSV(text);
+  if (rows.length < 2) return null;
+  const h = rows[0].map(x=>x.trim()), ix = k => h.indexOf(k);
+  if (['DisciplineID','Firstname','Lastname','BestResultString'].some(k=>ix(k) < 0)) return null;
+  const seen = new Set(), people = new Set(), perDisc = new Map();
+  const c = {new:0, better:0, same:0}, skip = {other:0, club:0, bad:0};
+  rows.slice(1).forEach(r=>{
+    if (r.length < 5) return;
+    const get = k => ix(k) >= 0 ? String(r[ix(k)] || '').trim() : '';
+    const id = get('Id');
+    if (id){ if (seen.has(id)) return; seen.add(id); }
+    const did = get('DisciplineID'), dText = get('Discipline') || did;
+    const d = dlvDistance(did);
+    let extra = null;
+    if (!d){
+      const raw = get('BestResultString');
+      if (/^H\d/.test(did)) extra = {ev:did, label:dText, unit:'s', v:parseTime(raw)};
+      else if (/^T/.test(did)) extra = {ev:did, label:dText, unit:'m', v:parseFloat(String(raw).replace(/\./g,'').replace(',','.'))};
+      else if (/^M/.test(did) && !/^MBL/.test(did)) extra = {ev:did, label:dText, unit:'pts', v:parseFloat(String(raw).replace(/[.\s]/g,'').replace(',','.'))};
+      if (!extra || !(extra.v > 0)){ skip.other++; return; }
+    }
+    if (club && get('OrganizationName') && !get('OrganizationName').toLowerCase().includes(club)){ skip.club++; return; }
+    const t = d ? parseTime(get('BestResultString')) : 0;
+    if (d && !(t > 0)){ skip.bad++; return; }
+    const date = germanDate(get('PerformanceDateTime').split(' ')[0]);
+    const season = date ? +date.slice(0,4) : Y;
+    const kind = kindSel === 'auto' ? (season === Y ? 'SB' : 'PB') : kindSel;
+    const ag = get('AgegroupID'), g = /^M/i.test(ag) ? 'm' : /^W/i.test(ag) ? 'w' : gFallback;
+    const a = findOrCreate(get('Firstname') + ' ' + get('Lastname'), parseInt(get('Yob'),10), g, get('PersonID') || null);
+    people.add(a.id);
+    c[mergeFaster(a, d ? {d, fly:false, t, kind, date, season} : Object.assign({kind, date, season}, extra))]++;
+    perDisc.set(d ? dLabel(d,false) : dText, (perDisc.get(d ? dLabel(d,false) : dText) || 0) + 1);
+  });
+  return {c, skip, people:people.size, perDisc};
+}
+function dlvExportMessage(res){
+  if (!res) return 'Die Datei hat nicht das Format des DLV-Exports.';
+  const total = res.c.new + res.c.better + res.c.same;
+  let msg = `${res.people} Athleten, ${total} Leistungen (${countText(res.c)}).`;
+  if (total) msg += ' ' + [...res.perDisc.entries()].map(([d,n])=>d+': '+n).join(', ') + '.';
+  if (res.skip.other) msg += ` ${res.skip.other} Ergebnisse ohne passende Disziplin übersprungen, zum Beispiel Staffeln und Blockwettkämpfe.`;
+  if (res.skip.club) msg += ` ${res.skip.club} von anderen Vereinen übersprungen.`;
+  if (res.skip.bad) msg += ` ${res.skip.bad} ohne lesbare Zeit.`;
+  return msg;
+}
+
+/* Kopierte DLV-Bestenliste: Zeilen mit Platz, Ergebnis, Wind, Name, Verein, Nat, JG, Datum, Ort */
+function parseDLV(txt){
+  const tok = txt.split(/\t|\r?\n/).map(s=>s.trim()).filter(s=>s!=='');
+  const reRes = /^(\d{1,2}:){0,2}\d{1,2},\d{1,2}\*?$|^\d{1,2}:\d{2}(:\d{2})?\*?$/;
+  const out = [];
+  for (let i = 2; i < tok.length - 2; i++){
+    if (!/^[A-Z]{3}$/.test(tok[i]) || !/^(19|20)\d{2}$/.test(tok[i+1]) || !/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(tok[i+2])) continue;
+    let res = null;
+    for (let j = Math.max(0, i-5); j <= i-3; j++){ if (reRes.test(tok[j])){ res = tok[j]; break; } }
+    const t = res ? parseTime(res) : NaN;
+    if (!(t>0)) continue;
+    out.push({name:tok[i-2], club:tok[i-1], jg:+tok[i+1], date:germanDate(tok[i+2]), t, hand:/\*/.test(res)});
+  }
+  return out;
+}
+
+/* ---------- Teilen ---------- */
+function planText(){
+  const a = current(), disc = db.s.disc; if (!a) return '';
+  const lines = [a.name + ' – ' + (disc==='run' ? 'Lauf' : 'Sprint')];
+  db.plan[disc].filter(r=>r.p.length).forEach(row=>{
+    const fly = disc==='sprint' && row.fly, ref = chosenRef(a,row.d,fly,disc);
+    lines.push(dLabel(row.d,fly) + ': ' + row.p.map(p=>pLabel(p)+' = '+outStr(target(ref,row.d,p,disc),disc)).join(', '));
+  });
+  return lines.join('\n');
+}
+function groupText(){
+  const disc = db.s.disc, g = db.s.grp[disc], ps = g.p, d = +g.d, fly = disc==='sprint' && !!g.fly;
+  const lines = [dLabel(d,fly) + ' – ' + ps.map(pLabel).join(' / ')];
+  let last = null;
+  groupRows().forEach(({a, ref})=>{
+    if (!ref) return;
+    const lbl = classLabel(a);
+    if (lbl !== last){ lines.push(''); lines.push(lbl); last = lbl; }
+    lines.push(a.name + ': ' + ps.map(p=>outStr(target(ref,d,p,disc),disc)).join(' / '));
+  });
+  return lines.join('\n');
+}
+async function shareText(text, btn){
+  if (!text) return;
+  if (navigator.share){ try { await navigator.share({text}); return; } catch(e){ if (e && e.name==='AbortError') return; } }
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch(e){
+    const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { ok = document.execCommand('copy'); } catch(_){}
+    ta.remove();
+  }
+  const old = btn.textContent; btn.textContent = ok ? 'Kopiert' : 'Kopieren nicht möglich';
+  setTimeout(()=>btn.textContent = old, 1600);
+}
+function download(name, text, type){
+  const blob = new Blob([text], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1500);
+}
+function flash(el, text){ el.textContent = text; el.hidden = false; clearTimeout(el._t); el._t = setTimeout(()=>el.hidden = true, 7000); }
+
+/* ---------- Ereignisse: Auswahl und Rechner ---------- */
+$('#selA').addEventListener('change', e=>{ db.s.sel = e.target.value; save(); renderCalc(); renderPlan(); renderNorms(); });
+document.querySelectorAll('input[name="disc"]').forEach(r=>r.addEventListener('change', e=>{
+  db.s.disc = e.target.value; save(); setupCalcControls(); renderCalc(); renderPlan(); renderPlanRows(); renderGroup(true);
+}));
+function setD(v){ const cfg = CFG[db.s.disc]; db.s.calc[db.s.disc].d = clamp(v, cfg.dMin, cfg.dMax); $('#dRange').value = db.s.calc[db.s.disc].d; save(); renderCalc(); }
+function setP(v){ const cfg = CFG[db.s.disc]; db.s.calc[db.s.disc].p = clamp(v, cfg.pMin, cfg.pMax); $('#pRange').value = db.s.calc[db.s.disc].p; save(); renderCalc(); }
+$('#dRange').addEventListener('input', e=>setD(+e.target.value));
+$('#pRange').addEventListener('input', e=>setP(+e.target.value));
+$('#dMinus').addEventListener('click', ()=>setD(db.s.calc[db.s.disc].d - CFG[db.s.disc].dStep));
+$('#dPlus').addEventListener('click', ()=>setD(db.s.calc[db.s.disc].d + CFG[db.s.disc].dStep));
+$('#pMinus').addEventListener('click', ()=>setP(db.s.calc[db.s.disc].p - CFG[db.s.disc].pStep));
+$('#pPlus').addEventListener('click', ()=>setP(db.s.calc[db.s.disc].p + CFG[db.s.disc].pStep));
+$('#dChips').addEventListener('click', e=>{ const b = e.target.closest('[data-d]'); if (b) setD(+b.dataset.d); });
+$('#pChips').addEventListener('click', e=>{ const b = e.target.closest('[data-p]'); if (b) setP(+b.dataset.p); });
+$('#cFly').addEventListener('change', e=>{ db.s.calc.sprint.fly = e.target.checked; save(); renderCalc(); });
+$('#refSel').addEventListener('change', e=>{
+  const a = current(); if (!a) return;
+  if (db.s.disc==='run') a.refL = e.target.value || null; else a.refS = e.target.value || null;
+  save(); renderCalc(); renderPlan();
+});
+$('#toPlan').addEventListener('click', ()=>{
+  const disc = db.s.disc, c = db.s.calc[disc], fly = disc==='sprint' && !!c.fly;
+  let row = db.plan[disc].find(r=>r.d===c.d && r.fly===fly);
+  if (!row){ row = {id:uid(), d:c.d, fly, p:[]}; db.plan[disc].push(row); }
+  if (!row.p.includes(c.p)) row.p.push(c.p);
+  row.p.sort((x,y)=>x-y);
+  db.plan[disc].sort((x,y)=>x.d-y.d);
+  save(); renderPlan(); renderPlanRows();
+  flash($('#toPlanMsg'), dLabel(c.d,fly) + ' bei ' + pLabel(c.p) + ' ist im Plan.');
+});
+document.querySelectorAll('input[name="mode"]').forEach(r=>r.addEventListener('change', e=>{ db.s.mode = e.target.value; save(); renderSettings(); renderCalc(); renderPlan(); renderGroup(); }));
+document.querySelectorAll('input[name="dec"]').forEach(r=>r.addEventListener('change', e=>{ db.s.dec = +e.target.value; save(); renderCalc(); renderPlan(); renderGroup(); }));
+$('#kSel').addEventListener('change', e=>{ db.s.k = +e.target.value; save(); renderCalc(); renderPlan(); renderGroup(); });
+
+/* Plan */
+$('#planRows').addEventListener('change', e=>{
+  const rowEl = e.target.closest('.prow'); if (!rowEl) return;
+  const row = db.plan[db.s.disc].find(r=>r.id===rowEl.dataset.id); if (!row) return;
+  const k = e.target.dataset.k;
+  if (k==='d'){ const v = parseFloat(String(e.target.value).replace(',','.')); if (v>0) row.d = v; else e.target.value = row.d; }
+  if (k==='fly') row.fly = e.target.checked;
+  save(); renderPlan();
+});
+$('#planRows').addEventListener('click', e=>{
+  const pc = e.target.closest('[data-rp]');
+  if (pc){
+    const row = db.plan[db.s.disc].find(r=>r.id===pc.closest('.prow').dataset.id);
+    if (row){ togglePct(row.p, +pc.dataset.rp); save(); renderPlanRows(); renderPlan(); }
+    return;
+  }
+  const b = e.target.closest('[data-del-row]'); if (!b) return;
+  db.plan[db.s.disc] = db.plan[db.s.disc].filter(r=>r.id!==b.dataset.delRow); save(); renderPlanRows(); renderPlan();
+});
+$('#addRow').addEventListener('click', ()=>{
+  const disc = db.s.disc;
+  db.plan[disc].push({id:uid(), d: disc==='run' ? 1000 : 100, fly:false, p:[disc==='run' ? 90 : 80]});
+  save(); renderPlanRows(); renderPlan();
+  const inputs = $('#planRows').querySelectorAll('input[data-k="d"]'); if (inputs.length) inputs[inputs.length-1].focus();
+});
+$('#sharePlan').addEventListener('click', e=>shareText(planText(), e.currentTarget));
+$('#shareGroup').addEventListener('click', e=>shareText(groupText(), e.currentTarget));
+
+/* Gruppe */
+$('#nChips').addEventListener('click', e=>{
+  const b = e.target.closest('[data-n]'); if (!b) return;
+  db.s.norm[b.dataset.n] = !db.s.norm[b.dataset.n]; save(); renderNorms();
+});
+$('#gRef').addEventListener('change', e=>{ db.s.grp[db.s.disc].ref = e.target.value; save(); renderGroup(); });
+$('#gD').addEventListener('input', e=>{ db.s.grp[db.s.disc].d = parseFloat(String(e.target.value).replace(',','.')) || ''; save(); renderGroup(); });
+$('#gPChips').addEventListener('click', e=>{
+  const b = e.target.closest('[data-gp]'); if (!b) return;
+  togglePct(db.s.grp[db.s.disc].p, +b.dataset.gp); save(); renderGroup();
+});
+$('#gFly').addEventListener('change', e=>{ db.s.grp[db.s.disc].fly = e.target.checked; save(); renderGroup(); });
+
+/* Athleten */
+$('#naAdd').addEventListener('click', ()=>{
+  const name = normName($('#naName').value), err = $('#naErr');
+  if (!name){ err.textContent = 'Bitte einen Namen eintragen.'; err.hidden = false; return; }
+  if (db.athletes.some(a=>a.name.toLowerCase()===name.toLowerCase())){ err.textContent = 'Diesen Namen gibt es schon.'; err.hidden = false; return; }
+  err.hidden = true;
+  const a = findOrCreate(name, parseInt($('#naJg').value,10), $('#naG').value);
+  if (db.athletes.length===1) db.s.sel = a.id;
+  openSet.add(a.id);
+  $('#naName').value = ''; $('#naJg').value = ''; $('#naG').value = '';
+  save(); renderAll();
+  const el = document.querySelector(`[data-ath="${a.id}"] [data-f="t"]`); if (el) el.focus();
+});
+$('#newAthBox').addEventListener('toggle', e=>{ e.currentTarget.open ? openSet.add('new') : openSet.delete('new'); });
+const athList = $('#athList');
+athList.addEventListener('toggle', e=>{
+  const d = e.target.closest && e.target.closest('details[data-ath]'); if (!d) return;
+  d.open ? openSet.add(d.dataset.ath) : openSet.delete(d.dataset.ath);
+}, true);
+athList.addEventListener('change', e=>{
+  if (e.target.dataset.f !== 'disc') return;
+  const form = e.target.closest('[data-form]'), kind = form.querySelector('[data-f="kind"]');
+  form.querySelectorAll('[data-cust]').forEach(el=>el.hidden = e.target.value!=='custom');
+  updateValueField(form);
+  if (e.target.value.endsWith('|1')) kind.value = 'Test';
+  else if (e.target.value.includes('|') && !/\|[01]$/.test(e.target.value) && kind.value==='Test') kind.value = 'SB';
+  else if (e.target.value!=='custom' && kind.value==='Test') kind.value = 'SB';
+});
+athList.addEventListener('click', e=>{
+  const t = e.target.closest('button'); if (!t) return;
+  const ds = t.dataset;
+  if (ds.addEntry){
+    const a = db.athletes.find(x=>x.id===ds.addEntry), form = athList.querySelector(`[data-form="${a.id}"]`), err = athList.querySelector(`[data-err="${a.id}"]`);
+    const f = k => form.querySelector(`[data-f="${k}"]`);
+    const sel = f('disc').value;
+    if (/\|(m|s|pts)$/.test(sel)){
+      const [ev, unit] = sel.split('|');
+      const raw = f('t').value;
+      const v = unit === 's' ? parseTimeFlex(raw, evDist(ev)) : parseMark(raw);
+      if (!(v > 0)){ err.textContent = unit === 's' ? 'Zeit bitte als 14,90 oder als 2,05,30 für 2:05,30 eintragen.' : 'Bitte eine Weite oder Höhe in Metern eintragen, z. B. 5,42.'; err.hidden = false; return; }
+      const entry = normEntry({ev, label:fieldLabel(sel), unit, v, kind:f('kind').value, date:f('date').value});
+      const old = entry.kind!=='Test' && a.entries.find(x=>slot(x,entry));
+      if (old){
+        if (!confirm(`Für ${fieldLabel(sel)} (${kindLabel(entry)}) ist schon ${fmtVal(old)} gespeichert. Durch ${fmtVal(entry)} ersetzen?`)) return;
+        old.v = entry.v; old.date = entry.date || old.date;
+      } else a.entries.push(entry);
+      lastDisc = sel; lastKind = f('kind').value;
+      err.hidden = true; openSet.add(a.id); save(); renderAll();
+      return;
+    }
+    let d, fly;
+    if (sel==='custom'){ d = parseFloat(String(f('d').value).replace(',','.')); fly = f('fly').checked; }
+    else { const [dd, ff] = sel.split('|'); d = +dd; fly = ff==='1'; }
+    const time = parseTimeFlex(f('t').value, d);
+    if (!(d>0)){ err.textContent = 'Bitte eine Strecke in Metern eintragen.'; err.hidden = false; return; }
+    if (!(time>0)){ err.textContent = 'Zeit bitte als Sekunden (14,20), als 2,05,30 für 2:05,30 oder als 1,37,13 für 1:37:13 eintragen.'; err.hidden = false; return; }
+    if (time / d > 1.2){ err.textContent = 'Die Zeit wirkt für diese Strecke zu langsam. Bitte prüfen.'; err.hidden = false; return; }
+    const entry = normEntry({d, fly, t:time, kind:f('kind').value, date:f('date').value});
+    const old = entry.kind!=='Test' && a.entries.find(x=>slot(x,entry));
+    if (old){
+      if (!confirm(`Für ${dLabel(d,fly)} (${kindLabel(entry)}) ist schon ${fmtT(old.t,2)} gespeichert. Durch ${fmtT(time,2)} ersetzen?`)) return;
+      old.t = entry.t; old.date = entry.date || old.date;
+    } else a.entries.push(entry);
+    lastDisc = sel==='custom' ? lastDisc : sel; lastKind = f('kind').value;
+    openSet.add(a.id); save(); renderAll();
+    return;
+  }
+  if (ds.delEntry){
+    const [aid, eid] = ds.delEntry.split('|'); const a = db.athletes.find(x=>x.id===aid);
+    const e2 = a && a.entries.find(x=>x.id===eid); if (!e2) return;
+    if (!confirm(`${dLabel(e2.d,e2.fly)} ${fmtT(e2.t,2)} löschen?`)) return;
+    a.entries = a.entries.filter(x=>x.id!==eid);
+    if (a.refS===eid) a.refS = null; if (a.refL===eid) a.refL = null;
+    save(); renderAll(); return;
+  }
+  if (ds.use){ db.s.sel = ds.use; save(); renderCalc(); renderPlan(); renderNorms(); goTo('rechner'); return; }
+  if (ds.edit){ editSet.has(ds.edit) ? editSet.delete(ds.edit) : editSet.add(ds.edit); athList.querySelector(`[data-editbox="${ds.edit}"]`).hidden = !editSet.has(ds.edit); return; }
+  if (ds.saveAth){
+    const a = db.athletes.find(x=>x.id===ds.saveAth), box = athList.querySelector(`[data-editbox="${a.id}"]`);
+    const name = normName(box.querySelector('[data-e="name"]').value);
+    if (!name){ alert('Der Name darf nicht leer sein.'); return; }
+    if (db.athletes.some(x=>x.id!==a.id && x.name.toLowerCase()===name.toLowerCase())){ alert('Diesen Namen gibt es schon.'); return; }
+    a.name = name.slice(0,60);
+    const jg = parseInt(box.querySelector('[data-e="jg"]').value,10); a.jg = (jg>1900 && jg<=Y) ? jg : null;
+    a.g = box.querySelector('[data-e="g"]').value;
+    editSet.delete(a.id); save(); renderAll(); return;
+  }
+  if (ds.delAth){
+    const a = db.athletes.find(x=>x.id===ds.delAth);
+    if (!confirm(`${a.name} mit allen Leistungen löschen?`)) return;
+    db.athletes = db.athletes.filter(x=>x.id!==a.id); if (db.s.sel===a.id) db.s.sel = null;
+    save(); renderAll();
+  }
+});
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-go]'); if (!b) return;
+  if (b.dataset.open){ openSet.add(b.dataset.open); renderAthletes(); }
+  goTo(b.dataset.go);
+});
+
+/* Daten */
+$('#xSeason').value = Y;
+$('#dlvDisc').innerHTML = discOptions('100|0', false);
+$('#tplBtn').addEventListener('click', ()=>{
+  const head = ['Name','Jahrgang','Geschlecht','30 m fl','60 m','80 m','100 m','150 m','200 m','300 m','400 m','800 m','1500 m','3000 m','5000 m'];
+  download('dtv-vorlage.csv', '\uFEFF' + head.join(';') + '\r\n' + ['Max Muster','2010','m','','','','12,21','','25,00','','','','','',''].join(';') + '\r\n', 'text/csv;charset=utf-8');
+});
+$('#csvBtn').addEventListener('click', ()=>$('#csvFile').click());
+$('#csvFile').addEventListener('change', e=>{
+  const file = e.target.files && e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    const text = String(r.result).replace(/^\uFEFF/,''); e.target.value = '';
+    if (isDlvExport(text)){ runDlvExport(text, $('#xMsg')); return; }
+    $('#xArea').value = text; flash($('#xMsg'), 'Datei geladen. Prüfen und „Übernehmen“ tippen.');
+  };
+  r.readAsText(file, 'utf-8');
+});
+$('#xBtn').addEventListener('click', ()=>{
+  if (isDlvExport($('#xArea').value)){ runDlvExport($('#xArea').value, $('#xMsg')); $('#xArea').value = ''; return; }
+  const season = parseInt($('#xSeason').value,10) || Y;
+  const {c, bad} = importTable($('#xArea').value, $('#xKind').value, season);
+  save(); renderAll();
+  let msg = 'Übernommen: ' + countText(c) + '.';
+  if (bad.length) msg += ' Nicht lesbar: Zeile ' + bad.join(', ') + '.';
+  if (!bad.length && (c.new || c.better)) $('#xArea').value = '';
+  flash($('#xMsg'), msg);
+});
+function runDlvExport(text, msgEl){
+  const res = importDlvExport(text, $('#dlvKind').value, $('#dlvClub').value.trim().toLowerCase(), $('#dlvG').value);
+  save(); renderAll();
+  msgEl.textContent = dlvExportMessage(res); msgEl.hidden = false;
+}
+$('#dlvFileBtn').addEventListener('click', ()=>$('#dlvFile').click());
+$('#dlvFile').addEventListener('change', e=>{
+  const file = e.target.files && e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ()=>{ runDlvExport(String(r.result), $('#dlvFileMsg')); e.target.value = ''; };
+  r.readAsText(file, 'utf-8');
+});
+$('#dlvBtn').addEventListener('click', ()=>{
+  if (isDlvExport($('#dlvArea').value)){ runDlvExport($('#dlvArea').value, $('#dlvMsg')); $('#dlvArea').value = ''; return; }
+  const rows = parseDLV($('#dlvArea').value);
+  if (!rows.length){ flash($('#dlvMsg'), 'Keine Ergebniszeilen erkannt. Bitte die ganze Tabelle mit Name, Verein, Jahrgang und Datum kopieren.'); return; }
+  const [dd, ff] = $('#dlvDisc').value.split('|'); const d = +dd, fly = ff==='1';
+  const club = $('#dlvClub').value.trim().toLowerCase(), kindSel = $('#dlvKind').value, g = $('#dlvG').value;
+  const c = {new:0, better:0, same:0}; let skipped = 0, hand = 0;
+  rows.forEach(r=>{
+    if (club && !r.club.toLowerCase().includes(club)){ skipped++; return; }
+    const season = r.date ? +r.date.slice(0,4) : Y;
+    const kind = kindSel==='auto' ? (season===Y ? 'SB' : 'PB') : kindSel;
+    const a = findOrCreate(r.name, r.jg, g);
+    if (r.hand) hand++;
+    c[mergeFaster(a, {d, fly, t:r.t, kind, date:r.date, season})]++;
+  });
+  save(); renderAll();
+  let msg = dLabel(d,fly) + ': ' + (c.new + c.better + c.same) + ' Leistungen erkannt (' + countText(c) + ').';
+  if (skipped) msg += ' ' + skipped + ' von anderen Vereinen übersprungen.';
+  if (hand) msg += ' Davon ' + hand + ' Handzeit' + (hand===1 ? '' : 'en') + '.';
+  if (c.new || c.better) $('#dlvArea').value = '';
+  flash($('#dlvMsg'), msg);
+});
+$('#exportBtn').addEventListener('click', ()=>{
+  download('dtv-training-' + new Date().toISOString().slice(0,10) + '.json',
+    JSON.stringify({app:'dtv-training', version:2, saved:new Date().toISOString(), athletes:db.athletes, plan:db.plan, s:db.s}, null, 2), 'application/json');
+  flash($('#dataMsg'), 'Sicherung wird gespeichert. Auf dem iPhone liegt sie in der Dateien-App unter Downloads.');
+});
+$('#importBtn').addEventListener('click', ()=>$('#importFile').click());
+$('#importFile').addEventListener('change', e=>{
+  const file = e.target.files && e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try {
+      const o = JSON.parse(reader.result);
+      if (!o || !Array.isArray(o.athletes)) throw new Error('format');
+      if (!confirm(`Sicherung mit ${o.athletes.length} Athleten laden? Die aktuellen Daten werden ersetzt.`)) return;
+      db = normalize(o); openSet.clear(); editSet.clear(); save(); renderAll();
+      flash($('#dataMsg'), 'Sicherung geladen.');
+    } catch(err){ alert('Die Datei ist keine gültige Sicherung dieser Seite.'); }
+    finally { e.target.value = ''; }
+  };
+  reader.readAsText(file);
+});
+$('#demoBtn').addEventListener('click', ()=>{
+  importTable([
+    'Name\tJahrgang\tGeschlecht\t30 m fl\t100 m\t200 m\t400 m\t800 m\t1500 m\t3000 m',
+    'Beispiel Anna\t' + (Y-15) + '\tw\t3,45\t13,20\t27,40\t\t2:28,50\t5:05,00\t',
+    'Beispiel Ben\t' + (Y-16) + '\tm\t3,10\t12,10\t25,00\t56,80\t\t\t',
+    'Beispiel Carl\t' + (Y-17) + '\tm\t\t\t\t\t2:05,40\t4:12,00\t9:05,00'
+  ].join('\n'), 'SB', Y);
+  const ben = db.athletes.find(a=>a.name==='Beispiel Ben'); if (ben) db.s.sel = ben.id;
+  save(); renderAll(); goTo('rechner');
+});
+$('#clearBtn').addEventListener('click', ()=>{
+  if (!confirm('Wirklich alle Athleten, Leistungen und Einstellungen auf diesem Gerät löschen?')) return;
+  db = normalize(null); openSet.clear(); editSet.clear(); save(); renderAll();
+});
+
+on('#mvChips', 'click', e=>{
+  const b = e.target.closest('[data-mv]'); if (!b) return;
+  db.s.mv = b.dataset.mv; save(); renderMoves();
+});
+
+/* ---------- Navigation ---------- */
+const picker = document.querySelector('.picker');
+const links = [...document.querySelectorAll('nav.jump a:not(.ext)')];
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setStick(){ document.documentElement.style.setProperty('--stick', picker.offsetHeight + 'px'); }
+function mark(id){ links.forEach(l=>l.classList.toggle('on', l.dataset.target===id)); }
+let lock = 0;
+function goTo(id){
+  const t = document.getElementById(id); if (!t) return;
+  setStick(); mark(id); lock = Date.now();
+  const top = t.getBoundingClientRect().top + window.pageYOffset - picker.offsetHeight - 6;
+  try { window.scrollTo({top, behavior: reduce ? 'auto' : 'smooth'}); } catch(err){ window.scrollTo(0, top); }
+  setTimeout(()=>{ if (Math.abs(t.getBoundingClientRect().top - picker.offsetHeight) > 40) t.scrollIntoView({block:'start'}); }, reduce ? 50 : 700);
+  const l = links.find(x=>x.dataset.target===id);
+  if (l){ const nav = l.parentElement; nav.scrollLeft = l.offsetLeft - (nav.clientWidth - l.offsetWidth)/2; }
+}
+links.forEach(l=>{
+  l.dataset.target = l.getAttribute('href').slice(1);
+  l.addEventListener('click', e=>{ e.preventDefault(); goTo(l.dataset.target); });
+});
+function onScroll(){
+  if (Date.now() - lock < 900) return;
+  const line = picker.offsetHeight + 40;
+  let cur = links[0].dataset.target;
+  document.querySelectorAll('main section').forEach(sec=>{ if (sec.getBoundingClientRect().top <= line) cur = sec.id; });
+  mark(cur);
+}
+setStick(); window.addEventListener('resize', setStick);
+window.addEventListener('scroll', onScroll, {passive:true});
+
+window.DTVT = {parseDLV, importTable, importDlvExport, target, autoRef, get db(){ return db; }};
+renderAll(); onScroll();
+})();
+</script>
+<script data-sw>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }).then(function(){
+    var v = document.querySelector('.ver'); if (v && !v.dataset.off){ v.dataset.off = 1; v.textContent += ' · offline verfügbar'; }
+  }).catch(function(){});
+}
+</script>
+</body>
+</html>

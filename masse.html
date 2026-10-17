@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="de" data-app="trainer" class="no-js">
+<head>
+<script>document.documentElement.classList.add("app")</script>
+<meta charset="utf-8">
+<script>document.documentElement.className="js";</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#D7191C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DTV1847 Trainer" data-old="DTV Maße">
+<link rel="apple-touch-icon" href="dtv-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Dürener TV 1847 Track &amp; Field – Maße, Markierungen, Geräte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F1F1F0;
+  --paper:#FFFFFF;
+  --ink:#2B2B2B;
+  --muted:#6A6A6A;
+  --line:#DEDEDC;
+  --red:#D7191C;
+  --red-deep:#A81216;
+  --track:#D7191C;
+  --track-deep:#B51518;
+  --m-weiss:#FFFFFF;
+  --m-blau:#1F5FBF;
+  --m-gelb:#F2C200;
+  --m-gruen:#1E9150;
+  --m-rot:#D63A2E;
+  --m-schwarz:#1A1A1A;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+a{color:var(--red-deep)}
+:focus-visible{outline:3px solid var(--m-gelb);outline-offset:2px}
+
+/* Kopf: Bahn mit Bahnlinien */
+.brand{background:#fff;display:flex;align-items:center;gap:14px;padding:14px 16px 12px;max-width:760px;margin:0 auto}
+.brand img{height:78px;width:auto;flex:0 0 auto}
+.wordmark{flex:1;min-width:0;max-width:430px;height:auto;display:block}
+.wm-club{font-family:var(--cond);font-weight:700;font-size:34px;fill:var(--ink)}
+.wm-tf{font-family:var(--cond);font-weight:600;font-size:17px;fill:var(--red)}
+.wm-line{stroke:var(--red);stroke-width:2}
+.hero{background:var(--red);color:#fff;padding:16px 16px 0}
+.hero-inner{max-width:760px;margin:0 auto}
+.hero h1{font-family:var(--cond);font-weight:700;font-size:38px;line-height:1;margin:0;letter-spacing:.2px}
+.hero p{margin:6px 0 14px;font-size:15px;opacity:.95}
+.lanes{height:38px;margin:0 -16px;background:repeating-linear-gradient(to bottom, rgba(255,255,255,.92) 0 2px, var(--track-deep) 2px 12px);position:relative}
+.lanes::after{content:"";position:absolute;left:68%;top:0;bottom:0;width:4px;background:#fff}
+
+.no-js .only-js{display:none!important}
+.no-js main{display:flex;flex-direction:column}
+.no-js #uebersicht{order:-1}
+.no-js .no-js-only.info{display:none}
+.js .no-js-only{display:none!important}
+.js .nojs-banner{display:none}
+.nojs-banner{background:var(--ink);color:#fff;padding:12px 16px;font-size:14.5px}
+.nojs-banner a{color:#fff;font-weight:600}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.ov{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.ov th{text-align:left;font-weight:600;color:var(--muted);font-size:12.5px;padding:4px 6px 6px;white-space:nowrap}
+table.ov td{padding:7px 6px;border-top:1px solid var(--line);vertical-align:top;white-space:nowrap}
+table.ov td:first-child{font-weight:600;white-space:normal;min-width:62px}
+table.ov small{color:var(--muted);font-size:11.5px}
+.ov-h{margin:14px 0 6px}
+/* Sticky Auswahl */
+.picker{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line)}
+.picker-inner{display:flex;gap:12px;align-items:stretch;padding:10px 12px 8px;max-width:760px;margin:0 auto}
+.bib{position:relative;flex:0 0 auto;min-width:108px;border:2px solid var(--ink);border-top:7px solid var(--red);border-radius:6px;padding:5px 12px 5px;text-align:center;background:#fff}
+.bib::before,.bib::after{content:"";position:absolute;top:4px;width:6px;height:6px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1px var(--muted)}
+.bib::before{left:5px}.bib::after{right:5px}
+.bib-code{font-family:var(--cond);font-weight:700;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.bib-sub{font-size:11.5px;color:var(--muted);line-height:1.2;margin-top:3px}
+.controls{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{text-align:center;padding:6px 4px;font-weight:600;cursor:pointer;font-size:15px}
+.seg input:checked + label{background:var(--ink);color:#fff}
+.seg input:focus-visible + label{outline:3px solid var(--m-gelb);outline-offset:-3px}
+select{appearance:none;-webkit-appearance:none;width:100%;font:600 16px var(--body);color:var(--ink);background:#fff;
+  border:1.5px solid var(--ink);border-radius:6px;padding:7px 30px 7px 10px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+nav.jump{display:flex;gap:6px;overflow-x:auto;padding:0 12px 10px;max-width:760px;margin:0 auto;scrollbar-width:none}
+nav.jump::-webkit-scrollbar{display:none}
+nav.jump a{flex:0 0 auto;text-decoration:none;color:var(--ink);font-weight:600;font-size:14px;padding:5px 12px;border-radius:999px;background:var(--bg)}
+nav.jump a.on{background:var(--red);color:#fff}
+nav.jump a.ext{background:#fff;border:1px solid var(--line)}
+
+main{max-width:760px;margin:0 auto;padding:6px 12px 40px}
+section{scroll-margin-top:calc(var(--stick,150px) + 6px);padding-top:22px}
+h2{font-family:var(--cond);font-weight:700;font-size:30px;line-height:1;margin:0 0 4px}
+.lead{margin:0 0 12px;color:var(--muted);font-size:14.5px}
+h3{font-family:var(--cond);font-weight:600;font-size:21px;line-height:1.1;margin:0}
+.block{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px;margin:0 0 10px}
+.block.coded{border-left:6px solid var(--code,var(--ink))}
+.block-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+.tag{font-size:12.5px;color:var(--muted);white-space:nowrap}
+
+dl.rows{margin:0}
+dl.rows > div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+dl.rows > div:first-child{border-top:0}
+dl.rows dt{color:var(--muted);font-size:14.5px}
+dl.rows dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+
+.chip{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.35);flex:0 0 auto}
+
+svg.strip{display:block;width:100%;height:auto;margin:4px 0 8px}
+svg.strip text{font-family:var(--cond);font-size:12px;fill:var(--ink)}
+svg.strip .lbl{fill:var(--muted);font-size:11px}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.tile{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tile .name{font-size:14px;color:var(--muted)}
+.tile .val{font-family:var(--cond);font-weight:700;font-size:36px;line-height:1.05;font-variant-numeric:tabular-nums}
+.tile .det{font-size:12.5px;color:var(--muted);line-height:1.3;margin-top:2px}
+
+.note{font-size:13.5px;color:var(--muted);margin:8px 0 0}
+.info{background:#FFF;border:1px solid var(--line);border-left:6px solid var(--red);border-radius:10px;padding:12px 14px;margin:0 0 10px;font-size:14.5px}
+
+details.block{padding:0}
+details.block > summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+details.block > summary::-webkit-details-marker{display:none}
+details.block > summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg);margin-top:-4px;flex:0 0 auto}
+details.block[open] > summary::after{transform:rotate(-135deg);margin-top:4px}
+details.block > .inner{padding:0 14px 14px}
+
+table.stagger{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14.5px}
+table.stagger th,table.stagger td{padding:6px 4px;text-align:right;border-top:1px solid var(--line)}
+table.stagger th{font-weight:600;color:var(--muted);font-size:13px;border-top:0}
+table.stagger td:first-child,table.stagger th:first-child{text-align:left}
+
+ul.plain{margin:0;padding:0;list-style:none}
+ul.plain li{padding:8px 0;border-top:1px solid var(--line);font-size:14.5px}
+ul.plain li:first-child{border-top:0}
+ul.plain b{font-weight:600}
+.codes li{display:flex;gap:10px;align-items:flex-start}
+.codes .sw{margin-top:3px;width:18px;height:18px}
+.sw.inset{background:linear-gradient(90deg,#fff 0 30%,var(--c) 30% 70%,#fff 70%)}
+.ver{display:block;margin-top:6px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+footer{max-width:760px;margin:0 auto;padding:0 12px 40px;font-size:13px;color:var(--muted)}
+
+@media (max-width:360px){ .brand img{height:64px} }
+@media (min-width:600px){
+  .brand{padding:20px 24px 16px;gap:20px}
+  .brand img{height:104px}
+  .hero{padding:24px 24px 0}
+  .lanes{margin:0 -24px}
+  .hero h1{font-size:52px}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+}
+@media (prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+</style>
+<style id="dtv-appbar">
+.appbar{display:flex;align-items:center;gap:6px;background:#2B2B2B;color:#fff;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));overflow-x:auto;scrollbar-width:none;position:relative;z-index:30}
+.appbar::-webkit-scrollbar{display:none}
+.appbar a{color:#fff;text-decoration:none;white-space:nowrap;flex:0 0 auto}
+.appbar .ab-home{display:flex;align-items:center;gap:7px;font:700 17px 'Barlow Condensed',system-ui,sans-serif;letter-spacing:.3px;margin-right:6px}
+.appbar .ab-home img{width:30px;height:30px;border-radius:7px;background:#fff}
+.appbar .ab-t{font:600 15px 'Barlow',system-ui,sans-serif;padding:8px 12px;border-radius:999px;opacity:.85}
+.appbar .ab-t.on{background:#D7191C;opacity:1}
+html[data-app] .brand{display:none!important}
+html[data-app] nav.jump a.ext{display:none!important}
+body.running .appbar{display:none}
+</style>
+</head>
+<body>
+<nav class="appbar" aria-label="Trainer-App"><a class="ab-home" href="index.html"><img src="dtv-icon.png" alt="">DTV 1847</a><a class="ab-t" href="plan.html">Planung</a><a class="ab-t" href="zirkel.html">Zirkel</a><a class="ab-t" href="training.html">Athleten</a><a class="ab-t" href="technik.html">Technik</a><a class="ab-t on" href="masse.html">Maße</a></nav>
+
+
+<div class="nojs-banner">Vorschau-Modus ohne Altersklassen-Auswahl. Die Werte aller Klassen stehen direkt darunter. Für die Auswahl die Seite in Safari öffnen.</div>
+<header>
+  <div class="brand">
+    <img src="data:image/png;base64,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" alt="Wappen Dürener TV 1847">
+    <svg class="wordmark" viewBox="0 0 300 62" role="img" aria-label="Dürener TV 1847 Track &amp; Field">
+      <text x="0" y="32" textLength="300" lengthAdjust="spacingAndGlyphs" class="wm-club">DÜRENER TV 1847</text>
+      <line x1="0" y1="50" x2="52" y2="50" class="wm-line"/>
+      <text x="150" y="57" text-anchor="middle" textLength="176" lengthAdjust="spacingAndGlyphs" class="wm-tf">TRACK &amp; FIELD</text>
+      <line x1="248" y1="50" x2="300" y2="50" class="wm-line"/>
+    </svg>
+  </div>
+  <div class="hero">
+    <div class="hero-inner">
+      <h1>Bahn, Hürden, Geräte</h1>
+      <p>Maße und Markierungen nach DLV und World Athletics</p>
+    </div>
+    <div class="lanes" aria-hidden="true"></div>
+  </div>
+</header>
+
+<div class="picker only-js">
+  <div class="picker-inner">
+    <div class="bib" aria-live="polite">
+      <div class="bib-code" id="bibCode">MJU18</div>
+      <div class="bib-sub" id="bibSub">16–17 Jahre</div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="radiogroup" aria-label="Geschlecht">
+        <input type="radio" name="g" id="gm" value="m" checked><label for="gm">männlich</label>
+        <input type="radio" name="g" id="gw" value="w"><label for="gw">weiblich</label>
+      </div>
+      <label for="cls" class="sr">Altersklasse</label>
+      <select id="cls"></select>
+    </div>
+  </div>
+  <nav class="jump" aria-label="Bereiche">
+    <a href="#wurf">Gewichte</a>
+    <a href="#huerden">Hürden</a>
+    <a href="#bahn">Bahn</a>
+    <a href="#sprung">Sprung</a>
+    <a href="#uebersicht">Alle Klassen</a>
+    <a href="#quellen">Quellen</a>
+    <a href="training.html" class="ext">Mein Training</a>
+    <a href="technik.html" class="ext">Technik</a>
+  </nav>
+</div>
+
+<main>
+
+<!-- ============ WURF ============ -->
+<section id="wurf">
+  <h2>Wurfgeräte und Gewichte</h2>
+  <p class="lead only-js">Kugel, Diskus, Hammer und Speer für die gewählte Altersklasse.</p>
+  <p class="info no-js-only">Diese Ansicht zeigt keine Auswahl. Alle Gewichte stehen in der <a href="#uebersicht">Übersicht aller Klassen</a>.</p>
+  <div id="throwOut" class="only-js"></div>
+
+  <details class="block">
+    <summary><h3>Kugelstoß-Anlage</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>Ring innen</dt><dd>2,135 m ±0,005</dd></div>
+      <div><dt>Stoßbalken Sehne</dt><dd>1,21 m ±0,01</dd></div>
+      <div><dt>Stoßbalken Breite</dt><dd>0,112–0,30 m</dd></div>
+      <div><dt>Stoßbalken Höhe</dt><dd>0,10 m ±0,008</dd></div>
+      <div><dt>Sektor</dt><dd>34,92°</dd></div>
+    </dl></div>
+  </details>
+  <details class="block">
+    <summary><h3>Diskus- und Hammerwurf-Anlage</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>Ring Diskus innen</dt><dd>2,50 m ±0,005</dd></div>
+      <div><dt>Ring Hammer innen</dt><dd>2,135 m ±0,005</dd></div>
+      <div><dt>Hammer aus Diskusring</dt><dd>mit Einlegering zulässig</dd></div>
+      <div><dt>Sektor</dt><dd>34,92°</dd></div>
+    </dl>
+    <p class="note">Wurfkäfig: Maße und Torstellungen nach IWR/WA-Regel 35 und 37; vor Ort Abnahmeprotokoll der Anlage beachten.</p></div>
+  </details>
+  <details class="block">
+    <summary><h3>Speerwurf-Anlage</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>Anlauf Länge</dt><dd>mind. 30 m</dd></div>
+      <div><dt>Hochrangige Wettkämpfe</dt><dd>mind. 33,50 m</dd></div>
+      <div><dt>Empfohlen</dt><dd>36,50 m</dd></div>
+      <div><dt>Anlaufbreite</dt><dd>4,00 m (Linien 50 mm)</dd></div>
+      <div><dt>Abwurfbogen</dt><dd>Radius 8 m, mind. 70 mm breit</dd></div>
+      <div><dt>Sektor</dt><dd>28,96°</dd></div>
+      <div><dt>Rücktrittmarke</dt><dd>4 m hinter Bogenenden</dd></div>
+    </dl></div>
+  </details>
+  <details class="block">
+    <summary><h3>Ring allgemein und Sektor abstecken</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>Ringrand</dt><dd>mind. 6 mm, weiß</dd></div>
+      <div><dt>Innenfläche tiefer</dt><dd>20 mm ±6</dd></div>
+      <div><dt>Weiße Querlinie</dt><dd>50 mm breit, je mind. 0,75 m</dd></div>
+      <div><dt>Sektor 34,92° auf 20 m</dt><dd>12,00 m Breite (je 1 m: +0,60 m)</dd></div>
+      <div><dt>Sektor 28,96° auf 20 m</dt><dd>10,00 m Breite (je 1 m: +0,50 m)</dd></div>
+      <div><dt>Sektorlinien</dt><dd>50 mm, Innenkante zählt</dd></div>
+    </dl></div>
+  </details>
+</section>
+
+<!-- ============ HÜRDEN ============ -->
+<section id="huerden">
+  <h2>Hürden und Hindernis</h2>
+  <p class="lead only-js">Werte für die gewählte Altersklasse. Die Farbe links am Block ist die übliche Bodenmarkierung der Hürdenposition.</p>
+  <p class="info no-js-only">Alle Hürdenmaße stehen in der <a href="#uebersicht">Übersicht aller Klassen</a>.</p>
+  <div id="hurdleOut" class="only-js"></div>
+
+  <details class="block">
+    <summary><h3>Bauart Hürde und Hindernis</h3></summary>
+    <div class="inner">
+      <dl class="rows">
+        <div><dt>Hürdenbreite</dt><dd>1,18–1,20 m</dd></div>
+        <div><dt>Fußlänge max.</dt><dd>0,70 m</dd></div>
+        <div><dt>Gesamtgewicht</dt><dd>mind. 10 kg</dd></div>
+        <div><dt>Toleranz Höhe</dt><dd>±3 mm</dd></div>
+        <div><dt>Oberlatte</dt><dd>70 mm ±5 breit, 10–25 mm dick</dd></div>
+        <div><dt>Kippkraft (Mitte Oberkante)</dt><dd>3,6–4,0 kg</dd></div>
+      </dl>
+      <p class="note">Hindernis (Steeple):</p>
+      <dl class="rows">
+        <div><dt>Breite Bahnhindernis</dt><dd>mind. 3,94 m</dd></div>
+        <div><dt>Breite am Wassergraben</dt><dd>3,66 m ±0,02</dd></div>
+        <div><dt>Oberer Balken</dt><dd>127 × 127 mm</dd></div>
+        <div><dt>Gewicht</dt><dd>80–100 kg</dd></div>
+        <div><dt>Wassergraben L × B</dt><dd>3,66 × 3,66 m</dd></div>
+        <div><dt>Wassertiefe am Hindernis</dt><dd>0,50 m ±0,05 auf 1,20 m, dann ansteigend</dd></div>
+      </dl>
+      <p class="note">Ältere Anlagen können tiefere Gräben (bis 0,70 m) haben.</p>
+    </div>
+  </details>
+</section>
+
+
+<!-- ============ BAHN ============ -->
+<section id="bahn">
+  <h2>Laufbahn</h2>
+  <p class="lead">400-m-Standardbahn nach World Athletics. Gilt für alle Altersklassen.</p>
+
+  <details class="block" open>
+    <summary><h3>Geometrie</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>Rundenlänge (Bahn 1)</dt><dd>400,00 m</dd></div>
+      <div><dt>Kurvenradius (Bordkante)</dt><dd>36,50 m</dd></div>
+      <div><dt>Gerade</dt><dd>84,39 m</dd></div>
+      <div><dt>Bahnbreite inkl. rechter Linie</dt><dd>1,22 m ±0,01</dd></div>
+      <div><dt>Linienbreite</dt><dd>50 mm</dd></div>
+      <div><dt>Messlinie Bahn 1</dt><dd>0,30 m von Bordkante</dd></div>
+      <div><dt>Messlinie Bahn 1 ohne Bordkante</dt><dd>0,20 m von Linie</dd></div>
+      <div><dt>Messlinie Bahn 2–8</dt><dd>0,20 m von innerer Linie</dd></div>
+      <div><dt>Querneigung max.</dt><dd>1 %</dd></div>
+      <div><dt>Gefälle in Laufrichtung max.</dt><dd>0,1 %</dd></div>
+    </dl></div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Kurvenvorgaben je Bahn</h3></summary>
+    <div class="inner">
+      <table class="stagger" id="stagger"><thead><tr><th>Bahn</th><th>200 m</th><th>400 m</th><th>800 m ≈</th><th>4×400 ≈</th></tr></thead><tbody><tr><td>1</td><td>–</td><td>–</td><td>–</td><td>–</td></tr><tr><td>2</td><td>3,52</td><td>7,04</td><td>3,53</td><td>10,56</td></tr><tr><td>3</td><td>7,35</td><td>14,70</td><td>7,38</td><td>22,09</td></tr><tr><td>4</td><td>11,18</td><td>22,37</td><td>11,26</td><td>33,63</td></tr><tr><td>5</td><td>15,02</td><td>30,03</td><td>15,15</td><td>45,19</td></tr><tr><td>6</td><td>18,85</td><td>37,70</td><td>19,06</td><td>56,76</td></tr><tr><td>7</td><td>22,68</td><td>45,36</td><td>22,99</td><td>68,36</td></tr><tr><td>8</td><td>26,52</td><td>53,03</td><td>26,94</td><td>79,97</td></tr></tbody></table>
+      <p class="note">200 m und 400 m rechnerisch aus Radius und Messlinie. 800 m und 4×400 m sind Näherungen inklusive Einlaufen nach der Abbruchlinie. Maßgeblich ist das Vermessungsprotokoll der Anlage.</p>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Startorte auf der Rundbahn</h3></summary>
+    <div class="inner"><ul class="plain">
+      <li><b>100 m, 100 m H, 110 m H:</b> Zielgerade, verlängert bis zum Start</li>
+      <li><b>200 m:</b> Beginn der zweiten Kurve, mit Kurvenvorgabe</li>
+      <li><b>400 m, 400 m H, 4×100 m:</b> Ziellinie, Vorgabe über zwei Kurven</li>
+      <li><b>4×400 m:</b> Ziellinie, Vorgabe über drei Kurven</li>
+      <li><b>800 m:</b> Ziellinie, Vorgabe über eine Kurve, danach Abbruchlinie</li>
+      <li><b>1000 m, 3000 m, 5000 m:</b> 200-m-Startbereich, Evolventenlinie</li>
+      <li><b>1500 m:</b> 100 m nach der Ziellinie, in der ersten Kurve</li>
+      <li><b>2000 m, 10.000 m:</b> Ziellinie, Evolventenlinie</li>
+      <li><b>1 Meile:</b> 9,34 m hinter der Ziellinie</li>
+      <li><b>3000 m H / 2000 m H:</b> abhängig von der Lage des Wassergrabens (innen oder außen)</li>
+    </ul></div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Staffeln und Wechselräume</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>4×100 m Wechselraum</dt><dd>30 m</dd></div>
+      <div><dt>4×100 m Bezugslinie</dt><dd>20 m nach Raumbeginn</dd></div>
+      <div><dt>4×400 m Wechselraum</dt><dd>20 m (je 10 m vor/nach Linie)</dd></div>
+      <div><dt>4×400 m in Bahnen</dt><dd>1. Läufer und 2. Läufer bis Abbruchlinie</dd></div>
+      <div><dt>Staffelstab Länge</dt><dd>0,28–0,30 m</dd></div>
+      <div><dt>Staffelstab Umfang</dt><dd>0,12–0,13 m</dd></div>
+      <div><dt>Staffelstab Gewicht</dt><dd>mind. 50 g</dd></div>
+    </dl>
+    <p class="note">Maßgeblich sind die Linien des Wechselraums, nicht die Position des Läufers. Der Stab muss innerhalb des Raums übergeben sein.</p></div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Farbcode der Markierungen</h3></summary>
+    <div class="inner">
+      <ul class="plain codes">
+        <li><span class="sw" style="background:#fff"></span><span><b>Weiß:</b> Ziellinie über die ganze Bahnbreite; Startlinien 100 m, 110 m H, 400 m, 4×100 m</span></li>
+        <li><span class="sw" style="background:var(--m-blau)"></span><span><b>Blau:</b> 110-m-Hürden, 5 × 10 cm beidseitig der Bahn. Auf blauen Bahnen stattdessen rot.</span></li>
+        <li><span class="sw" style="background:var(--m-gelb)"></span><span><b>Gelb:</b> 100-m-Hürden; gelbe Hakenlinien für die Wechselräume 4×100 m (1,10 m von der Innenlinie)</span></li>
+        <li><span class="sw" style="background:var(--m-gruen)"></span><span><b>Grün:</b> 400-m-Hürden; Abbruchlinie für 800 m und 2. Läufer 4×400 m (Bahn 2–8); Break-Point für Gruppenstart 3000/5000 m</span></li>
+        <li><span class="sw" style="background:var(--m-blau);border-radius:0"></span><span><b>Blaues Quadrat 12,5 cm:</b> Hindernispositionen, innen Bahn 1 und außen Bahn 3</span></li>
+        <li><span class="sw inset" style="--c:var(--m-blau)"></span><span><b>Weiß mit blauem Mittelteil:</b> Start 4×400 m</span></li>
+        <li><span class="sw inset" style="--c:var(--m-gruen)"></span><span><b>Weiß mit grünem Mittelteil:</b> Start 800 m und Start 2. Läufer 4×400 m</span></li>
+        <li><span class="sw" style="background:var(--m-blau)"></span><span><b>Blaue Hakenlinie:</b> Wechselraum 2. Läufer 4×400 m (0,80 m von der Innenlinie)</span></li>
+      </ul>
+      <p class="note">Jugend- und Seniorenhürden werden national meist mit Rot oder Schwarz und Zusatzzeichen (Striche, Punkte, Kreuze) markiert. Das kann je nach Anlage abweichen.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ SPRUNG ============ -->
+<section id="sprung">
+  <h2>Sprung</h2>
+  <p class="lead">Anlagen und Geräte. Nicht altersabhängig, Ausnahmen stehen in der Ausschreibung.</p>
+
+  <details class="block">
+    <summary><h3>Weitsprung</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>Anlauf</dt><dd>mind. 40 m, wenn möglich 45 m</dd></div>
+      <div><dt>Anlaufbreite</dt><dd>1,22 m ±0,01</dd></div>
+      <div><dt>Absprungbalken L × B</dt><dd>1,22 m ±0,01 × 0,20 m ±0,002</dd></div>
+      <div><dt>Balkentiefe</dt><dd>0,10 m</dd></div>
+      <div><dt>Absprunglinie bis Grube</dt><dd>1–3 m</dd></div>
+      <div><dt>Absprunglinie bis Grubenende</dt><dd>mind. 10 m</dd></div>
+      <div><dt>Grubenbreite</dt><dd>2,75–3,00 m</dd></div>
+    </dl>
+    <p class="note">In der Kinder- und U14-Leichtathletik oft Zonenabsprung, Maße laut Ausschreibung.</p></div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Dreisprung</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>Anlauf und Balken</dt><dd>wie Weitsprung</dd></div>
+      <div><dt>Balken bis Grube Männer</dt><dd>mind. 13 m (international)</dd></div>
+      <div><dt>Balken bis Grube Frauen</dt><dd>mind. 11 m (international)</dd></div>
+      <div><dt>Balken bis Grubenende</dt><dd>mind. 21 m</dd></div>
+    </dl>
+    <p class="note">National werden je nach Leistungsniveau kürzere Balkenabstände genutzt, z. B. 9 m oder 11 m in Jugendklassen.</p></div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Hochsprung</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>Anlauf</dt><dd>mind. 15 m (Topwettkämpfe 20 m)</dd></div>
+      <div><dt>Ständerabstand</dt><dd>4,00–4,04 m</dd></div>
+      <div><dt>Latte Länge</dt><dd>3,98–4,02 m</dd></div>
+      <div><dt>Latte Gewicht</dt><dd>max. 2,0 kg</dd></div>
+      <div><dt>Latte Durchmesser</dt><dd>30 mm ±1</dd></div>
+      <div><dt>Lattenenden</dt><dd>30–35 mm breit, 0,15–0,20 m lang</dd></div>
+      <div><dt>Sprungmatte</dt><dd>mind. 6 × 4 × 0,7 m</dd></div>
+    </dl></div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Stabhochsprung</h3></summary>
+    <div class="inner"><dl class="rows">
+      <div><dt>Anlauf</dt><dd>mind. 40 m, wenn möglich 45 m</dd></div>
+      <div><dt>Anlaufbreite</dt><dd>1,22 m ±0,01</dd></div>
+      <div><dt>Einstichkasten Länge (Boden)</dt><dd>1,00 m</dd></div>
+      <div><dt>Kastenbreite vorn / am Stoßbrett</dt><dd>0,60 m / 0,15 m</dd></div>
+      <div><dt>Winkel Stoßbrett</dt><dd>105°</dd></div>
+      <div><dt>Kastentiefe am Stoßbrett</dt><dd>0,20 m</dd></div>
+      <div><dt>Ständerabstand</dt><dd>4,30–4,37 m</dd></div>
+      <div><dt>Ständerverschiebung</dt><dd>0–0,80 m Richtung Matte</dd></div>
+      <div><dt>Latte Länge</dt><dd>4,48–4,52 m</dd></div>
+      <div><dt>Latte Gewicht</dt><dd>max. 2,25 kg</dd></div>
+      <div><dt>Matte hinter Nulllinie</dt><dd>mind. 6 × 6 m, Höhe mind. 0,8 m</dd></div>
+      <div><dt>Vorderteile</dt><dd>mind. 2 m lang</dd></div>
+    </dl></div>
+  </details>
+</section>
+
+<!-- ============ ÜBERSICHT ============ -->
+<section id="uebersicht">
+  <h2>Übersicht aller Klassen</h2>
+  <p class="lead">Alle Altersklassen auf einen Blick. Klassen mit gleichen Werten sind zusammengefasst.</p>
+<details class="block" open data-ov><summary><h3>Wurfgeräte: Gewichte</h3></summary><div class="inner"><h3 class="ov-h">männlich</h3><div class="tw"><table class="ov"><thead><tr><th>Klasse</th><th>Kugel</th><th>Diskus</th><th>Hammer</th><th>Speer</th></tr></thead><tbody><tr><td>MJU14</td><td>3 kg</td><td>0,75 kg</td><td>3 kg</td><td>400 g</td></tr><tr><td>MJU16</td><td>4 kg</td><td>1 kg</td><td>4 kg</td><td>600 g</td></tr><tr><td>MJU18</td><td>5 kg</td><td>1,5 kg</td><td>5 kg</td><td>700 g</td></tr><tr><td>MJU20</td><td>6 kg</td><td>1,75 kg</td><td>6 kg</td><td>800 g</td></tr><tr><td>MU23, Männer</td><td>7,26 kg</td><td>2 kg</td><td>7,26 kg</td><td>800 g</td></tr><tr><td>M30–45</td><td>7,26 kg</td><td>2 kg</td><td>7,26 kg</td><td>800 g</td></tr><tr><td>M50–55</td><td>6 kg</td><td>1,5 kg</td><td>6 kg</td><td>700 g</td></tr><tr><td>M60–65</td><td>5 kg</td><td>1 kg</td><td>5 kg</td><td>600 g</td></tr><tr><td>M70–75</td><td>4 kg</td><td>1 kg</td><td>4 kg</td><td>500 g</td></tr><tr><td>M80+</td><td>3 kg</td><td>1 kg</td><td>3 kg</td><td>400 g</td></tr></tbody></table></div><h3 class="ov-h">weiblich</h3><div class="tw"><table class="ov"><thead><tr><th>Klasse</th><th>Kugel</th><th>Diskus</th><th>Hammer</th><th>Speer</th></tr></thead><tbody><tr><td>WJU14</td><td>3 kg</td><td>0,75 kg</td><td>2 kg</td><td>400 g</td></tr><tr><td>WJU16</td><td>3 kg</td><td>1 kg</td><td>3 kg</td><td>500 g</td></tr><tr><td>WJU18</td><td>3 kg</td><td>1 kg</td><td>3 kg</td><td>500 g</td></tr><tr><td>WJU20</td><td>4 kg</td><td>1 kg</td><td>4 kg</td><td>600 g</td></tr><tr><td>WU23, Frauen</td><td>4 kg</td><td>1 kg</td><td>4 kg</td><td>600 g</td></tr><tr><td>W30–45</td><td>4 kg</td><td>1 kg</td><td>4 kg</td><td>600 g</td></tr><tr><td>W50–70</td><td>3 kg</td><td>1 kg</td><td>3 kg</td><td>500 g</td></tr><tr><td>W75+</td><td>2 kg</td><td>0,75 kg</td><td>2 kg</td><td>400 g</td></tr></tbody></table></div><p class="note">U14 und U16 zusätzlich Ballwurf mit 200 g. Senioren im Wurf-Fünfkampf zusätzlich Gewichtwurf. Kinder U8 bis U12: Geräte laut Ausschreibung.</p></div></details><details class="block" open data-ov><summary><h3>Hürden: Freiluft</h3></summary><div class="inner"><h3 class="ov-h">männlich</h3><div class="tw"><table class="ov"><thead><tr><th>Klasse</th><th>Kurzhürden</th><th>Langhürden</th></tr></thead><tbody><tr><td>MJU14</td><td><b>60 m</b> 76,2 cm<br><small>6 H.: 11,50 / 7,50 / 11,00</small></td><td>–</td></tr><tr><td>MJU16</td><td><b>80 m</b> 83,8 cm<br><small>7 H.: 13,50 / 8,60 / 14,90</small></td><td><b>300 m</b> 83,8 cm</td></tr><tr><td>MJU18</td><td><b>110 m</b> 91,4 cm<br><small>10 H.: 13,72 / 8,90 / 16,18</small></td><td><b>400 m</b> 83,8 cm</td></tr><tr><td>MJU20</td><td><b>110 m</b> 99,1 cm<br><small>10 H.: 13,72 / 9,14 / 14,02</small></td><td><b>400 m</b> 91,4 cm</td></tr><tr><td>MU23, Männer</td><td><b>110 m</b> 106,7 cm<br><small>10 H.: 13,72 / 9,14 / 14,02</small></td><td><b>400 m</b> 91,4 cm</td></tr><tr><td>M30</td><td><b>110 m</b> 106,7 cm<br><small>10 H.: 13,72 / 9,14 / 14,02</small></td><td><b>400 m</b> 91,4 cm</td></tr><tr><td>M35–45</td><td><b>110 m</b> 99,1 cm<br><small>10 H.: 13,72 / 9,14 / 14,02</small></td><td><b>400 m</b> 91,4 cm</td></tr><tr><td>M50–55</td><td><b>100 m</b> 91,4 cm<br><small>10 H.: 13,00 / 8,50 / 10,50</small></td><td><b>400 m</b> 83,8 cm</td></tr><tr><td>M60–65</td><td><b>100 m</b> 83,8 cm<br><small>10 H.: 12,00 / 8,00 / 16,00</small></td><td><b>300 m</b> 76,2 cm</td></tr><tr><td>M70–75</td><td><b>80 m</b> 76,2 cm<br><small>8 H.: 12,00 / 7,00 / 19,00</small></td><td><b>300 m</b> 68,6 cm</td></tr><tr><td>M80+</td><td><b>80 m</b> 68,6 cm<br><small>8 H.: 12,00 / 7,00 / 19,00</small></td><td><b>300 m</b> 68,6 cm</td></tr></tbody></table></div><h3 class="ov-h">weiblich</h3><div class="tw"><table class="ov"><thead><tr><th>Klasse</th><th>Kurzhürden</th><th>Langhürden</th></tr></thead><tbody><tr><td>WJU14</td><td><b>60 m</b> 76,2 cm<br><small>6 H.: 11,50 / 7,50 / 11,00</small></td><td>–</td></tr><tr><td>WJU16</td><td><b>80 m</b> 76,2 cm<br><small>8 H.: 12,00 / 8,00 / 12,00</small></td><td><b>300 m</b> 76,2 cm</td></tr><tr><td>WJU18</td><td><b>100 m</b> 76,2 cm<br><small>10 H.: 13,00 / 8,50 / 10,50</small></td><td><b>400 m</b> 76,2 cm</td></tr><tr><td>WJU20</td><td><b>100 m</b> 83,8 cm<br><small>10 H.: 13,00 / 8,50 / 10,50</small></td><td><b>400 m</b> 76,2 cm</td></tr><tr><td>WU23, Frauen</td><td><b>100 m</b> 83,8 cm<br><small>10 H.: 13,00 / 8,50 / 10,50</small></td><td><b>400 m</b> 76,2 cm</td></tr><tr><td>W30–35</td><td><b>100 m</b> 83,8 cm<br><small>10 H.: 13,00 / 8,50 / 10,50</small></td><td><b>400 m</b> 76,2 cm</td></tr><tr><td>W40–45</td><td><b>80 m</b> 76,2 cm<br><small>8 H.: 12,00 / 8,00 / 12,00</small></td><td><b>400 m</b> 76,2 cm</td></tr><tr><td>W50–55</td><td><b>80 m</b> 76,2 cm<br><small>8 H.: 12,00 / 7,00 / 19,00</small></td><td><b>300 m</b> 76,2 cm</td></tr><tr><td>W60+</td><td><b>80 m</b> 68,6 cm<br><small>8 H.: 12,00 / 7,00 / 19,00</small></td><td><b>300 m</b> 68,6 cm</td></tr></tbody></table></div><p class="note">Kleine Zahlen: Anzahl Hürden (H.), dann Start bis 1. Hürde / Hürdenabstand / letzte Hürde bis Ziel, in Metern. Langhürden: 400 m mit 45 / 35 / 40 m, 300 m mit 50 / 35 / 40 m.</p></div></details><details class="block" open data-ov><summary><h3>Hindernis</h3></summary><div class="inner"><h3 class="ov-h">männlich</h3><div class="tw"><table class="ov"><thead><tr><th>Klasse</th><th>Strecke</th><th>Höhe</th><th>Hindernisse</th></tr></thead><tbody><tr><td>MJU16</td><td>1.500 m</td><td>76,2 cm</td><td>12 + 3 Wg.</td></tr><tr><td>MJU18</td><td>2.000 m</td><td>83,8 cm</td><td>18 + 5 Wg.</td></tr><tr><td>MJU20</td><td>3.000 m</td><td>91,4 cm</td><td>28 + 7 Wg.</td></tr><tr><td>MU23, Männer</td><td>3.000 m</td><td>91,4 cm</td><td>28 + 7 Wg.</td></tr><tr><td>M30–55</td><td>3.000 m</td><td>91,4 cm</td><td>28 + 7 Wg.</td></tr><tr><td>M60+</td><td>2.000 m</td><td>76,2 cm</td><td>18 + 5 Wg.</td></tr></tbody></table></div><h3 class="ov-h">weiblich</h3><div class="tw"><table class="ov"><thead><tr><th>Klasse</th><th>Strecke</th><th>Höhe</th><th>Hindernisse</th></tr></thead><tbody><tr><td>WJU16</td><td>1.500 m</td><td>76,2 cm</td><td>12 + 3 Wg.</td></tr><tr><td>WJU18</td><td>2.000 m</td><td>76,2 cm</td><td>18 + 5 Wg.</td></tr><tr><td>WJU20</td><td>3.000 m</td><td>76,2 cm</td><td>28 + 7 Wg.</td></tr><tr><td>WU23, Frauen</td><td>3.000 m</td><td>76,2 cm</td><td>28 + 7 Wg.</td></tr><tr><td>W30</td><td>3.000 m</td><td>76,2 cm</td><td>28 + 7 Wg.</td></tr><tr><td>W35+</td><td>2.000 m</td><td>76,2 cm</td><td>18 + 5 Wg.</td></tr></tbody></table></div><p class="note">Wg. = Wassergraben. U14: kein Hindernislauf.</p></div></details><details class="block" open data-ov><summary><h3>Hürden: Halle</h3></summary><div class="inner"><h3 class="ov-h">männlich</h3><div class="tw"><table class="ov"><thead><tr><th>Klasse</th><th>60 m Hürden</th></tr></thead><tbody><tr><td>MJU14</td><td><b>60 m</b> 76,2 cm<br><small>6 H.: 11,50 / 7,50 / 11,00</small></td></tr><tr><td>MJU16</td><td><b>60 m</b> 83,8 cm<br><small>5 H.: 13,50 / 8,60 / 12,10</small></td></tr><tr><td>MJU18</td><td><b>60 m</b> 91,4 cm<br><small>5 H.: 13,72 / 8,90 / 10,68</small></td></tr><tr><td>MJU20</td><td><b>60 m</b> 99,1 cm<br><small>5 H.: 13,72 / 9,14 / 9,72</small></td></tr><tr><td>MU23, Männer</td><td><b>60 m</b> 106,7 cm<br><small>5 H.: 13,72 / 9,14 / 9,72</small></td></tr><tr><td>M30</td><td><b>60 m</b> 106,7 cm<br><small>5 H.: 13,72 / 9,14 / 9,72</small></td></tr><tr><td>M35–45</td><td><b>60 m</b> 99,1 cm<br><small>5 H.: 13,72 / 9,14 / 9,72</small></td></tr><tr><td>M50–55</td><td><b>60 m</b> 91,4 cm<br><small>5 H.: 13,00 / 8,50 / 13,00</small></td></tr><tr><td>M60–65</td><td><b>60 m</b> 83,8 cm<br><small>5 H.: 12,00 / 8,00 / 16,00</small></td></tr><tr><td>M70–75</td><td><b>60 m</b> 76,2 cm<br><small>5 H.: 12,00 / 7,00 / 20,00</small></td></tr><tr><td>M80+</td><td><b>60 m</b> 68,6 cm<br><small>5 H.: 12,00 / 7,00 / 20,00</small></td></tr></tbody></table></div><h3 class="ov-h">weiblich</h3><div class="tw"><table class="ov"><thead><tr><th>Klasse</th><th>60 m Hürden</th></tr></thead><tbody><tr><td>WJU14</td><td><b>60 m</b> 76,2 cm<br><small>6 H.: 11,50 / 7,50 / 11,00</small></td></tr><tr><td>WJU16</td><td><b>60 m</b> 76,2 cm<br><small>5 H.: 12,00 / 8,00 / 16,00</small></td></tr><tr><td>WJU18</td><td><b>60 m</b> 76,2 cm<br><small>5 H.: 13,00 / 8,50 / 13,00</small></td></tr><tr><td>WJU20</td><td><b>60 m</b> 83,8 cm<br><small>5 H.: 13,00 / 8,50 / 13,00</small></td></tr><tr><td>WU23, Frauen</td><td><b>60 m</b> 83,8 cm<br><small>5 H.: 13,00 / 8,50 / 13,00</small></td></tr><tr><td>W30–35</td><td><b>60 m</b> 83,8 cm<br><small>5 H.: 13,00 / 8,50 / 13,00</small></td></tr><tr><td>W40–45</td><td><b>60 m</b> 76,2 cm<br><small>5 H.: 12,00 / 8,00 / 16,00</small></td></tr><tr><td>W50–55</td><td><b>60 m</b> 76,2 cm<br><small>5 H.: 12,00 / 7,00 / 20,00</small></td></tr><tr><td>W60+</td><td><b>60 m</b> 68,6 cm<br><small>5 H.: 12,00 / 7,00 / 20,00</small></td></tr></tbody></table></div></div></details>
+</section>
+
+<!-- ============ QUELLEN ============ -->
+<section id="quellen">
+  <h2>Quellen</h2>
+  <div class="block">
+    <ul class="plain">
+      <li><b>DLV:</b> <a href="https://www.leichtathletik.de/fileadmin/user_upload/006_Wir-im-DLV/03_Struktur/DLV_Satzung_Ordnungen/Deutsche_Leichtathletik-Ordnung.pdf" target="_blank" rel="noopener">Deutsche Leichtathletik-Ordnung (DLO)</a> und Internationale Wettkampfregeln (IWR) mit nationalen Bestimmungen</li>
+      <li><b>DLV-Umsetzung der Landesverbände:</b> <a href="https://blv-sport.de/fileadmin/wettkampfsport/2024/Klassen_Jahrgang_Gewichte_2024.pdf" target="_blank" rel="noopener">BLV Klassen, Jahrgänge, Gewichte, Hürden (laut DLO/IWR)</a>; <a href="https://www.hlv.de/fileadmin/HLV/Dokumente_und_Formulare/03_Wettkampfsport/03_Info_Dokumente/Altersklassen_und_Gewichte.pdf" target="_blank" rel="noopener">HLV Altersklassen und Gewichte 2026</a></li>
+      <li><b>World Athletics (ehem. IAAF):</b> <a href="https://worldathletics.org/about-iaaf/documents/book-of-rules" target="_blank" rel="noopener">Book of Rules, Book C Technical Rules</a></li>
+      <li><b>World Athletics:</b> <a href="https://worldathletics.org/download/download?filename=596848ce-6afe-4f00-8eb0-62a019ee215e.pdf&amp;urlslug=Track+and+Field+Facilities+Manual+2019+Edition+-+Marking+Plan+400m+Standard+Track" target="_blank" rel="noopener">Track and Field Facilities Manual 2019, Markierungsplan 400-m-Bahn</a></li>
+      <li><b>Masters-Geräte (2 kg, 0,75 kg):</b> World Masters Athletics, Appendix Geräte-Spezifikationen</li>
+    </ul>
+  </div>
+  <p class="info">Nachschlagewerk ohne Gewähr. Für Wettkämpfe gelten die jeweils aktuelle DLO/IWR und die Ausschreibung. Kurz vor Saisonbeginn lohnt ein Blick auf Regeländerungen.</p>
+</section>
+</main>
+
+<footer>Stand der Zusammenstellung: September 2026 <span class="ver">Maße · Version 2026-09-26</span></footer>
+
+<script>
+(function(){
+const Y = new Date().getFullYear();
+const de = (n, min=0, max=3) => n.toLocaleString('de-DE',{minimumFractionDigits:min, maximumFractionDigits:max});
+const m = (n) => de(n,2,2) + ' m';
+
+/* ---------- Altersklassen ---------- */
+const CLASSES = [
+  {k:'U8', t:'kid', u:8}, {k:'U10', t:'kid', u:10}, {k:'U12', t:'kid', u:12},
+  {k:'U14', t:'y', u:14}, {k:'U16', t:'y', u:16}, {k:'U18', t:'y', u:18}, {k:'U20', t:'y', u:20},
+  {k:'U23', t:'u23'}, {k:'A', t:'adult'}
+];
+for (let a=30; a<=90; a+=5) CLASSES.push({k:String(a), t:'master', a});
+
+function code(g,c){
+  const G = g==='m' ? 'M' : 'W';
+  if (c.t==='kid') return G+'K'+c.k;
+  if (c.t==='y') return G+'J'+c.k;
+  if (c.t==='u23') return G+'U23';
+  if (c.t==='adult') return g==='m' ? 'Männer' : 'Frauen';
+  return G + c.k + (c.a===90 ? '+' : '');
+}
+function sub(g,c){
+  if (c.t==='kid' || c.t==='y'){
+    const a1=c.u-2, a2=c.u-1;
+    const ages = c.u===8 ? '7 Jahre und jünger' : a1+'–'+a2+' Jahre';
+    const jg = c.u===8 ? 'Jg. '+(Y-7)+' u. jünger' : 'Jg. '+(Y-a2)+'/'+String(Y-a1).slice(2);
+    let extra = '';
+    if (c.k==='U16') extra = (g==='m'?'M14, M15':'W14, W15')+'<br>';
+    if (c.k==='U14') extra = (g==='m'?'M12, M13':'W12, W13')+'<br>';
+    return extra + ages + '<br>' + jg;
+  }
+  if (c.t==='u23') return '20–22 Jahre<br>Jg. '+(Y-22)+'–'+String(Y-20).slice(2);
+  if (c.t==='adult') return 'Hauptklasse<br>ab 20 Jahre';
+  if (c.a===90) return '90 Jahre u. älter<br>Jg. '+(Y-90)+' u. älter';
+  return c.a+'–'+(c.a+4)+' Jahre<br>Jg. '+(Y-c.a-4)+'–'+String(Y-c.a).slice(2);
+}
+function optLabel(g,c){
+  const txt = {U8:'Kinder U8',U10:'Kinder U10',U12:'Kinder U12',U14:'Jugend U14',U16:'Jugend U16',U18:'Jugend U18',U20:'Jugend U20',U23:'U23',A: g==='m'?'Männer':'Frauen'};
+  if (txt[c.k]) return txt[c.k];
+  return (g==='m'?'Senioren ':'Seniorinnen ') + code(g,c);
+}
+
+/* ---------- Hürden (DLV nach DLO/IWR) ---------- */
+const H = (d,h,n,a,z,e,mk) => ({d,h,n,a,z,e,mk});
+const L400 = h => H(400,h,10,45,35,40,['gruen','']);
+const L300 = h => H(300,h,7,50,35,40,['gruen','']);
+const SC = (d,h) => ({d,h, frei: d===3000?28:d===2000?18:12, wasser: d===3000?7:d===2000?5:3});
+const U14 = H(60,.762,6,11.5,7.5,11,['schwarz','++']);
+
+function hurdles(g,c){
+  if (c.t==='kid') return null;
+  const k = c.k, a = c.a || 0;
+  if (k==='U14') return {sprint:U14, lang:null, halle:U14, sc:null};
+  if (g==='m'){
+    if (k==='U16') return {sprint:H(80,.838,7,13.5,8.6,14.9,['gelb','oo']), lang:L300(.838), halle:H(60,.838,5,13.5,8.6,12.1), sc:SC(1500,.762)};
+    if (k==='U18') return {sprint:H(110,.914,10,13.72,8.9,16.18,['rot','oo']), lang:L400(.838), halle:H(60,.914,5,13.72,8.9,10.68), sc:SC(2000,.838)};
+    if (k==='U20' || (a>=35 && a<=45)) return {sprint:H(110,.991,10,13.72,9.14,14.02,['blau','--']), lang:L400(.914), halle:H(60,.991,5,13.72,9.14,9.72), sc:SC(3000,.914)};
+    if (k==='U23' || k==='A' || a===30) return {sprint:H(110,1.067,10,13.72,9.14,14.02,['blau','-']), lang:L400(.914), halle:H(60,1.067,5,13.72,9.14,9.72), sc:SC(3000,.914)};
+    if (a<=55) return {sprint:H(100,.914,10,13,8.5,10.5,['gelb','--']), lang:L400(.838), halle:H(60,.914,5,13,8.5,13), sc:SC(3000,.914)};
+    if (a<=65) return {sprint:H(100,.838,10,12,8,16,['schwarz','oo']), lang:L300(.762), halle:H(60,.838,5,12,8,16), sc:SC(2000,.762)};
+    if (a<=75) return {sprint:H(80,.762,8,12,7,19,['rot','++']), lang:L300(.686), halle:H(60,.762,5,12,7,20), sc:SC(2000,.762)};
+    return {sprint:H(80,.686,8,12,7,19,['rot','++']), lang:L300(.686), halle:H(60,.686,5,12,7,20), sc:SC(2000,.762)};
+  } else {
+    if (k==='U16') return {sprint:H(80,.762,8,12,8,12,['schwarz','oo']), lang:L300(.762), halle:H(60,.762,5,12,8,16), sc:SC(1500,.762)};
+    if (k==='U18') return {sprint:H(100,.762,10,13,8.5,10.5,['gelb','--']), lang:L400(.762), halle:H(60,.762,5,13,8.5,13), sc:SC(2000,.762)};
+    if (k==='U20' || k==='U23' || k==='A' || a===30) return {sprint:H(100,.838,10,13,8.5,10.5,['gelb','-']), lang:L400(.762), halle:H(60,.838,5,13,8.5,13), sc:SC(3000,.762)};
+    if (a===35) return {sprint:H(100,.838,10,13,8.5,10.5,['gelb','-']), lang:L400(.762), halle:H(60,.838,5,13,8.5,13), sc:SC(2000,.762)};
+    if (a<=45) return {sprint:H(80,.762,8,12,8,12,['schwarz','oo']), lang:L400(.762), halle:H(60,.762,5,12,8,16), sc:SC(2000,.762)};
+    if (a<=55) return {sprint:H(80,.762,8,12,7,19,['rot','++']), lang:L300(.762), halle:H(60,.762,5,12,7,20), sc:SC(2000,.762)};
+    return {sprint:H(80,.686,8,12,7,19,['rot','++']), lang:L300(.686), halle:H(60,.686,5,12,7,20), sc:SC(2000,.762)};
+  }
+}
+
+const COL = {blau:'var(--m-blau)', gelb:'var(--m-gelb)', gruen:'var(--m-gruen)', rot:'var(--m-rot)', schwarz:'var(--m-schwarz)'};
+const COLNAME = {blau:'Blau', gelb:'Gelb', gruen:'Grün', rot:'Rot', schwarz:'Schwarz'};
+const SYM = {'-':'ein Strich','--':'zwei Striche','oo':'zwei Punkte','++':'zwei Kreuze'};
+
+function strip(o, colour){
+  const W=340, pad=14, base=50, sc=(W-2*pad)/o.d;
+  const barY = base - (10 + o.h*22);
+  let s = `<svg class="strip" viewBox="0 0 ${W} 86" role="img" aria-label="Schema ${o.d} m Hürden: Anlauf ${de(o.a,2,2)} m, Abstand ${de(o.z,2,2)} m, Auslauf ${de(o.e,2,2)} m">`;
+  s += `<line x1="${pad}" y1="${base}" x2="${W-pad}" y2="${base}" stroke="#2B2B2B" stroke-width="2"/>`;
+  s += `<line x1="${pad}" y1="${base-14}" x2="${pad}" y2="${base+6}" stroke="#2B2B2B" stroke-width="2"/>`;
+  s += `<rect x="${W-pad-1}" y="${base-14}" width="3" height="20" fill="#2B2B2B"/>`;
+  s += `<text class="lbl" x="${pad}" y="${base-18}">Start</text><text class="lbl" x="${W-pad}" y="${base-18}" text-anchor="end">Ziel</text>`;
+  const xs=[];
+  for (let i=0;i<o.n;i++){
+    const x = pad + (o.a + i*o.z)*sc; xs.push(x);
+    s += `<line x1="${x-3}" y1="${base}" x2="${x-3}" y2="${barY}" stroke="#2B2B2B" stroke-width="1.2"/>`;
+    s += `<line x1="${x+3}" y1="${base}" x2="${x+3}" y2="${barY}" stroke="#2B2B2B" stroke-width="1.2"/>`;
+    s += `<rect x="${x-5}" y="${barY-3}" width="10" height="4" fill="${colour}" stroke="#2B2B2B" stroke-width=".8"/>`;
+  }
+  const mid = (x1,x2)=> (x1+x2)/2;
+  const y2 = base+20;
+  s += `<text x="${mid(pad,xs[0])}" y="${y2}" text-anchor="middle">${de(o.a,2,2)}</text>`;
+  s += `<text x="${mid(xs[0],xs[1])}" y="${y2+14}" text-anchor="middle">${de(o.z,2,2)}</text>`;
+  s += `<text x="${mid(xs[o.n-1],W-pad)}" y="${y2}" text-anchor="middle">${de(o.e,2,2)}</text>`;
+  s += `<line x1="${mid(xs[0],xs[1])}" y1="${base+4}" x2="${mid(xs[0],xs[1])}" y2="${y2+3}" stroke="#6A6A6A" stroke-width=".6"/>`;
+  s += `</svg>`;
+  return s;
+}
+
+function hurdleBlock(title, tag, o, withMark){
+  const mk = withMark && o.mk ? o.mk : null;
+  const colour = mk ? COL[mk[0]] : 'var(--m-weiss)';
+  const hcm = de(o.h*100,1,1);
+  let rows = `
+    <div><dt>Hürdenhöhe</dt><dd>${de(o.h,3,3)} m (${hcm} cm)</dd></div>
+    <div><dt>Anzahl Hürden</dt><dd>${o.n}</dd></div>
+    <div><dt>Start bis 1. Hürde</dt><dd>${m(o.a)}</dd></div>
+    <div><dt>Hürdenabstand</dt><dd>${m(o.z)}</dd></div>
+    <div><dt>Letzte Hürde bis Ziel</dt><dd>${m(o.e)}</dd></div>`;
+  if (mk) rows += `<div><dt>Markierung</dt><dd><span class="chip"><span class="sw" style="background:${COL[mk[0]]}"></span>${COLNAME[mk[0]]}${mk[1] ? ', '+SYM[mk[1]] : ''}</span></dd></div>`;
+  return `<div class="block ${mk?'coded':''}" style="${mk?'--code:'+COL[mk[0]]:''}">
+    <div class="block-head"><h3>${title}</h3><span class="tag">${tag}</span></div>
+    ${strip(o, mk ? COL[mk[0]] : '#FFFFFF')}
+    <dl class="rows">${rows}</dl></div>`;
+}
+
+function renderHurdles(g,c){
+  const out = document.getElementById('hurdleOut');
+  const d = hurdles(g,c);
+  if (!d){
+    out.innerHTML = `<div class="info">Kinderleichtathletik (U8 bis U12) hat ein eigenes Wettkampfsystem, etwa Hindernissprint mit niedrigen Hindernissen. Maße und Abstände legt die Ausschreibung des Landesverbands fest.</div>`;
+    return;
+  }
+  let html = '';
+  html += hurdleBlock(d.sprint.d+' m Hürden', 'Freiluft', d.sprint, true);
+  if (d.lang) html += hurdleBlock(d.lang.d+' m Hürden', 'Freiluft', d.lang, true);
+  html += hurdleBlock(d.halle.d+' m Hürden', 'Halle', Object.assign({}, d.halle, {mk:null}), false);
+  if (c.k==='U14') html = hurdleBlock('60 m Hürden', 'Freiluft und Halle', d.sprint, true);
+  if (d.sc){
+    html += `<div class="block coded" style="--code:var(--m-blau)">
+      <div class="block-head"><h3>${d.sc.d.toLocaleString('de-DE')} m Hindernis</h3><span class="tag">Freiluft</span></div>
+      <dl class="rows">
+        <div><dt>Hindernishöhe</dt><dd>${de(d.sc.h,3,3)} m (${de(d.sc.h*100,1,1)} cm)</dd></div>
+        <div><dt>Hindernisse auf der Bahn</dt><dd>${d.sc.frei}</dd></div>
+        <div><dt>Wassergräben</dt><dd>${d.sc.wasser}</dd></div>
+        <div><dt>Übersprünge gesamt</dt><dd>${d.sc.frei + d.sc.wasser}</dd></div>
+      </dl></div>`;
+  }
+  html += `<p class="note">50 m Hürden in der Halle: wie 60 m, mit einer Hürde weniger.</p>`;
+  out.innerHTML = html;
+}
+
+/* ---------- Wurfgeräte (DLV nach DLO/IWR) ---------- */
+function throwsFor(g,c){
+  if (c.t==='kid') return null;
+  const k=c.k, a=c.a||0;
+  if (g==='m'){
+    if (k==='U14') return {kugel:3, diskus:.75, hammer:3, speer:400, ball:200};
+    if (k==='U16') return {kugel:4, diskus:1, hammer:4, speer:600, ball:200};
+    if (k==='U18') return {kugel:5, diskus:1.5, hammer:5, speer:700};
+    if (k==='U20') return {kugel:6, diskus:1.75, hammer:6, speer:800};
+    if (k==='U23' || k==='A') return {kugel:7.26, diskus:2, hammer:7.26, speer:800};
+    if (a<=45) return {kugel:7.26, diskus:2, hammer:7.26, speer:800, gew:15.88};
+    if (a<=55) return {kugel:6, diskus:1.5, hammer:6, speer:700, gew:11.34};
+    if (a<=65) return {kugel:5, diskus:1, hammer:5, speer:600, gew:9.08};
+    if (a<=75) return {kugel:4, diskus:1, hammer:4, speer:500, gew:7.26};
+    return {kugel:3, diskus:1, hammer:3, speer:400, gew:5.45};
+  } else {
+    if (k==='U14') return {kugel:3, diskus:.75, hammer:2, speer:400, ball:200};
+    if (k==='U16') return {kugel:3, diskus:1, hammer:3, speer:500, ball:200};
+    if (k==='U18') return {kugel:3, diskus:1, hammer:3, speer:500};
+    if (k==='U20' || k==='U23' || k==='A') return {kugel:4, diskus:1, hammer:4, speer:600};
+    if (a<=45) return {kugel:4, diskus:1, hammer:4, speer:600, gew:9.08};
+    if (a<=55) return {kugel:3, diskus:1, hammer:3, speer:500, gew:7.26};
+    if (a<=70) return {kugel:3, diskus:1, hammer:3, speer:500, gew:5.45};
+    return {kugel:2, diskus:.75, hammer:2, speer:400, gew:4.00};
+  }
+}
+const SHOT = {7.26:'Ø 110–130 mm', 6:'Ø 105–125 mm', 5:'Ø 100–120 mm', 4:'Ø 95–110 mm', 3:'Ø 85–110 mm', 2:'Maße nach WMA'};
+const DISC = {2:'Ø 219–221 mm', 1.75:'Ø 210–212 mm', 1.5:'Ø 200–202 mm', 1:'Ø 180–182 mm', .75:'Ø 165–167 mm'};
+const HAM  = {7.26:'Länge 1175–1215 mm, Kopf Ø 110–130 mm', 6:'Länge 1175–1215 mm, Kopf Ø 105–125 mm', 5:'Länge 1175–1215 mm, Kopf Ø 100–120 mm', 4:'Länge 1160–1195 mm, Kopf Ø 95–110 mm', 3:'Länge 1150–1195 mm, Kopf Ø 85–100 mm', 2:'Länge max. 1195 mm, Kopf Ø 75–100 mm'};
+const JAV  = {800:'Länge 2,60–2,70 m, Schwerpunkt 0,90–1,06 m ab Spitze', 700:'Länge 2,30–2,40 m, neue Schwerpunktlage seit 2025', 600:'Länge 2,20–2,30 m, Schwerpunkt 0,80–0,92 m ab Spitze', 500:'Länge 2,00–2,10 m', 400:'Länge 1,85–1,95 m, Schwerpunkt 0,75–0,80 m ab Spitze'};
+const kg = n => de(n,0,2)+' kg';
+
+function renderThrows(g,c){
+  const out = document.getElementById('throwOut');
+  const t = throwsFor(g,c);
+  if (!t){
+    out.innerHTML = `<div class="info">Kinderleichtathletik: Wurf mit Schlagball (80 g), Heuler oder Medizinball, jeweils laut Ausschreibung. Kugel, Diskus, Hammer und Speer beginnen in der U14.</div>`;
+    return;
+  }
+  const tile = (name,val,det) => `<div class="tile"><div class="name">${name}</div><div class="val">${val}</div><div class="det">${det||''}</div></div>`;
+  let html = '<div class="tiles">';
+  html += tile('Kugel', kg(t.kugel), SHOT[t.kugel]);
+  html += tile('Diskus', kg(t.diskus), DISC[t.diskus]);
+  html += tile('Hammer', kg(t.hammer), HAM[t.hammer]);
+  html += tile('Speer', t.speer+' g', JAV[t.speer]);
+  html += '</div>';
+  const extra = [];
+  if (t.ball) extra.push(`<div><dt>Ballwurf</dt><dd>200 g Ball</dd></div>`);
+  if (t.gew) extra.push(`<div><dt>Gewichtwurf (Wurf-Fünfkampf)</dt><dd>${kg(t.gew)}</dd></div>`);
+  if (extra.length) html += `<div class="block"><dl class="rows">${extra.join('')}</dl></div>`;
+  out.innerHTML = html;
+}
+
+/* ---------- Kurvenvorgaben ---------- */
+function renderStagger(){
+  const r1 = 36.80, straight = 84.39;
+  let h = '<thead><tr><th>Bahn</th><th>200 m</th><th>400 m</th><th>800 m ≈</th><th>4×400 ≈</th></tr></thead><tbody>';
+  for (let n=1;n<=8;n++){
+    const r = n===1 ? r1 : 36.50 + 1.22*(n-1) + 0.20;
+    const d = r - r1;
+    const cut = Math.sqrt(straight*straight + d*d) - straight;
+    const v = x => n===1 ? '–' : de(x,2,2);
+    h += `<tr><td>${n}</td><td>${v(Math.PI*d)}</td><td>${v(2*Math.PI*d)}</td><td>${v(Math.PI*d+cut)}</td><td>${v(3*Math.PI*d+cut)}</td></tr>`;
+  }
+  document.getElementById('stagger').innerHTML = h + '</tbody>';
+}
+
+/* ---------- Steuerung ---------- */
+const sel = document.getElementById('cls');
+const state = {g:'m', k:'U18'};
+
+function fillSelect(){
+  sel.innerHTML = '';
+  const groups = [['Kinder', c=>c.t==='kid'], ['Jugend', c=>c.t==='y'], ['Erwachsene', c=>c.t==='u23'||c.t==='adult'], [state.g==='m'?'Senioren':'Seniorinnen', c=>c.t==='master']];
+  groups.forEach(([label, fn])=>{
+    const og = document.createElement('optgroup'); og.label = label;
+    CLASSES.filter(fn).forEach(c=>{
+      const o = document.createElement('option'); o.value=c.k; o.textContent=optLabel(state.g,c);
+      if (c.k===state.k) o.selected = true;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+}
+function render(){
+  const c = CLASSES.find(x=>x.k===state.k);
+  document.getElementById('bibCode').textContent = code(state.g,c);
+  document.getElementById('bibSub').innerHTML = sub(state.g,c);
+  renderHurdles(state.g,c);
+  renderThrows(state.g,c);
+  try{ history.replaceState(null,'','#'+state.g+'-'+state.k); }catch(e){}
+}
+
+const hash = (location.hash||'').slice(1).split('-');
+if (hash.length===2 && (hash[0]==='m'||hash[0]==='w') && CLASSES.some(c=>c.k===hash[1])){
+  state.g = hash[0]; state.k = hash[1];
+  document.getElementById(state.g==='m'?'gm':'gw').checked = true;
+}
+document.querySelectorAll('input[name="g"]').forEach(r=>r.addEventListener('change',e=>{
+  state.g = e.target.value; fillSelect(); render();
+}));
+sel.addEventListener('change',()=>{ state.k = sel.value; render(); });
+
+/* Navigation: Sprung zu Bereichen (per JS, funktioniert auch in eingebetteten Vorschauen) */
+const picker = document.querySelector('.picker');
+const links = [...document.querySelectorAll('nav.jump a[href^="#"]')];
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setStick(){ document.documentElement.style.setProperty('--stick', picker.offsetHeight + 'px'); }
+function mark(id){ links.forEach(l=>l.classList.toggle('on', l.dataset.target===id)); }
+setStick(); window.addEventListener('resize', setStick);
+let lock = 0;
+links.forEach(l=>{
+  l.dataset.target = l.getAttribute('href').slice(1);
+  l.addEventListener('click', e=>{
+    e.preventDefault();
+    const t = document.getElementById(l.dataset.target);
+    if (!t) return;
+    setStick(); mark(l.dataset.target); lock = Date.now();
+    const top = t.getBoundingClientRect().top + window.pageYOffset - picker.offsetHeight - 6;
+    try { window.scrollTo({top, behavior: reduce ? 'auto' : 'smooth'}); }
+    catch(err){ window.scrollTo(0, top); }
+    setTimeout(()=>{ if (Math.abs(t.getBoundingClientRect().top - picker.offsetHeight) > 40) t.scrollIntoView({block:'start'}); }, reduce ? 50 : 700);
+    const nav = l.parentElement; nav.scrollLeft = l.offsetLeft - (nav.clientWidth - l.offsetWidth)/2;
+  });
+});
+function onScroll(){
+  if (Date.now() - lock < 900) return;
+  const line = picker.offsetHeight + 40;
+  let cur = links[0].dataset.target;
+  document.querySelectorAll('main section').forEach(sec=>{ if (sec.getBoundingClientRect().top <= line) cur = sec.id; });
+  mark(cur);
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+
+window.DTV = {CLASSES, hurdles, throwsFor, code, de, kg};
+document.querySelectorAll('details[data-ov]').forEach(d=>d.removeAttribute('open'));
+fillSelect(); renderStagger(); render(); onScroll();
+})();
+</script>
+<script data-sw>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }).then(function(){
+    var v = document.querySelector('.ver'); if (v && !v.dataset.off){ v.dataset.off = 1; v.textContent += ' · offline verfügbar'; }
+  }).catch(function(){});
+}
+</script>
+</body>
+</html>

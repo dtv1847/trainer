@@ -1,0 +1,17 @@
+{
+ "name": "Dürener TV 1847 – Trainer",
+ "short_name": "DTV1847-Trainer",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#F1F1F0",
+ "theme_color": "#D7191C",
+ "lang": "de",
+ "icons": [
+  {
+   "src": "dtv-icon.png",
+   "sizes": "180x180",
+   "type": "image/png"
+  }
+ ]
+}

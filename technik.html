@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="de" data-app="trainer" class="no-js">
+<head>
+<script>document.documentElement.classList.add("app")</script>
+<meta charset="utf-8">
+<script>document.documentElement.className="js";</script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#D7191C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DTV1847 Trainer" data-old="DTV Technik">
+<link rel="apple-touch-icon" href="dtv-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Dürener TV 1847 Track &amp; Field – Technik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F1F1F0; --paper:#FFFFFF; --ink:#2B2B2B; --muted:#6A6A6A; --line:#DEDEDC;
+  --red:#D7191C; --red-deep:#A81216; --track-deep:#B51518; --m-gelb:#F2C200;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+a{color:var(--red-deep)}
+:focus-visible{outline:3px solid var(--m-gelb);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* Kopf */
+.brand{background:#fff;display:flex;align-items:center;gap:14px;padding:14px 16px 12px;max-width:760px;margin:0 auto}
+.brand img{height:78px;width:auto;flex:0 0 auto}
+.wordmark{flex:1;min-width:0;max-width:430px;height:auto;display:block}
+.wm-club{font-family:var(--cond);font-weight:700;font-size:34px;fill:var(--ink)}
+.wm-tf{font-family:var(--cond);font-weight:600;font-size:17px;fill:var(--red)}
+.wm-line{stroke:var(--red);stroke-width:2}
+.hero{background:var(--red);color:#fff;padding:16px 16px 0}
+.hero-inner{max-width:760px;margin:0 auto}
+.hero h1{font-family:var(--cond);font-weight:700;font-size:38px;line-height:1;margin:0;letter-spacing:.2px}
+.hero p{margin:6px 0 14px;font-size:15px;opacity:.95}
+.lanes{height:38px;margin:0 -16px;background:repeating-linear-gradient(to bottom, rgba(255,255,255,.92) 0 2px, var(--track-deep) 2px 12px);position:relative}
+.lanes::after{content:"";position:absolute;left:68%;top:0;bottom:0;width:4px;background:#fff}
+
+.no-js .only-js{display:none!important}
+.js .nojs-banner{display:none}
+.nojs-banner{background:var(--ink);color:#fff;padding:12px 16px;font-size:14.5px}
+
+/* Feste Leiste */
+.picker{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--line)}
+.picker-inner{display:flex;gap:12px;align-items:stretch;padding:10px 12px 8px;max-width:760px;margin:0 auto}
+.bib{position:relative;flex:0 0 auto;min-width:108px;max-width:42%;border:2px solid var(--ink);border-top:7px solid var(--red);border-radius:6px;padding:5px 10px 5px;text-align:center;background:#fff}
+.bib::before,.bib::after{content:"";position:absolute;top:4px;width:6px;height:6px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 1px var(--muted)}
+.bib::before{left:5px}.bib::after{right:5px}
+.bib-code{font-family:var(--cond);font-weight:700;font-size:30px;line-height:1;font-variant-numeric:tabular-nums}
+.bib-sub{font-size:11.5px;color:var(--muted);line-height:1.2;margin-top:3px}
+.controls{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1.5px solid var(--ink);border-radius:6px;overflow:hidden}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{text-align:center;padding:7px 4px;font-weight:600;cursor:pointer;font-size:15px}
+.seg input:checked + label{background:var(--ink);color:#fff}
+.seg input:focus-visible + label{outline:3px solid var(--m-gelb);outline-offset:-3px}
+select,input[type=text],input[type=number],input[type=date],textarea{
+  width:100%;min-width:0;font:600 16px var(--body);color:var(--ink);background:#fff;
+  border:1.5px solid var(--ink);border-radius:6px;padding:7px 10px;min-height:40px;-webkit-appearance:none;appearance:none}
+select{padding-right:30px;text-overflow:ellipsis;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+select:disabled{opacity:.55}
+textarea{font:500 14px ui-monospace,Menlo,Consolas,monospace;min-height:130px;resize:vertical}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+nav.jump{display:flex;gap:6px;overflow-x:auto;padding:0 12px 10px;max-width:760px;margin:0 auto;scrollbar-width:none}
+nav.jump::-webkit-scrollbar{display:none}
+nav.jump a{flex:0 0 auto;text-decoration:none;color:var(--ink);font-weight:600;font-size:14px;padding:5px 12px;border-radius:999px;background:var(--bg)}
+nav.jump a.on{background:var(--red);color:#fff}
+nav.jump a.ext{background:#fff;border:1px solid var(--line)}
+
+/* Inhalt */
+main{max-width:760px;margin:0 auto;padding:6px 12px 40px}
+section{scroll-margin-top:calc(var(--stick,150px) + 6px);padding-top:22px}
+h2{font-family:var(--cond);font-weight:700;font-size:30px;line-height:1;margin:0 0 4px}
+.lead{margin:0 0 12px;color:var(--muted);font-size:14.5px}
+h3{font-family:var(--cond);font-weight:600;font-size:21px;line-height:1.1;margin:0}
+h4{margin:16px 0 8px;font-size:15px}
+.block{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px;margin:0 0 10px}
+.block.coded{border-left:6px solid var(--red)}
+.block-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.tag{font-size:12.5px;color:var(--muted)}
+.note{font-size:13.5px;color:var(--muted);margin:8px 0 0}
+.warn{font-size:13.5px;color:var(--red-deep);margin:8px 0 0}
+.info{background:#fff;border:1px solid var(--line);border-left:6px solid var(--red);border-radius:10px;padding:12px 14px;margin:0 0 10px;font-size:14.5px}
+
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{background:var(--bg);border-radius:8px;padding:9px 12px}
+.tile .name{font-size:14px;color:var(--muted);font-weight:600}
+.tile .val{font-family:var(--cond);font-weight:700;font-size:38px;line-height:1.05;font-variant-numeric:tabular-nums}
+.tile .unit{font-size:18px;font-weight:600;color:var(--muted)}
+.tile .det{font-size:12.5px;color:var(--muted)}
+
+details.block{padding:0}
+details.block > summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+details.block > summary::-webkit-details-marker{display:none}
+details.block > summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg);margin-top:-4px;flex:0 0 auto}
+details.block[open] > summary::after{transform:rotate(-135deg);margin-top:4px}
+details.block > .inner{padding:0 14px 14px}
+.sum{display:flex;flex-direction:column;gap:1px;min-width:0}
+
+/* Formulare */
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f > span{font-size:12.5px;color:var(--muted);font-weight:500}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px 8px}
+.fg .full{grid-column:1 / -1}
+.chk{display:flex;align-items:center;gap:8px;font-size:15px;min-height:40px;cursor:pointer}
+.chk input{width:22px;height:22px;accent-color:var(--red);margin:0;flex:0 0 auto}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{font:600 15px var(--body);border:1.5px solid var(--ink);background:#fff;color:var(--ink);border-radius:6px;padding:8px 14px;cursor:pointer;min-height:40px}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn.danger{border-color:var(--red);color:var(--red-deep)}
+.btn.small{font-size:14px;padding:6px 11px;min-height:36px}
+.icon-btn{width:36px;height:36px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;flex:0 0 auto}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--red-deep);text-decoration:underline;cursor:pointer}
+.prow{display:grid;grid-template-columns:5.2rem 1fr auto 36px;gap:8px;align-items:end;padding:10px 0;border-top:1px solid var(--line)}
+.prow:first-child{border-top:0;padding-top:0}
+.prow .chk{min-height:40px;font-size:14px}
+.ok{color:#1E7A3F;font-size:13.5px;margin:8px 0 0}
+
+ul.plain{margin:0;padding:0;list-style:none}
+ul.ents li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+ul.ents li:first-child{border-top:0}
+ul.ents li > span:first-child{flex:1;min-width:0}
+ul.ents small{display:block;color:var(--muted);font-size:12.5px}
+.et{font-family:var(--cond);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums}
+.editbox{background:var(--bg);border-radius:8px;padding:10px;margin-top:12px}
+
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.ov{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+table.ov th{text-align:left;font-weight:600;color:var(--muted);font-size:12.5px;padding:4px 6px 6px;white-space:nowrap}
+table.ov td{padding:7px 6px;border-top:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+table.ov td:first-child{font-weight:600;white-space:normal}
+table.ov.nw td:first-child{white-space:nowrap}
+table.ov small{color:var(--muted);font-size:11.5px}
+table.ov td.big{font-family:var(--cond);font-weight:700;font-size:22px}
+table.ov tr.grp td{background:var(--bg);font-family:var(--cond);font-weight:700;font-size:17px;padding:5px 6px;border-top:1px solid var(--line)}
+.prow{grid-template-columns:5.2rem auto 36px}
+.prow .pcell{grid-column:1 / -1;margin-top:2px}
+code{font-size:13px;background:var(--bg);padding:1px 4px;border-radius:4px}
+.ver{display:block;margin-top:6px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+footer{max-width:760px;margin:0 auto;padding:0 12px 40px;font-size:13px;color:var(--muted)}
+
+@media (max-width:360px){ .brand img{height:64px} .fg{grid-template-columns:1fr} }
+@media (min-width:600px){
+  .brand{padding:20px 24px 16px;gap:20px}
+  .brand img{height:104px}
+  .hero{padding:24px 24px 0}
+  .lanes{margin:0 -24px}
+  .hero h1{font-size:52px}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+}
+@media (prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+
+/* ---- v2: Rechner mit Schiebereglern ---- */
+.picker .seg label{padding:6px 4px}
+.result{text-align:center;padding:4px 0 12px;border-bottom:1px solid var(--line)}
+.res-label{font-size:14px;color:var(--muted);font-weight:600}
+.res-val{font-family:var(--cond);font-weight:700;font-size:76px;line-height:1;font-variant-numeric:tabular-nums;margin-top:2px}
+.res-val small{font-size:30px;color:var(--muted);font-weight:600}
+.res-det{font-size:14px;color:var(--muted)}
+.res-empty{font-size:15px;color:var(--muted);padding:18px 0}
+.sl-head{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 2px}
+.sl-head span{font-size:14px;color:var(--muted);font-weight:600}
+.sl-head output{font-family:var(--cond);font-weight:700;font-size:28px;line-height:1}
+.sl-row{display:grid;grid-template-columns:44px 1fr 44px;gap:10px;align-items:center}
+.step{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;font:600 24px/1 var(--body);color:var(--ink);cursor:pointer;padding:0}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:40px;background:transparent;margin:0;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:linear-gradient(to right,var(--red) 0 var(--pct,50%),var(--line) var(--pct,50%) 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:32px;height:32px;border-radius:50%;background:#fff;border:3px solid var(--red);margin-top:-12px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:8px;border-radius:4px;background:var(--red)}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--red)}
+.qchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.qchip{font:600 14px var(--body);border:0;background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;min-height:34px;cursor:pointer}
+.qchip.on{background:var(--ink);color:#fff}
+.pchips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.pchip{border:0;background:var(--bg);border-radius:8px;padding:6px 4px 4px;text-align:center;font:inherit;color:var(--ink);cursor:pointer}
+.pchip b{display:block;font-size:12.5px;color:var(--muted);font-weight:600}
+.pchip span{font-family:var(--cond);font-weight:700;font-size:23px;font-variant-numeric:tabular-nums}
+.pchip.on{background:var(--ink);color:#fff}
+.pchip.on b{color:#D8D8D8}
+.refline{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;margin-top:14px}
+.refline > span{font-size:14px;color:var(--muted);font-weight:600}
+.grp-title{font-size:13px;color:var(--muted);font-weight:600;margin:12px 0 0;text-transform:none}
+.steps-list{margin:0 0 10px;padding-left:20px;font-size:14px}
+.steps-list li{margin:3px 0}
+@media (min-width:600px){ .pchips{grid-template-columns:repeat(6,1fr)} }
+
+/* ---- Technikseite ---- */
+.fig{margin:2px 0 0}
+.fig svg{display:block;width:100%;height:auto}
+.fig svg text{font-family:var(--cond);font-weight:600;fill:var(--ink)}
+.fig svg text.s{font-family:var(--body);font-weight:500;font-size:11px;fill:var(--muted)}
+.cap{font-size:13.5px;color:var(--muted);margin:8px 0 0}
+ul.pts{margin:0;padding:0;list-style:none}
+ul.pts li{padding:8px 0 8px 26px;border-top:1px solid var(--line);position:relative;font-size:15px}
+ul.pts li:first-child{border-top:0}
+ul.pts li::before{content:"";position:absolute;left:4px;top:15px;width:9px;height:9px;border-radius:50%;background:var(--red)}
+ul.steps{margin:0;padding:0;list-style:none;counter-reset:st}
+ul.steps li{padding:8px 0 8px 32px;border-top:1px solid var(--line);position:relative;font-size:15px}
+ul.steps li:first-child{border-top:0}
+ul.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:8px;width:22px;height:22px;border-radius:50%;background:var(--bg);color:var(--ink);font-family:var(--cond);font-weight:700;font-size:15px;text-align:center;line-height:22px}
+.err{padding:10px 0;border-top:1px solid var(--line)}
+.err:first-child{border-top:0;padding-top:0}
+.err b{display:block;font-weight:600}
+.err span{display:block;font-size:14.5px;color:var(--muted);margin-top:2px}
+.cues{display:flex;flex-wrap:wrap;gap:8px}
+.cue{background:var(--ink);color:#fff;border-radius:999px;padding:7px 14px;font-family:var(--cond);font-weight:600;font-size:17px;letter-spacing:.3px}
+.var{padding:10px 0;border-top:1px solid var(--line)}
+.var:first-child{border-top:0;padding-top:0}
+.var b{font-weight:600}
+.var span{display:block;font-size:14.5px;color:var(--muted);margin-top:2px}
+.safe{border-left:6px solid var(--ink)}
+h2 .sub{display:block;font-family:var(--body);font-size:14px;font-weight:500;color:var(--muted);margin-top:4px;line-height:1.4}
+</style>
+<style id="dtv-appbar">
+.appbar{display:flex;align-items:center;gap:6px;background:#2B2B2B;color:#fff;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));overflow-x:auto;scrollbar-width:none;position:relative;z-index:30}
+.appbar::-webkit-scrollbar{display:none}
+.appbar a{color:#fff;text-decoration:none;white-space:nowrap;flex:0 0 auto}
+.appbar .ab-home{display:flex;align-items:center;gap:7px;font:700 17px 'Barlow Condensed',system-ui,sans-serif;letter-spacing:.3px;margin-right:6px}
+.appbar .ab-home img{width:30px;height:30px;border-radius:7px;background:#fff}
+.appbar .ab-t{font:600 15px 'Barlow',system-ui,sans-serif;padding:8px 12px;border-radius:999px;opacity:.85}
+.appbar .ab-t.on{background:#D7191C;opacity:1}
+html[data-app] .brand{display:none!important}
+html[data-app] nav.jump a.ext{display:none!important}
+body.running .appbar{display:none}
+</style>
+</head>
+<body>
+<nav class="appbar" aria-label="Trainer-App"><a class="ab-home" href="index.html"><img src="dtv-icon.png" alt="">DTV 1847</a><a class="ab-t" href="plan.html">Planung</a><a class="ab-t" href="zirkel.html">Zirkel</a><a class="ab-t" href="training.html">Athleten</a><a class="ab-t on" href="technik.html">Technik</a><a class="ab-t" href="masse.html">Maße</a></nav>
+
+<div class="nojs-banner">Hinweis: Diese Seite funktioniert auch ohne JavaScript. Die Reiter oben springen dann nicht, du scrollst einfach weiter.</div>
+<header>
+  <div class="brand">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARUAAAEsCAMAAADaRde1AAAAwFBMVEX9/PzZFRgAAAAuLy5dXV2fn5/kXF35+flhJydwcHDuoKGoqKiWlpaiHiClpKVra2vT0tPpfoBqampAQD7ePkE/QD5AP0A/PkA+QECq/6q/wMDogH/0vsA/P38AVQAA//9VAABVAFVmZpl+foB/f4B/f/9/g399gHx/gICAfn6Af36AgH6+wMDeQD/BvsH//38AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB2xCmnAAAAMHRSTlP//wD++f3/D/8D/w6h/2SmTv92///+///5A////wQDAQMDBZv/Ajy7tG/WgX7/SwKbLPIUAAAR8UlEQVR42uXd52KkOBIA4LKQUBPctO2Z293bvZzz+7/dAe1ulHMAzK9djwN8XVUSkhCAzAdFaMRnOyjqzFcNdpTmdIeVxaKyREpzQpb18w5V6egpUZrmPSKDBnQ9J4qNxaTSoa457TEFqnRowM3XZIGvitLgq77kwldFWVk6T5UBUQ7lcpaDZfm3jgXcUF5fznJwLLf5Qt1V6GlRBJZBzQJfK1IULJ2jylyZT4wisFBVtIASZTozykuPbSzwBVEAhBvo/1lVxLGDM6KILL/vLCoiyuVsKC2AyDJJnVxQDL19ARQgRhZBZaDnRvkGoGDBkzGDhAGV06G8AGhZqE6lQ9fmq6AILCPHAjwK/jooJhb4Qii9oAJYYFGoDOj2xVAklk5SEVCa06G0ABaW7U4RvjSKjgW+NoqGBT4LLT312IHU/OhZhqfKjBJ0m9yD19HvEUVguY8rQATKCxxFxXxejcQyq/wlFOUwKrYTE1jorEKDUY6iYk90cb0CRKAcRMWl+gnjCtCFoxxDxa1J4FgG4Nvky8vZVFrHk+Mmz2aVMfjm5wAqrijsDTSmwM2InU7FGYVRwbe5DerYiY7XDCn7MKmh4n56W2gQ2gE/p3xJdhrtvvv5xlCZVeZgGdPdAe1KBUJCZaIdAuHW8HIilT4oVJa1uPf7oCnZGMKOVPqwUFkGE0AcR3g9i4pXUyDfHS7He6oU2o1KCxDWAFFmfCVVsOxFxQsFuAZoG4ujf0sULDtR+Y8XCltrO3aEkllGegYVv073du2fi02fMx+JUmgfKp63IkyorGXlocLOMF8Or+KJsiXQSLmZD67bf3QVz0H2LYGea+TgOck8JUmhHaj0waGCqTR3uAXLxfxn+ufRWlSe36huPB//+pYU5Q2CQ+X6WE7JrEnQ1lsTfmtSMQfO9kvqdVTEfm0nqHRUW2/Nf6h1UOmNKn1VFMLfAvEq1JBCHkNsnMovputus6h4o7AJRAd5VQ/V1luPkUe+rphypM1RmP1RQK61rArbZXn1q+q9RqU1qfQZykoACttZkVf1mFLImqytTeVbEZUeohJoW9DPrhZkUsj3M9D0V0xJkr6shKBwXTiqXFk6BhYW5qo1Kn2BshKEAqoEYlUMHbm1wyV05NTBUk+lDUIhymczuVix3AuJ19EqgoX/gqF2pC4rYShcAmlUzPdCrSFfqqsEogAz4YHsa7PdVOSeGP89hjRJXGwhVmXUPd1g6t5qLlEqLPz3fHNQaWuiEPXTqsKTML4qvVlFHxFpi20oiqasCCr03VBYMqlUa5N5Ff3zQYOxsISoaGtqymIbjsL2Vv5geMLOkEJJVRIW2wgUouru51fR3gk9v/5Wq03mVaj+WTL2Vii1Spup2Mag6MqKoML2WJKovFhVaqKob4IUT2Pe9OVWpdI6q/R5ii0kURE3qAHtDiOXJCqay09VbONQiG4jlmOrQCoV87PvzGRZGhV1AUlUbPtIFeyoMjAbAiRWaZMX21iUTWWyxYq+dxukom6EkhTbt1iUZ7H9uAp7sIB+P7TEKn3istJCMhVp1ytJhXqpvFlVlGGRQCUBCjuMYNxTg3b6RiidSoJimwBF299X7WA0pVVpjSq12uT1+LOzCrN8/ZKkrjjdJ1RBUU8FlVF5Man0NVGYhlncNE5WGXSzH7EqfbJi2ydWGW0qA9M0p1GRAyO22CZC2RpmELeMA8Nmi69pVUD+oW81UbZxhMEeK6lV5AYnrti2kFoFW1Won8qbj0qboqykQyH67fkV+1BOaVVekqp8gzoqdEqbQRJCVLGFPCrUPVYuaVSeZeSX+J4t5FCZqG0fSk+VNx8ViC62fUoVrN+DXqEyJlZpdSp9VZTdqLRxxTYtSmUV7Yx8W6tN9lfpMqr0McU2NUpGFZc2SCgkgcU2OQp7c1hVBSKKLeRU+U0FFf6bwootZFXpqqq0ocUWDqXiVG25LwYV2/7UKn1Ysc2CUl2lV6n0lVH2owIhxbaFc6q0KpW2MsqeVPyLLWRXqXMfxH7VWwV2ojLlVPEttlBChdZR2Sw8VfqMKsQnVmjq0Wx1xWxro4SO2yYazVaruEyQ/Qw7UaHJZ8k05aFmm+w98zEUUumroxxUBYqpDA4rNXKo9P7FFrIfPipd4vUr6mz4Vh8FmPeeDCjlWqe3UJWqbbK4UiO1Su+o8uJZVkqgeKwA81xDmUmlhbIq1KZC86j0PsW2DIr7GkrquTY7i0ohFPdVyL4r1qWU0F1361FsYW8qg98zH20OlVIo8Gth/9ZUzwfJKaHNEediC+UOzdPMcc+StYoP302lrdwm2xoh5+cO220YDfp2/r9emRLaC+/dEqgkyqZChMLipmI91zaRyhtUUcHGsbhZ5UdVsbX+/herSuui0hZF0Y8lgMtjh6H7xekuuN8Hir7ciirvqjvm0L0FdeW23QnKdn/4booVTX+/d82fOJXiKFy5Rb47jbijGFR6W1mBiiqmPTV+Um8e0bqmj6NKX79NVpTbwfAub1+VXjdi0OqrRr8XFM3OgqKKen9O7QkrNsR2UWn3gqLbLs5pZ7RWfajbEf2/mn7QpfkhBM8HIbmGWDQqg3kXvYxHy1z6esgkzPsHMdG6aX7aSUWzix67ofhrHZTn85G6s9f8O18lSEhhodpd9EgdFenisS79n7tgGD94ww+Kf8C6DyWtlUCKT86Coo4WhalVhUmhjqp3/R2qqCiuAZvSR5slTYCKepSSy6AqZaVXXD1W5j5/6AcciV2FyL98VO76y24y0tRF4VWw5cKkCwQPFWDfSEZV+/HXKCs/Ky8eq6sKYRto7FBstSqWSSGntxSUaJNxY1URQt6h2DqoEPN+/F26lx7GonAXJvZCsE5FlVprZ3g7jHDj1gpB1QRy6aWJ5YL4qGjCiVg6/U+VgV6/lw4VbUENUdFq2cLJ8E4YmuwtdglQglSw8W7A8KNbMUdUUimeQL2+P1JUBevfNTUnUGGVXtF5wxEqHmVF03XeUgjsryUr1nvDzysOUHEpK1gJR+Q7RHiESuEEapWfYAIV7Fls+RT67N4+Y+W9aKi08klhiFLBHiraoacrFysUle3CtfJJYYhTcSgr1p5O88/Pjhx8JtB/iyaQ/FERyK+CrXdQj3shcHlHTlaU9ZwIRKr4FFusDaLHcAJUGESQThabSqabCg4vtsC/3Y95w/n1h3IJJE79YAxlVexD/VD8dlmaDyOQQCWm2MopBGuo3MrV2t5lIsJbJaqsyCkE/Nr97CotZFX5CFQR3gUJ/MhK7gRqIY9KXLGVXrwL/MrjS1WUeBUSVGylegv8aw5fi7bJ6VTiii13477UW5gboFupzgqEqICDSmyxFertosL0ay91UcwqRH91LmXFkmTsjfMA5W4M+0AV4ZIbgwoJLLbiKAsUq7Uuq5mIcUZVvxwjuqzwKfRbMLzYvDiKZuiIndsiLkO77r9a0woBKnNj6LbCmFjWJDATqsRzHM5aetgFPsDMo15qo+guz7Z+hb1i3Sowe+lhCgsUGVlxXYtOXNc6YW0h1ZUYe+lhUgiKjGJDpAqYVzqxZUUTEw6lh1Upsb4JolX46UXNFX84qLjMoeEBjC+qLoxiOnfDmjiukGLz7IbL7SO+wZS9BeoTqBBTAnEQmnhyWXT6lBthyp1APmvRiSUa1DnUeKg4LUkeIXdZ8XqSkJiDQc3CF9LGPGvqpDJB5rLi93yYrRenZOFLhlrFpawwz1BlVvF8aI5YVpYSoljaxtdXfAAVSKDCF1n9onOTitMK/1IqkEAFN+qRBHG+sQEHFccHQLKqQAoVbWxg5c8oVYifStZq26dQkcdTsDo4sCFXnMqKsmV+rY9iVNF9RQiOCJVtT7B8KiFPEipUDI+3EFXJsPfzXHr8uVSCHmQPUNnu6e5Hw/2/T7FlHorZ/vtSHyVKxbBe37PYzip57oMCtzxIrYKDiu1EYcwyFAe7VHErK8sI5ZBDBXai8uFRbNlHYrKMUALsKla8y0oWlX43Ko3zxAg/0ZxhjD9iy4M8seJUbPkZ1eQTqjH7QIT04uzzPtjrhhnf0ACpn4CJ2oYoj4pLsSXcyjhIvAA5bm+mLCp+o5P3VT2JHwyC2io/aFWwa62dVdKuX4HqKr+yjOvaQgWjz7VO6daVwp5ViFOorDuOAPfAVFOv+clXVzyeBnk8vgso3cK4+L2ZcsSKzxO9j12vgN/5K6ayJNiwKkes+KxGeDymOqvQ3zEpdKnUJudTcSi2jfg8JqBEwZJkE8kcKh7LebhnybjG+VIRpY4KaaSdaaSnpgKDBfaqYi8rcqgonrC71EOporKFyveR3xGAqyyXaig5VKzFlhl3eO7sBPKeTv451O9YxVZWcKPfaYR9mZJ3sKTbWbO8CrsMZNtd8LmnBvp7aLAk3G40vYqtrDSNabcrdmdOP5aUu10bVBrDfLxBxVJWcKN8tRKodvz1yaGkW4CbZt/lrSMhWoWoQ4XbA2y7SfRggVIq4pSXm4q5rDAoN/VOrmE5BLlVuOXHhGDbdq68Su+UbY34jmZ2H0o6MmdQA8W8Asxhf05JxVhsWWGqe0sB91yzWw71BVTAtu2oaXzFVFYIlz+dfofom18OJd8CnHjszmlpau0qjbr9kXZyHRCbQ6/FUcJWIfPHRbkQihhRMDK9gcsvhzK8liNoxbqhrhi6NlxRMb8Fknqw5HhXiW7qhrjVFP0ktBHlKr4E0vS2NgsL5DhI1M7zzG/A3K8jhkrb/ElCkd5+0lHiVlqg+OG92b7LrLLqTd6q96iyOaRngUMfPIoUKvIbQ/kubnNKFHNRUb5dlt0pWlda+rOgNP9SoShUuIlnNct5UCakPBQqlN06QcXSngYF065zVBF6LYY3Eh8fRZk/ahU0sNv3iA3RsVG4Nvkm9mmNKvzAnMByHpSrDkWjslRcDctpUJp/IO2hUZn7uGxDtLGcB+UdeassneBJwdKfBmXUFFqjitj1v7OcB4Uo7n4cVMSu/8JyHhRsRDGoiCyXY7fJIsqAwlSkaDlL582KYlTh5+QPzeKHYlaRWMjXQLGozCx/PQGLiNKhOJVTRMuPvihWleOzCFtC2dPHRUViwQdHsUeKi8qxWXgU4hQpTioSy8dB62wzmnu0fioSy2GKCz/j+I6c0sdV5aAsQkl5R51bpLiqSHfQRyguAsrVNVDcVZZ7oulYLFhE8ThcVWSWfWeRsIoBU5RFBf2E6HiY4iKgTI4tsr/KMk00NsfIIiF7JuRRUzxVlrb+ig+QRWL2jKjzQ/FSQbTj1hPuNFzEMxyQ9wF+3z630NO+m2hpsRhF2VWWpmhsdpxFYqB4l5QgFVVx2U+4EPHMrgiViJX5rwxScdlLuIinNYWIhKmsMlL2kv1VlOWR7a6gSidnUf00kk7oitBQNlaQeLdYO42kQAnOnnCVtYke9xMuRA4UGpo9MSrL3xz2Ei7SeSydlKFCrNyzaBLP54PsweRKwxrkBCrrp3GVT4lULijLcreY7IlVUYdL0fJCFIGC4g+I+/H5BkAOl2Iussna9Ay1VdZwGeu4KEyWQOnqx8p6AzDfAXwv7qIyGWkalHiV+3ko0iiri8pkSZ4/IrQTlTWRVWmUzYWo/lZ0c5xaZY2Xm+pR0hzttNJkTFJlE6to0yi5i9JkSZ6Oot2p3NNI6fKdZOzHrq8jGNKapFRZ40VZXlIFDFH/7pQFJYPKMgeAbmqX+BtHg0mH0I5V7p+ZJl6iAoZofuVIUydPDpV7Q6CLl1AYTZik67VlV7G4+MPowuSeOxQdROXpooH57gFDdEGX0ySTyrO+aPfZcYIh2njLa5JNZY6Xbu2/YP17FcxbHhC96HTLa5JR5d5Oo9uETW+cIN4ka4nNU2OLqNxHGYyJpIoZYoqvNXXQQNGBVT4LL71ZYOarJVaRpXeymuQmKaDymUjGCvO4aAvcPXUKmJRQ+ay81kyykKyD1EMRk0Iqj4C5BcF84OlaLkxKqiwXFQaDyUqScEhpVypLk7TCLDUGO2cOXfomQ4fQWVWeMHPxnawweIkS+giyU6usJeYOc7sa2mH82QrPJBShL6CyXuu9SsxVRlFm8Fxdb/dvo7TK6VVS2XJpLjPD+EinD7yIfFJ0FFU7AFU8HjLzf1zHiUzjU2RAVY//A06XwnjiVfSoAAAAAElFTkSuQmCC" alt="Wappen Dürener TV 1847">
+    <svg class="wordmark" viewBox="0 0 300 62" role="img" aria-label="Dürener TV 1847 Track &amp; Field">
+      <text x="0" y="32" textLength="300" lengthAdjust="spacingAndGlyphs" class="wm-club">DÜRENER TV 1847</text>
+      <line x1="0" y1="50" x2="52" y2="50" class="wm-line"/>
+      <text x="150" y="57" text-anchor="middle" textLength="176" lengthAdjust="spacingAndGlyphs" class="wm-tf">TRACK &amp; FIELD</text>
+      <line x1="248" y1="50" x2="300" y2="50" class="wm-line"/>
+    </svg>
+  </div>
+  <div class="hero">
+    <div class="hero-inner">
+      <h1>Technik</h1>
+      <p>Spickzettel für Übungsleiter und Helfer</p>
+    </div>
+    <div class="lanes" aria-hidden="true"></div>
+  </div>
+</header>
+
+<div class="picker">
+  <nav class="jump" aria-label="Disziplinen">
+    <a href="#weitsprung">Weitsprung</a>
+    <a href="#hochsprung">Hochsprung</a>
+    <a href="#sprintstart">Sprintstart</a>
+    <a href="#huerden">Hürden</a>
+    <a href="#kugel">Kugelstoß</a>
+    <a href="#wurf">Ball und Speer</a>
+    <a href="#mittelstrecke">800 m</a>
+    <a href="masse.html" class="ext">Maße</a>
+    <a href="training.html" class="ext">Mein Training</a>
+  </nav>
+</div>
+
+<main>
+
+<section id="start" style="padding-top:14px">
+  <div class="info">Aufbau je Disziplin: Grundprinzip, Bild, Ablauf, Techniken, Schlüsselpunkte, typische Fehler, Ansagen für die Bahn sowie Alter und Sicherheit. Die Ansagen sind kurze Rufe, die Kinder im Moment umsetzen können. Sie ersetzen keine Trainerausbildung: Bei Stabhochsprung, Speer, Hochsprung und Hammerwurf gehört immer eine ausgebildete Betreuung dazu.</div>
+</section>
+
+<!-- ============ WEITSPRUNG ============ -->
+<section id="weitsprung">
+  <h2>Weitsprung<span class="sub">Der häufigste Denkfehler: Kinder wollen weit springen und springen deshalb flach nach vorn.</span></h2>
+
+  <div class="block coded">
+    <h3>Grundprinzip</h3>
+    <p>Die Weite entsteht aus zwei Dingen: dem Tempo, das aus dem Anlauf mitgenommen wird, und der Flugzeit, die beim Absprung erzeugt wird. In der Luft kann niemand mehr etwas hinzufügen. Alles wird im letzten Bodenkontakt entschieden, der etwa eine Zehntelsekunde dauert.</p>
+    <p>Wer nur nach vorn springt, hat zwar Tempo, aber kaum Flugzeit. Der Absprung muss also nach oben gehen, ohne dabei zu bremsen. Gut gesprungen sind es etwa 20 Grad nach oben, nicht 45. „Spring nach oben“ ist deshalb eine Korrektur gegen zu flaches Springen, kein Hochsprung.</p>
+  </div>
+
+  <div class="block">
+    <div class="fig">
+      <svg viewBox="0 0 360 158" role="img" aria-label="Zwei Flugkurven vom selben Balken: die flache Kurve landet früh, die höhere Kurve landet deutlich weiter">
+        <line x1="20" y1="120" x2="70" y2="120" stroke="#2B2B2B" stroke-width="1.5"/>
+        <rect x="70" y="114" width="14" height="6" fill="#2B2B2B"/>
+        <rect x="84" y="120" width="256" height="16" fill="#EDE2C6"/>
+        <path d="M84 112 Q 142 96 200 112" fill="none" stroke="#6A6A6A" stroke-width="2"/>
+        <path d="M84 112 Q 190 40 296 112" fill="none" stroke="#D7191C" stroke-width="2.5"/>
+        <line x1="200" y1="106" x2="200" y2="128" stroke="#6A6A6A" stroke-width="2"/>
+        <line x1="296" y1="106" x2="296" y2="128" stroke="#D7191C" stroke-width="2.5"/>
+        <text class="s" x="200" y="148" text-anchor="middle">flach</text>
+        <text class="s" x="296" y="148" text-anchor="middle">nach oben</text>
+      </svg>
+    </div>
+    <p class="cap">Gleicher Anlauf, gleiches Tempo, nur der Absprung ist anders: flach nach vorn gegen nach oben abgesprungen. Mehr Flugzeit bedeutet mehr Weite.</p>
+  </div>
+
+  <details class="block">
+    <summary><h3>Ablauf</h3></summary>
+    <div class="inner">
+      <ul class="steps">
+        <li><b>Anlauf:</b> gleichmäßig steigern, die letzten Meter am schnellsten. Anlauflänge gemessen und markiert, nicht geschätzt.</li>
+        <li><b>Letzte drei Schritte:</b> vorletzter Schritt etwas länger und flacher, letzter Schritt kurz. So kommt der Körper tief und kann nach oben abdrücken.</li>
+        <li><b>Absprung:</b> Fuß aktiv unter dem Körper aufsetzen, ganz kurzer Bodenkontakt, Schwungknie und Arme nach oben.</li>
+        <li><b>Flug:</b> Gleichgewicht halten und Drehung nach vorn vermeiden. Mehr macht der Flug nicht.</li>
+        <li><b>Landung:</b> beide Beine nach vorn, Arme nach hinten unten reißen, im Sand nach vorn durchrutschen und nicht zurückfallen.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Techniken</h3></summary>
+    <div class="inner">
+      <div class="var"><b>Schrittsprung</b><span>Die Grundform. Der Schwungschritt wird in der Luft gehalten. Für alle Jüngeren und die meisten Jugendlichen die richtige Wahl.</span></div>
+      <div class="var"><b>Hangsprung</b><span>Der Körper streckt sich in der Luft, Arme und Beine gehen nach hinten. Bremst die Vorwärtsdrehung, braucht aber Rumpfspannung.</span></div>
+      <div class="var"><b>Laufsprung</b><span>Weiterlaufen in der Luft mit eineinhalb oder zweieinhalb Schritten. Erst sinnvoll bei langem Anlauf und hoher Flugzeit, also bei Fortgeschrittenen.</span></div>
+      <p class="note">Die Flugtechnik bringt keine Weite von allein. Sie hilft nur, die Drehung zu kontrollieren und sauber zu landen. Anlauf und Absprung entscheiden.</p>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Worauf es ankommt</h3>
+    <ul class="pts">
+      <li>Anlauf messen, Startmarke setzen und immer gleich anlaufen.</li>
+      <li>Vor dem Balken nicht bremsen und nicht nach dem Balken schauen.</li>
+      <li>Kurzer, harter Bodenkontakt beim Absprung. Der Fuß stempelt, er rollt nicht ab.</li>
+      <li>Schwungknie und Arme nach oben, Brust aufrecht, Blick nach vorn.</li>
+      <li>Landung üben: Beine vor, Arme zurück, nach vorn abrutschen.</li>
+    </ul>
+  </div>
+
+  <details class="block">
+    <summary><h3>Typische Fehler</h3></summary>
+    <div class="inner">
+      <div class="err"><b>Springt flach nach vorn</b><span>Über ein flach gespanntes Gummiband oder einen kleinen Kasten hinter dem Balken springen. Ziel vorgeben: Knie hoch, Kopf bleibt oben.</span></div>
+      <div class="err"><b>Stoppt vor dem Balken und tritt zurück</b><span>Nicht auf den Balken zielen lassen. In der Jugend mit Absprungzone springen und den Anlauf gemeinsam einmessen.</span></div>
+      <div class="err"><b>Landet auf dem Po und gibt Weite ab</b><span>Landung getrennt üben: von einem niedrigen Kasten in den Sand, Arme beim Aufsetzen nach hinten reißen.</span></div>
+      <div class="err"><b>Anlauf stimmt nie</b><span>Schrittzahl festlegen, Startmarke mit Klebeband, immer dieselben Schuhe, Rückenwind und Belag berücksichtigen.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Ansagen</h3>
+    <div class="cues"><span class="cue">Schnell rein, oben raus</span><span class="cue">Knie hoch</span><span class="cue">Vom Boden wegdrücken</span><span class="cue">Füße nach vorn</span></div>
+  </div>
+
+  <details class="block safe">
+    <summary><h3>Alter und Sicherheit</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0"><b>U8 bis U12:</b> Zonenabsprung statt Balken, viele Sprünge, sichere Landung. <b>U14 und U16:</b> Anlauf einmessen, Schrittsprung sauber lernen. <b>Ab U18:</b> längerer Anlauf, Flugtechnik.</p>
+      <p class="note"><b>Sicherheit:</b> Sand vor jedem Durchgang auflockern und glattziehen, Grube frei von Harken und Geräten, immer nur ein Springer im Anlauf, Anlaufbahn sauber und trocken.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ HOCHSPRUNG ============ -->
+<section id="hochsprung">
+  <h2>Hochsprung<span class="sub">Der Bogen im Anlauf ist keine Verzierung. Ohne ihn funktioniert der Flop nicht.</span></h2>
+
+  <div class="block coded">
+    <h3>Grundprinzip</h3>
+    <p>Entscheidend ist, wie hoch der Körperschwerpunkt steigt und wie sparsam der Körper über die Latte geführt wird. Beim Flop läuft der Athlet einen Bogen. Dadurch neigt er sich nach innen, kann beim Absprung weit ausholen und den Rücken über die Latte drehen. Der Schwerpunkt bleibt dabei tief, ein Teil des Körpers ist immer unter der Latte.</p>
+    <p>Wer gerade auf die Latte zuläuft, hat keine Innenneigung und springt frontal in die Latte. Dann bleibt nur der Schersprung.</p>
+  </div>
+
+  <div class="block">
+    <div class="fig">
+      <svg viewBox="0 0 360 195" role="img" aria-label="Draufsicht auf die Hochsprunganlage mit bogenförmigem Anlauf und geradem Anlauf zum Vergleich">
+        <rect x="210" y="25" width="120" height="92" rx="6" fill="#E6E6E4" stroke="#DEDEDC"/>
+        <text class="s" x="270" y="75" text-anchor="middle">Matte</text>
+        <line x1="210" y1="25" x2="210" y2="117" stroke="#D7191C" stroke-width="3"/>
+        <circle cx="210" cy="25" r="4" fill="#2B2B2B"/>
+        <circle cx="210" cy="117" r="4" fill="#2B2B2B"/>
+        <path d="M30 168 C 95 166, 150 152, 186 106" fill="none" stroke="#D7191C" stroke-width="2.5"/>
+        <circle cx="86" cy="162" r="3" fill="#6A6A6A"/>
+        <circle cx="127" cy="150" r="3" fill="#6A6A6A"/>
+        <circle cx="162" cy="130" r="3" fill="#6A6A6A"/>
+        <circle cx="186" cy="106" r="5" fill="#D7191C"/>
+        <line x1="190" y1="110" x2="212" y2="140" stroke="#6A6A6A" stroke-width="1" stroke-dasharray="3 3"/>
+        <text class="s" x="214" y="146" text-anchor="start">Absprung</text>
+        <path d="M60 168 L 196 62" fill="none" stroke="#6A6A6A" stroke-width="2" stroke-dasharray="6 4"/>
+        <text class="s" x="120" y="186" text-anchor="middle">Bogen: Innenneigung</text>
+        <text class="s" x="204" y="52" text-anchor="end">gerade: frontal in die Latte</text>
+      </svg>
+    </div>
+    <p class="cap">Von oben gesehen. Die Punkte sind Hütchen, mit denen sich der Bogen im Training markieren lässt.</p>
+  </div>
+
+  <details class="block">
+    <summary><h3>Ablauf</h3></summary>
+    <div class="inner">
+      <ul class="steps">
+        <li><b>Anlauf gerade:</b> drei bis fünf Schritte zum Tempoaufbau, locker und aufrecht.</li>
+        <li><b>Bogen:</b> die letzten drei bis fünf Schritte im Bogen zur Matte hin, der Körper neigt sich dabei von selbst nach innen.</li>
+        <li><b>Absprung:</b> vorletzter Schritt lang, letzter kurz, Sprungbein streckt sich vollständig, Schwungknie und Arme nach oben.</li>
+        <li><b>Überquerung:</b> Rücken zur Latte, Hüfte nach oben schieben, Kopf erst danach nachziehen.</li>
+        <li><b>Landung:</b> auf Schultern und Rücken in der Mattenmitte, Kinn zur Brust, nie auf Kopf oder Nacken.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Techniken</h3></summary>
+    <div class="inner">
+      <div class="var"><b>Schersprung</b><span>Der Einstieg. Gerader oder leicht schräger Anlauf, Beine scheren über die Latte, Landung auf den Füßen oder sitzend. Sicher, auch ohne große Matte, und für Kinder die richtige Form.</span></div>
+      <div class="var"><b>Flop</b><span>Bogenanlauf, Überquerung mit dem Rücken. Bringt deutlich mehr Höhe, braucht aber eine ausreichend große Matte, Rumpfspannung und Anleitung.</span></div>
+      <div class="var"><b>Straddle (Wälzer)</b><span>Ältere Technik mit Bauch zur Latte. Wird heute nicht mehr unterrichtet, taucht aber in alten Lehrbüchern auf.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Worauf es ankommt</h3>
+    <ul class="pts">
+      <li>Den Bogen wirklich laufen. Hütchen setzen, sonst wird daraus eine Gerade.</li>
+      <li>Absprungbein ist immer das von der Matte weiter entfernte, also das äußere Bein.</li>
+      <li>Absprungpunkt etwa eine Armlänge vor der Latte, auf Höhe des inneren Ständerdrittels.</li>
+      <li>Tempo nur so hoch, wie es der Absprung verkraftet. Zu schnell heißt meist zu flach.</li>
+      <li>Nicht zur Latte schauen, sondern groß bleiben und die Hüfte nach oben schieben.</li>
+    </ul>
+  </div>
+
+  <details class="block">
+    <summary><h3>Typische Fehler</h3></summary>
+    <div class="inner">
+      <div class="err"><b>Gerader Anlauf</b><span>Bogen mit drei Hütchen abstecken und zunächst ohne Latte anlaufen lassen.</span></div>
+      <div class="err"><b>Springt zu dicht an der Latte ab</b><span>Absprungmarke auf den Boden kleben. Ein Schritt mehr Abstand wirkt oft sofort.</span></div>
+      <div class="err"><b>Bremst vor dem Absprung</b><span>Niedrige Höhe wählen und den Anlauf ohne Latte durchlaufen, damit der Rhythmus bleibt.</span></div>
+      <div class="err"><b>Hüfte hängt, Beine reißen die Latte</b><span>Rückenlage auf der Matte üben: Brücke bauen, Hüfte hoch, Beine locker. Danach aus drei Schritten springen.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Ansagen</h3>
+    <div class="cues"><span class="cue">Bogen laufen</span><span class="cue">Groß bleiben</span><span class="cue">Knie und Arm hoch</span><span class="cue">Hüfte nach oben</span></div>
+  </div>
+
+  <details class="block safe">
+    <summary><h3>Alter und Sicherheit</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0"><b>Kinder:</b> Schersprung, niedrige Höhen, viele Wiederholungen, Gummiband statt Latte. <b>Flop</b> erst mit passender Matte, ausreichender Körperspannung und Anleitung durch eine ausgebildete Person.</p>
+      <p class="note"><b>Sicherheit:</b> Matten dicht zusammenschieben und verbinden, keine Lücken, Mattenhöhe und Fläche prüfen (Wettkampfanlagen mindestens 6 mal 4 Meter), Ständer nicht anspringen lassen, Latte nie festhalten, Anlauf trocken halten. Nach der Landung sofort von der Matte.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ SPRINTSTART ============ -->
+<section id="sprintstart">
+  <h2>Sprintstart<span class="sub">Die ersten Meter sind Drücken nach vorn, kein Aufrichten.</span></h2>
+
+  <div class="block coded">
+    <h3>Grundprinzip</h3>
+    <p>Ein Sprint besteht aus zwei Teilen: beschleunigen und schnell bleiben. Beim Beschleunigen drückt der Körper schräg nach vorn gegen den Boden, die Schritte sind kurz und kräftig. Erst nach etwa 20 bis 30 Metern ist die Aufrichtung abgeschlossen, und es zählt die Schrittfrequenz.</p>
+    <p>Kinder richten sich fast immer zu früh auf. Dann fehlt der Vortrieb, und der Lauf beginnt praktisch bei Null.</p>
+  </div>
+
+  <div class="block">
+    <div class="fig">
+      <svg viewBox="0 0 360 165" role="img" aria-label="Seitenansicht: schräge Körperlinie beim Start im Vergleich zur aufrechten Haltung">
+        <line x1="20" y1="132" x2="340" y2="132" stroke="#2B2B2B" stroke-width="1.5"/>
+        <line x1="70" y1="112" x2="70" y2="142" stroke="#2B2B2B" stroke-width="2"/>
+        <line x1="70" y1="132" x2="178" y2="72" fill="none" stroke="#D7191C" stroke-width="3"/>
+        <circle cx="182" cy="70" r="7" fill="none" stroke="#D7191C" stroke-width="2"/>
+        <line x1="70" y1="132" x2="76" y2="58" fill="none" stroke="#6A6A6A" stroke-width="2.5"/>
+        <circle cx="77" cy="50" r="7" fill="none" stroke="#6A6A6A" stroke-width="2"/>
+        <text class="s" x="196" y="66" text-anchor="start">schräg nach vorn drücken</text>
+        <text class="s" x="92" y="38" text-anchor="start">zu früh aufrecht</text>
+        <text class="s" x="70" y="154" text-anchor="middle">Startlinie</text>
+      </svg>
+    </div>
+    <p class="cap">Je flacher die Körperlinie in den ersten Schritten, desto mehr Kraft geht nach vorn statt nach oben.</p>
+  </div>
+
+  <details class="block">
+    <summary><h3>Ablauf</h3></summary>
+    <div class="inner">
+      <ul class="steps">
+        <li><b>Auf die Plätze:</b> Hände schulterbreit hinter der Linie, Finger gespreizt, Blick nach unten, Knie des hinteren Beins am Boden.</li>
+        <li><b>Fertig:</b> Hüfte etwas höher als die Schultern, Gewicht ruhig auf Händen und Füßen, keine Bewegung mehr.</li>
+        <li><b>Schuss:</b> beide Beine drücken, die Arme arbeiten sofort kräftig gegen.</li>
+        <li><b>Beschleunigung:</b> etwa 20 bis 30 Meter, Schritte kurz und kräftig, der Körper richtet sich langsam von selbst auf.</li>
+        <li><b>Maximaltempo und Ziel:</b> locker bleiben, durch die Ziellinie laufen und erst danach austrudeln.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Techniken</h3></summary>
+    <div class="inner">
+      <div class="var"><b>Hochstart</b><span>Aus dem Stand mit Schrittstellung. Für Kinder und für alle Läufe ab 800 Metern die passende Form. Braucht keinen Block.</span></div>
+      <div class="var"><b>Tiefstart mit Startblock</b><span>Ab etwa U14 sinnvoll, wenn Kraft und Körperspannung ausreichen. Mittlere Blockstellung als Standard: vorderer Block etwa zwei Fußlängen hinter der Linie, hinterer etwa eine weitere Fußlänge dahinter.</span></div>
+      <div class="var"><b>Tiefstart ohne Block</b><span>Als Zwischenschritt, um die Position zu lernen. Die Hände stehen hinter der Linie, der Druck kommt aus dem Boden statt aus dem Block.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Worauf es ankommt</h3>
+    <ul class="pts">
+      <li>In „Fertig“ absolut ruhig bleiben. Jede Vorbewegung ist ein Fehlstart.</li>
+      <li>Erste Schritte kurz, kräftig und unter dem Körper, nicht weit nach vorn greifen.</li>
+      <li>Blick in den ersten Metern nach unten, dann von selbst nach vorn.</li>
+      <li>Arme lang und locker, Schultern tief, Hände nicht zur Faust verkrampfen.</li>
+      <li>Immer durch die Ziellinie laufen, nicht davor abbremsen.</li>
+    </ul>
+  </div>
+
+  <details class="block">
+    <summary><h3>Typische Fehler</h3></summary>
+    <div class="inner">
+      <div class="err"><b>Richtet sich sofort auf</b><span>Beschleunigungsläufe am leichten Berg oder gegen leichten Widerstand. Markierungen legen, die die ersten Schritte kurz halten.</span></div>
+      <div class="err"><b>Verkrampfte Schultern und Fäuste</b><span>Locker-Kommando geben, Hände offen oder Daumen locker an den Zeigefinger. Kurze Steigerungsläufe statt voller Sprints.</span></div>
+      <div class="err"><b>Schaut beim Laufen zur Seite</b><span>Blick auf einen Punkt hinter dem Ziel richten, Bahnlinien als Orientierung nutzen.</span></div>
+      <div class="err"><b>Bremst vor dem Ziel ab</b><span>Zielmarke fünf Meter hinter die Linie legen und bis dorthin laufen lassen.</span></div>
+    </div>
+  </details>
+
+
+  <details class="block">
+    <summary><h3>Übungen mit Hütchen</h3></summary>
+    <div class="inner">
+      <h4 style="margin-top:0">Beschleunigungsgasse</h4>
+      <p class="note" style="margin-top:0">Marken für die ersten Schritte, die Abstände werden größer. Der Fuß soll die Marke knapp erreichen, nicht danach springen. Wenn ein Kind streckt oder stolpert, sind die Abstände zu groß.</p>
+      <div class="fig">
+        <svg viewBox="0 0 360 112" role="img" aria-label="Sechs Markierungen hinter der Startlinie mit größer werdenden Abständen">
+          <line x1="20" y1="80" x2="345" y2="80" stroke="#2B2B2B" stroke-width="1.5"/>
+          <line x1="30" y1="62" x2="30" y2="92" stroke="#2B2B2B" stroke-width="2.5"/>
+          <path d="M62 80 L 72 80 L 67 66 Z" fill="#D7191C"/>
+          <path d="M105 80 L 115 80 L 110 66 Z" fill="#D7191C"/>
+          <path d="M154 80 L 164 80 L 159 66 Z" fill="#D7191C"/>
+          <path d="M207 80 L 217 80 L 212 66 Z" fill="#D7191C"/>
+          <path d="M264 80 L 274 80 L 269 66 Z" fill="#D7191C"/>
+          <path d="M325 80 L 335 80 L 330 66 Z" fill="#D7191C"/>
+          <text class="s" x="30" y="104" text-anchor="middle">Start</text>
+          <text class="s" x="48" y="58" text-anchor="middle">0,90</text>
+          <text class="s" x="88" y="58" text-anchor="middle">1,05</text>
+          <text class="s" x="134" y="58" text-anchor="middle">1,20</text>
+          <text class="s" x="185" y="58" text-anchor="middle">1,30</text>
+          <text class="s" x="240" y="58" text-anchor="middle">1,40</text>
+          <text class="s" x="299" y="58" text-anchor="middle">1,50</text>
+        </svg>
+      </div>
+      <p class="cap">Beispiel für U16, Abstand von Marke zu Marke in Metern.</p>
+      <div class="tw">
+        <table class="ov nw">
+          <thead><tr><th>Gruppe</th><th>Abstände von Marke zu Marke</th></tr></thead>
+          <tbody>
+            <tr><td>U10 bis U12</td><td>0,70 / 0,85 / 0,95 / 1,05 / 1,15 / 1,25 m</td></tr>
+            <tr><td>U14 bis U16</td><td>0,90 / 1,05 / 1,20 / 1,30 / 1,40 / 1,50 m</td></tr>
+            <tr><td>U18 und älter</td><td>1,00 / 1,20 / 1,35 / 1,50 / 1,60 / 1,70 m</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h4>Frequenzgasse</h4>
+      <p class="note" style="margin-top:0">Zehn bis fünfzehn Marken in gleichem, eher kurzem Abstand. Ziel sind schnelle Fußaufsätze, nicht große Schritte. U10 bis U12 etwa 0,80 bis 0,90 m, U14 bis U16 etwa 1,00 bis 1,10 m, ab U18 etwa 1,10 bis 1,25 m.</p>
+      <h4>Steigerungsgasse</h4>
+      <p class="note" style="margin-top:0">Hütchen alle 10 m über 40 m. Bis zum ersten Hütchen anfahren, bis zum zweiten steigern, danach das Tempo halten und locker bleiben. Gut als Einlaufform.</p>
+      <h4>Fliegende Sprints</h4>
+      <p class="note" style="margin-top:0">20 m Anlaufzone, danach 20 m Messstrecke zwischen zwei Hütchenpaaren, anschließend mindestens 15 m locker auslaufen. Ergibt gleich die Zeit für 20 m fliegend, die sich auf der <a href="training.html">Trainingsseite</a> als Referenz eintragen lässt.</p>
+      <h4>Reaktionsstarts</h4>
+      <p class="note" style="margin-top:0">Hütchen alle 5 m, Start auf Signal aus verschiedenen Ausgangslagen, zum Beispiel stehend, sitzend oder in Bauchlage. Sprintstrecke 10 bis 20 m, dann volle Pause bis zur Ruhe.</p>
+      <p class="note"><b>Wichtig:</b> Alle Werte sind Richtwerte. Maßband mitnehmen, die Gasse einmal ausmessen und die Abstände an die Kinder anpassen, nicht umgekehrt. Bei müden Beinen lieber kürzer stellen.</p>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Ansagen</h3>
+    <div class="cues"><span class="cue">Drücken, nicht hochkommen</span><span class="cue">Kurz und schnell</span><span class="cue">Schultern locker</span><span class="cue">Durchs Ziel</span></div>
+  </div>
+
+  <details class="block safe">
+    <summary><h3>Alter und Regeln</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0"><b>U8 bis U12:</b> Hochstart, Reaktionsspiele, kurze Strecken mit vollem Tempo und langen Pausen. <b>Ab U14:</b> Blockstart einführen, zuerst ohne Zeitdruck. <b>Ab U16:</b> Startserien mit Kommando.</p>
+      <p class="note"><b>Regeln:</b> Nach „Fertig“ keine Bewegung, sonst Fehlstart. In der Bahn bleiben, die Innenlinie nicht übertreten. Windmessung gilt bis 100 Meter und im Weitsprung.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ HÜRDEN ============ -->
+<section id="huerden">
+  <h2>Hürden<span class="sub">Hürdenlauf ist Sprint mit festem Rhythmus. Die Hürde wird überlaufen, nicht übersprungen.</span></h2>
+
+  <div class="block coded">
+    <h3>Grundprinzip</h3>
+    <p>Die Zeit entsteht zwischen den Hürden, nicht über ihnen. Jeder Zentimeter, den der Körper zu hoch steigt, kostet Zeit und Tempo. Ziel ist deshalb eine flache Flugkurve: Der Oberkörper legt sich nach vorn, statt dass der Körper nach oben springt.</p>
+    <p>Genauso wichtig ist der Rhythmus. Zwischen den Hürden wird eine feste Schrittzahl gelaufen, im Sprint über Hürden sind das drei Schritte. Stimmt der Abstand zur Altersklasse, passt dieser Rhythmus von selbst. Stimmt er nicht, fangen Kinder an zu stottern und zu bremsen.</p>
+  </div>
+
+  <div class="block">
+    <div class="fig">
+      <svg viewBox="0 0 360 158" role="img" aria-label="Seitenansicht einer Hürde mit flacher und zu hoher Flugkurve">
+        <line x1="20" y1="125" x2="340" y2="125" stroke="#2B2B2B" stroke-width="1.5"/>
+        <line x1="180" y1="125" x2="180" y2="86" stroke="#2B2B2B" stroke-width="2"/>
+        <rect x="166" y="82" width="28" height="5" fill="#2B2B2B"/>
+        <line x1="166" y1="125" x2="196" y2="125" stroke="#2B2B2B" stroke-width="2"/>
+        <path d="M124 118 Q 180 -18 236 118" fill="none" stroke="#6A6A6A" stroke-width="2"/>
+        <path d="M104 118 Q 180 30 256 118" fill="none" stroke="#D7191C" stroke-width="2.5"/>
+        <text class="s" x="336" y="56" text-anchor="end">zu hoch gesprungen</text>
+        <text class="s" x="340" y="100" text-anchor="end">flach überlaufen</text>
+        <text class="s" x="180" y="146" text-anchor="middle">Hürde</text>
+      </svg>
+    </div>
+    <p class="cap">Die Linien zeigen den Weg des Körperschwerpunkts. Wer hoch springt, verliert Tempo und landet spät.</p>
+  </div>
+
+  <div class="block">
+    <div class="fig">
+      <svg viewBox="0 0 360 158" role="img" aria-label="Abstände an der Hürde: weiter Absprung, nahe Landung, drei Schritte bis zur nächsten Hürde">
+        <line x1="20" y1="112" x2="345" y2="112" stroke="#2B2B2B" stroke-width="1.5"/>
+        <line x1="170" y1="112" x2="170" y2="74" stroke="#2B2B2B" stroke-width="2"/>
+        <rect x="156" y="70" width="28" height="5" fill="#2B2B2B"/>
+        <line x1="330" y1="112" x2="330" y2="74" stroke="#2B2B2B" stroke-width="2"/>
+        <rect x="316" y="70" width="28" height="5" fill="#2B2B2B"/>
+        <line x1="80" y1="104" x2="80" y2="120" stroke="#D7191C" stroke-width="2.5"/>
+        <line x1="212" y1="104" x2="212" y2="120" stroke="#D7191C" stroke-width="2.5"/>
+        <path d="M80 104 Q 160 20 212 104" fill="none" stroke="#D7191C" stroke-width="2.5"/>
+        <circle cx="240" cy="112" r="3.5" fill="#6A6A6A"/>
+        <circle cx="270" cy="112" r="3.5" fill="#6A6A6A"/>
+        <circle cx="300" cy="112" r="3.5" fill="#6A6A6A"/>
+        <text class="s" x="100" y="136" text-anchor="middle">Absprung weit weg</text>
+        <text class="s" x="218" y="92" text-anchor="start">Landung nah</text>
+        <text class="s" x="271" y="136" text-anchor="middle">3 Schritte</text>
+      </svg>
+    </div>
+    <p class="cap">Der Absprung liegt deutlich weiter von der Hürde entfernt als die Landung. Grob gilt etwa zwei Drittel vor und ein Drittel hinter der Hürde.</p>
+  </div>
+
+
+  <div class="block">
+    <h3>Abstände zum Messen</h3>
+    <p class="note" style="margin-top:0">Richtwerte für den Überlauf, gemessen vom Fußaufsatz bis zur Hürde. Praktisch am Platz: in eigenen Fußlängen abschreiten, das passt über alle Altersklassen erstaunlich gut.</p>
+    <div class="tw">
+      <table class="ov nw">
+        <thead><tr><th>Hürde</th><th>Absprung vor</th><th>Landung hinter</th><th>Fußlängen</th></tr></thead>
+        <tbody>
+          <tr><td>0,60 bis 0,76 m<br><small>U12 bis U16</small></td><td>1,50–1,80 m</td><td>0,80–1,00 m</td><td>7 vor, 4 hinter</td></tr>
+          <tr><td>0,76 bis 0,84 m<br><small>WJU18 bis Frauen</small></td><td>1,80–2,00 m</td><td>0,90–1,10 m</td><td>7 vor, 4 hinter</td></tr>
+          <tr><td>0,91 bis 1,07 m<br><small>MJU18 bis Männer</small></td><td>2,00–2,20 m</td><td>1,20–1,50 m</td><td>7 vor, 5 hinter</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Die Werte gelten für den Sprint über Hürden. Wer deutlich näher abspringt, muss steil nach oben springen. Wer viel weiter landet, bremst sich beim Aufsetzen aus. Bei langen Hürden liegen beide Werte etwas kürzer, weil das Tempo geringer ist.</p>
+    <h4>Rhythmusgasse für drei Schritte</h4>
+    <p class="note" style="margin-top:0">Abstand von Hindernis zu Hindernis im Training, mit niedrigen Hürden oder Schaumstoffteilen. Erst verkürzen, bis der Rhythmus sicher läuft, dann schrittweise auf das Wettkampfmaß vergrößern.</p>
+    <div class="tw">
+      <table class="ov nw">
+        <thead><tr><th>Gruppe</th><th>Training</th><th>Wettkampf</th></tr></thead>
+        <tbody>
+          <tr><td>U12 und U14</td><td>5,50–6,50 m</td><td>7,00–7,50 m</td></tr>
+          <tr><td>U16</td><td>6,50–7,50 m</td><td>8,00–8,60 m</td></tr>
+          <tr><td>U18 und älter</td><td>7,50–8,50 m</td><td>8,50–9,14 m</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Die genauen Wettkampfmaße je Altersklasse stehen auf der <a href="masse.html#huerden">Maße-Seite</a>.</p>
+  </div>
+
+  <details class="block">
+    <summary><h3>Ablauf</h3></summary>
+    <div class="inner">
+      <ul class="steps">
+        <li><b>Zur ersten Hürde:</b> feste Schrittzahl, im Sprint meist sieben oder acht Schritte, bei Jüngeren nach Absprache. Diese Zahl wird im Training festgelegt und nicht im Wettkampf geändert.</li>
+        <li><b>Angriff:</b> Schwungbein mit dem Knie zuerst gerade nach vorn führen, Unterschenkel dann nach vorn strecken. Gleichzeitig legt sich der Oberkörper vor, der gegengleiche Arm geht zum Schwungbeinfuß.</li>
+        <li><b>Überquerung:</b> Das Nachziehbein kommt flach und seitlich nach, Knie hoch und außen, Fußspitze angezogen.</li>
+        <li><b>Landung:</b> aktiv auf dem Ballen, Fuß unter dem Körper, nicht weit nach vorn. Der Lauf geht sofort weiter.</li>
+        <li><b>Rhythmus:</b> drei Schritte bis zur nächsten Hürde, Blick schon auf die nächste Hürde.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Techniken und Varianten</h3></summary>
+    <div class="inner">
+      <div class="var"><b>Sprinthürden (60 bis 110 Meter)</b><span>Drei Schritte zwischen den Hürden, immer dasselbe Schwungbein. Hier zählt der flache Überlauf und ein sauberer Rhythmus.</span></div>
+      <div class="var"><b>Lange Hürden (300 und 400 Meter)</b><span>Die Schrittzahl wird über das Rennen geplant, zum Beispiel 15 oder 17 Schritte, und wird zum Ende meist länger. Deshalb beide Beine als Schwungbein üben.</span></div>
+      <div class="var"><b>Hindernissprint für Kinder</b><span>Niedrige Schaumstoffhindernisse oder Kartons statt Hürden. Ziel ist der Rhythmus, nicht die Höhe. Abstände so wählen, dass drei oder fünf Schritte sicher passen.</span></div>
+      <p class="note">Höhen, Abstände und Hürdenzahl je Altersklasse stehen auf der <a href="masse.html#huerden">Maße-Seite</a>.</p>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Worauf es ankommt</h3>
+    <ul class="pts">
+      <li>Überlaufen statt überspringen: Der Kopf bleibt möglichst auf derselben Höhe.</li>
+      <li>Brust nach vorn zur Hürde, nicht aufrichten. Der Oberkörper macht die Arbeit.</li>
+      <li>Schwungbein mit dem Knie zuerst, dann den Fuß aktiv nach unten ziehen.</li>
+      <li>Nachziehbein flach und seitlich, Knie hoch. Nicht unter dem Körper durchziehen.</li>
+      <li>Landung unter dem Körper, sofort weiterlaufen, Blick auf die nächste Hürde.</li>
+      <li>Immer dieselbe Schrittzahl zur ersten Hürde und dazwischen.</li>
+    </ul>
+  </div>
+
+  <details class="block">
+    <summary><h3>Typische Fehler</h3></summary>
+    <div class="inner">
+      <div class="err"><b>Springt hoch statt flach</b><span>Niedrigere Hindernisse nehmen und Abstände leicht verkürzen. Ansage: Brust vor, Kopf bleibt unten. Über flache Linien oder Stäbe laufen lassen.</span></div>
+      <div class="err"><b>Stottert oder bremst vor der Hürde</b><span>Fast immer sind die Abstände zu groß. Abstände verringern, bis drei Schritte sicher passen, und erst dann wieder vergrößern.</span></div>
+      <div class="err"><b>Nachziehbein bleibt hängen</b><span>Seitlich neben der Hürde entlanggehen und nur das Nachziehbein über die Hürde führen, Knie hoch und außen. Erst gehen, dann traben.</span></div>
+      <div class="err"><b>Weicht seitlich aus oder hat Angst</b><span>Höhe deutlich senken, Softhürden nutzen und die Hürde einzeln im Gehen überqueren. Erfolg vor Tempo.</span></div>
+      <div class="err"><b>Landet weit vorn und bremst</b><span>Landung mit Markierung üben: Fuß unter dem Körper aufsetzen und sofort den ersten Schritt machen.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Ansagen</h3>
+    <div class="cues"><span class="cue">Überlaufen, nicht springen</span><span class="cue">Brust vor</span><span class="cue">Knie zuerst</span><span class="cue">Fuß runter</span><span class="cue">Auf die nächste Hürde</span></div>
+  </div>
+
+  <details class="block safe">
+    <summary><h3>Alter, Regeln und Sicherheit</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0"><b>U12 und U14:</b> niedrige Hindernisse, kurze Abstände, Rhythmus lernen. <b>Ab U16:</b> Hürden nach Ausschreibung, Schrittzahl zur ersten Hürde festlegen. <b>Lange Hürden</b> erst, wenn der Sprintrhythmus sitzt und beide Beine führen können.</p>
+      <p class="note"><b>Regeln:</b> Ein Bein oder Fuß darf nicht neben der Hürde vorbeigeführt werden, und eine Hürde darf nicht absichtlich umgeworfen werden. Beides führt zur Disqualifikation. Eine versehentlich umgestoßene Hürde ist dagegen erlaubt.</p>
+      <p class="note"><b>Sicherheit:</b> Hürden immer in Laufrichtung aufstellen, die Standfüße zeigen dem Läufer entgegen. Nie gegen die Laufrichtung anlaufen lassen, das ist die häufigste Verletzungsursache. Gegengewichte passend zur Höhe einstellen, Abstände vor dem Start kontrollieren und Anfänger mit Softhürden üben lassen.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ KUGELSTOSS ============ -->
+<section id="kugel">
+  <h2>Kugelstoß<span class="sub">Die Kugel wird gestoßen, nicht geworfen. Das ist auch eine Frage der Sicherheit.</span></h2>
+
+  <div class="block coded">
+    <h3>Grundprinzip</h3>
+    <p>Die Kugel liegt bis zuletzt am Hals unter dem Kinn und wird in einer geraden Linie nach vorn oben weggedrückt. Die Kraft kommt aus den Beinen, läuft über die Hüfte in den Rumpf und erst ganz zum Schluss in den Arm. Günstig ist ein Abflug von etwa 35 Grad, deutlich flacher als viele vermuten, weil die Kugel schwer ist und nur so lange fliegt, wie sie Schwung bekommt.</p>
+    <p>Wird die Kugel mit angewinkeltem Ellenbogen seitlich geschleudert, geht Weite verloren, und das Handgelenk sowie der Ellenbogen werden stark belastet.</p>
+  </div>
+
+  <div class="block">
+    <div class="fig">
+      <svg viewBox="0 0 360 165" role="img" aria-label="Zwei Flugkurven der Kugel: zu flach abgegeben und in etwa 35 Grad nach vorn oben abgegeben">
+        <line x1="20" y1="140" x2="340" y2="140" stroke="#2B2B2B" stroke-width="1.5"/>
+        <line x1="90" y1="82" x2="90" y2="140" stroke="#6A6A6A" stroke-width="1" stroke-dasharray="4 4"/>
+        <circle cx="90" cy="80" r="6" fill="#D7191C"/>
+        <line x1="90" y1="80" x2="150" y2="80" stroke="#6A6A6A" stroke-width="1" stroke-dasharray="4 4"/>
+        <path d="M90 80 Q 200 24 312 104" fill="none" stroke="#D7191C" stroke-width="2.5"/>
+        <path d="M90 80 Q 165 62 244 104" fill="none" stroke="#6A6A6A" stroke-width="2"/>
+        <text class="s" x="156" y="76" text-anchor="start">ca. 35°</text>
+        <text class="s" x="244" y="126" text-anchor="middle">zu flach</text>
+        <text class="s" x="312" y="126" text-anchor="middle">weiter</text>
+        <text class="s" x="90" y="158" text-anchor="middle">Abgabe</text>
+      </svg>
+    </div>
+    <p class="cap">Zu flach abgegeben fällt die Kugel früh. Der Abgabepunkt liegt hoch, also gestreckt über der Schulter.</p>
+  </div>
+
+  <details class="block">
+    <summary><h3>Ablauf</h3></summary>
+    <div class="inner">
+      <ul class="steps">
+        <li><b>Griff und Sitz:</b> Kugel auf den Fingerwurzeln, Handgelenk stabil, Kugel am Hals unter dem Kinn, Ellenbogen nach außen.</li>
+        <li><b>Auftakt:</b> Rücken zur Stoßrichtung, Gewicht auf dem hinteren Bein, Oberkörper gebeugt.</li>
+        <li><b>Angleiten oder Standstoß:</b> flach nach hinten gleiten oder direkt aus der Auslage arbeiten.</li>
+        <li><b>Stoßauslage:</b> Kugel noch hinter dem Körper, Stemmbein setzt vorn auf, Spannung von der Hüfte bis zur Schulter.</li>
+        <li><b>Stoß:</b> Beine strecken, Hüfte dreht ein, Brust auf, Arm zuletzt, Handgelenk gibt den letzten Impuls.</li>
+        <li><b>Umsprung:</b> Beine tauschen, im Ring bleiben, den Ring erst nach hinten verlassen, wenn die Kugel gelandet ist.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Techniken</h3></summary>
+    <div class="inner">
+      <div class="var"><b>Standstoß</b><span>Der Einstieg für alle. Ohne Angleiten, nur Auslage und Stoß. Damit lernen Kinder den Ablauf Beine, Hüfte, Arm.</span></div>
+      <div class="var"><b>Angleittechnik (O'Brien)</b><span>Flaches Gleiten rückwärts durch den Ring. Der Standard ab etwa U16 und bis in den Erwachsenenbereich.</span></div>
+      <div class="var"><b>Drehstoßtechnik</b><span>Drehung wie beim Diskus. Bringt bei guter Ausführung mehr Weite, braucht aber viel Technikarbeit und erst einen sicheren Standstoß.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Worauf es ankommt</h3>
+    <ul class="pts">
+      <li>Die Kugel bleibt bis zum letzten Moment am Hals.</li>
+      <li>Ellenbogen hoch und hinter der Kugel, nie seitlich absinken lassen.</li>
+      <li>Druck kommt aus dem Bein, nicht aus dem Arm.</li>
+      <li>Brust und Blick gehen nach oben vorn, der Körper streckt sich vollständig.</li>
+      <li>Ring hinten verlassen, erst nachdem die Kugel liegt. Sonst ist der Versuch ungültig.</li>
+    </ul>
+  </div>
+
+  <details class="block">
+    <summary><h3>Typische Fehler</h3></summary>
+    <div class="inner">
+      <div class="err"><b>Wirft statt zu stoßen</b><span>Standstoß gegen eine Wand oder mit dem Medizinball. Hand am Hals fixieren lassen und erst auf Kommando lösen.</span></div>
+      <div class="err"><b>Nur Arm, keine Beine</b><span>Aus der Hocke stoßen lassen, dabei laut mitzählen: beugen, strecken, stoßen. Medizinball beidhändig aus den Beinen.</span></div>
+      <div class="err"><b>Stößt zu flach nach vorn</b><span>Ein Band oder eine Leine schräg spannen und darüber stoßen lassen.</span></div>
+      <div class="err"><b>Übertritt</b><span>Umsprung ohne Kugel üben, Stoßbalken bewusst ansprechen, Abstand zum Balken vorher festlegen.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Ansagen</h3>
+    <div class="cues"><span class="cue">Kugel bleibt am Hals</span><span class="cue">Ellenbogen hoch</span><span class="cue">Aus den Beinen</span><span class="cue">Nach oben vorn wegdrücken</span></div>
+  </div>
+
+  <details class="block safe">
+    <summary><h3>Alter und Sicherheit</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0"><b>Jüngere:</b> Medizinball und leichte Kugeln, immer Standstoß. Die Gewichte je Altersklasse stehen auf der <a href="masse.html#wurf">Maße-Seite</a>. <b>Angleiten</b> erst, wenn der Standstoß sitzt, <b>Drehstoß</b> nur mit Anleitung.</p>
+      <p class="note"><b>Sicherheit:</b> Nur auf Kommando stoßen, Sektor vorher freimachen, niemals zurückstoßen oder zurückwerfen. Kugeln tragen, nicht rollen, und nach dem Stoß erst holen, wenn alle stehen. Kein Stoßen in Reihe ohne klaren Ablauf.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ BALL UND SPEER ============ -->
+<section id="wurf">
+  <h2>Ballwurf und Speer<span class="sub">Geworfen wird über den Kopf, nicht seitlich am Ohr vorbei.</span></h2>
+
+  <div class="block coded">
+    <h3>Grundprinzip</h3>
+    <p>Die Weite entsteht aus einem langen Beschleunigungsweg und einer Peitschenbewegung: Beine und Hüfte gehen zuerst nach vorn, der Wurfarm folgt zuletzt. Der Arm bleibt lang und führt das Gerät über der Schulter nach vorn. Der Abwurf liegt hoch über dem Kopf.</p>
+    <p>Ein seitlicher Schleuderwurf mit tiefem Ellenbogen kostet Weite und belastet die Schulter. Beim Speer ist er auf Dauer riskant.</p>
+  </div>
+
+  <div class="block">
+    <div class="fig">
+      <svg viewBox="0 0 360 165" role="img" aria-label="Seitenansicht: Abwurfrichtung über dem Kopf im Vergleich zum seitlichen Schleudern">
+        <line x1="20" y1="142" x2="340" y2="142" stroke="#2B2B2B" stroke-width="1.5"/>
+        <line x1="110" y1="80" x2="110" y2="142" stroke="#2B2B2B" stroke-width="2.5"/>
+        <circle cx="110" cy="64" r="13" fill="none" stroke="#2B2B2B" stroke-width="2"/>
+        <path d="M60 110 Q 96 34 150 44" fill="none" stroke="#D7191C" stroke-width="2" stroke-dasharray="5 4"/>
+        <line x1="150" y1="44" x2="288" y2="28" stroke="#D7191C" stroke-width="2.5"/>
+        <circle cx="150" cy="44" r="5" fill="#D7191C"/>
+        <line x1="132" y1="92" x2="284" y2="104" stroke="#6A6A6A" stroke-width="2"/>
+        <circle cx="132" cy="92" r="5" fill="#6A6A6A"/>
+        <text class="s" x="330" y="18" text-anchor="end">über den Kopf</text>
+        <text class="s" x="292" y="118" text-anchor="end">seitlich geschleudert</text>
+        <text class="s" x="34" y="128" text-anchor="start">Zugweg</text>
+      </svg>
+    </div>
+    <p class="cap">Der gestrichelte Bogen ist der Zugweg des Arms. Je länger und höher er verläuft, desto mehr Weg hat das Gerät zum Beschleunigen.</p>
+  </div>
+
+  <details class="block">
+    <summary><h3>Ablauf</h3></summary>
+    <div class="inner">
+      <ul class="steps">
+        <li><b>Anlauf:</b> locker und gleichmäßig, das Gerät ruhig über der Schulter führen.</li>
+        <li><b>Rückführung:</b> Wurfarm lang nach hinten strecken, Schulterachse zeigt in Wurfrichtung.</li>
+        <li><b>Impulsschritte:</b> beim Speer der typische Rhythmus aus Kreuzschritt und Stemmschritt, beim Ballwurf drei bis fünf Schritte.</li>
+        <li><b>Stemmschritt:</b> vorderes Bein blockiert, der Oberkörper bleibt zurück, es entsteht Bogenspannung.</li>
+        <li><b>Abwurf:</b> Hüfte zuerst, dann Brust, dann Arm. Ellenbogen führt hoch, das Gerät geht über dem Kopf ab.</li>
+        <li><b>Abfangen:</b> Beinwechsel, Abwurflinie oder Bogen nicht übertreten.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Techniken</h3></summary>
+    <div class="inner">
+      <div class="var"><b>Schlagwurf aus dem Stand</b><span>Die Grundform für Ball und Vortex. Schrittstellung, Arm lang, Abwurf über dem Kopf. So lernen Kinder die richtige Wurfebene.</span></div>
+      <div class="var"><b>Ballwurf mit kurzem Anlauf</b><span>Drei bis fünf Schritte mit Rückführung. Standard in U14 und U16, wo der 200-Gramm-Ball geworfen wird.</span></div>
+      <div class="var"><b>Speerwurf mit Impulsschritten</b><span>Fünfer-Rhythmus mit Kreuzschritt. Erst sinnvoll, wenn Schulter und Rumpf stabil sind und eine ausgebildete Betreuung dabei ist.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Worauf es ankommt</h3>
+    <ul class="pts">
+      <li>Wurfarm lang, Ellenbogen hoch, Abwurf über dem Kopf.</li>
+      <li>Das Gerät bleibt in der Wurfebene, es wandert nicht nach außen.</li>
+      <li>Das Stemmbein blockiert, sonst läuft der Körper unter dem Wurf weg.</li>
+      <li>Erst Hüfte, dann Brust, dann Arm. Nie mit dem Arm beginnen.</li>
+      <li>Beim Speer immer mit der Spitze nach unten tragen und nur in Wurfrichtung zeigen.</li>
+    </ul>
+  </div>
+
+  <details class="block">
+    <summary><h3>Typische Fehler</h3></summary>
+    <div class="inner">
+      <div class="err"><b>Seitlicher Schleuderwurf</b><span>Über ein gespanntes Band oder Netz werfen lassen. Zielhöhe vorgeben, zum Beispiel an eine Hallenwand deutlich über Kopfhöhe.</span></div>
+      <div class="err"><b>Wirft nur mit dem Arm</b><span>Aus dem Stand mit betonter Hüftdrehung werfen, Medizinball beidhändig über den Kopf, Partner klatscht den Rhythmus.</span></div>
+      <div class="err"><b>Zu kurzer Zugweg</b><span>Rückführung einzeln üben: gehen, Arm lang nach hinten, erst dann werfen.</span></div>
+      <div class="err"><b>Bremst ab und tritt über</b><span>Abwurfmarke deutlich vor die Linie legen und mit Abfangschritt weiterlaufen lassen.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Ansagen</h3>
+    <div class="cues"><span class="cue">Arm lang</span><span class="cue">Über den Kopf</span><span class="cue">Hüfte zuerst</span><span class="cue">Brust raus</span></div>
+  </div>
+
+  <details class="block safe">
+    <summary><h3>Alter und Sicherheit</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0"><b>Kinder:</b> Schlagball und Wurfgeräte wie Vortex, nie Speer. <b>U14 und U16:</b> Ballwurf mit 200 Gramm. <b>Speer</b> erst ab U18 oder mit entsprechender Vorbereitung und nur unter Aufsicht. Gewichte je Altersklasse stehen auf der <a href="masse.html#wurf">Maße-Seite</a>.</p>
+      <p class="note"><b>Sicherheit:</b> Immer nur in eine Richtung werfen, Sektor gesperrt, niemand holt Geräte während des Werfens. Geräte zurücktragen, nie zurückwerfen. Speer senkrecht mit der Spitze nach unten tragen, bei Wind oder nassem Belag besonders vorsichtig.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ 800 M ============ -->
+<section id="mittelstrecke">
+  <h2>800 m<span class="sub">Verloren wird das Rennen fast immer auf den ersten 200 Metern.</span></h2>
+
+  <div class="block coded">
+    <h3>Grundprinzip</h3>
+    <p>Die 800 Meter liegen zwischen Sprint und Ausdauer. Fast das gesamte Rennen wird in hoher Intensität gelaufen, deshalb entscheidet die Einteilung. Ein gleichmäßiges Tempo ist am sparsamsten. Erfahrene laufen die erste Runde etwas schneller als die zweite, aber nur wenige Sekunden.</p>
+    <p>Kinder und Jugendliche starten dagegen meist viel zu schnell, laufen nach 300 Metern ins Leere und verlieren am Ende deutlich mehr Zeit, als sie vorne gewonnen haben.</p>
+  </div>
+
+  <div class="block">
+    <div class="fig">
+      <svg viewBox="0 0 360 195" role="img" aria-label="Zeit je 200 Meter: eine gleichmäßige Einteilung im Vergleich zu einem zu schnellen Start">
+        <line x1="40" y1="28" x2="60" y2="28" stroke="#D7191C" stroke-width="2.5"/>
+        <text class="s" x="66" y="32" text-anchor="start">gleichmäßig</text>
+        <line x1="170" y1="28" x2="190" y2="28" stroke="#6A6A6A" stroke-width="2"/>
+        <text class="s" x="196" y="32" text-anchor="start">zu schnell gestartet</text>
+        <line x1="60" y1="50" x2="60" y2="150" stroke="#DEDEDC" stroke-width="1"/>
+        <line x1="60" y1="150" x2="340" y2="150" stroke="#2B2B2B" stroke-width="1.5"/>
+        <polyline points="100,96 175,98 250,98 325,92" fill="none" stroke="#D7191C" stroke-width="2.5"/>
+        <polyline points="100,64 175,108 250,126 325,116" fill="none" stroke="#6A6A6A" stroke-width="2"/>
+        <circle cx="100" cy="96" r="3.5" fill="#D7191C"/><circle cx="175" cy="98" r="3.5" fill="#D7191C"/><circle cx="250" cy="98" r="3.5" fill="#D7191C"/><circle cx="325" cy="92" r="3.5" fill="#D7191C"/>
+        <circle cx="100" cy="64" r="3.5" fill="#6A6A6A"/><circle cx="175" cy="108" r="3.5" fill="#6A6A6A"/><circle cx="250" cy="126" r="3.5" fill="#6A6A6A"/><circle cx="325" cy="116" r="3.5" fill="#6A6A6A"/>
+        <text class="s" x="100" y="166" text-anchor="middle">200 m</text>
+        <text class="s" x="175" y="166" text-anchor="middle">400 m</text>
+        <text class="s" x="250" y="166" text-anchor="middle">600 m</text>
+        <text class="s" x="325" y="166" text-anchor="middle">800 m</text>
+        <text class="s" x="200" y="186" text-anchor="middle">Zeit je 200-Meter-Abschnitt</text>
+      </svg>
+    </div>
+    <p class="cap">Je höher ein Punkt liegt, desto schneller war der Abschnitt. Wer zu schnell startet, wird auf der zweiten Runde deutlich langsamer. Unterm Strich ist die gleichmäßige Einteilung schneller.</p>
+  </div>
+
+  <details class="block">
+    <summary><h3>Ablauf</h3></summary>
+    <div class="inner">
+      <ul class="steps">
+        <li><b>Start:</b> Hochstart, meist als Gruppenstart. Die ersten Meter zügig, um eine Position zu bekommen, aber nicht sprinten.</li>
+        <li><b>Erste Kurve:</b> bis zur Abbruchlinie in der eigenen Bahn bleiben, danach zügig nach innen.</li>
+        <li><b>Erste Runde:</b> im geplanten Tempo laufen. Die Zwischenzeit bei 200 und 400 Metern ist die Kontrolle.</li>
+        <li><b>Dritte 200 Meter:</b> der schwierigste Abschnitt. Rhythmus und Position halten, nicht wegsacken lassen.</li>
+        <li><b>Endspurt:</b> auf den letzten 150 bis 200 Metern Frequenz erhöhen, Arme aktiv, durch die Ziellinie laufen.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="block">
+    <summary><h3>Taktik</h3></summary>
+    <div class="inner">
+      <div class="var"><b>Gleichmäßig laufen</b><span>Die einfachste und für Jüngere beste Variante. Zielzeit vorher in Abschnitte teilen und danach laufen.</span></div>
+      <div class="var"><b>Von vorn laufen</b><span>Sinnvoll für die Stärksten im Feld oder wenn das Feld zu langsam losläuft. Kostet Kraft, weil der Wind und das Tempo selbst gemacht werden.</span></div>
+      <div class="var"><b>Mitlaufen und spurten</b><span>An eine Gruppe hängen, innen laufen, den Endspurt vorbereiten. Braucht Übersicht und einen zuverlässigen Spurt.</span></div>
+      <p class="note">Die Abschnittszeiten lassen sich mit der <a href="training.html">Trainingsseite</a> im Bereich Lauf ausrechnen, zum Beispiel 400 Meter bei 95 Prozent der 800-Meter-Bestzeit.</p>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Worauf es ankommt</h3>
+    <ul class="pts">
+      <li>Zielzeit vorher in Abschnitte zerlegen und die Zwischenzeit bei 200 und 400 Metern zurufen.</li>
+      <li>Innen laufen. Eine Bahn weiter außen sind pro Runde rund sieben Meter mehr.</li>
+      <li>Locker bleiben: Schultern tief, Hände offen, Kiefer locker.</li>
+      <li>Überholen kurz und entschlossen, nicht minutenlang außen mitlaufen.</li>
+      <li>Der Endspurt beginnt spätestens auf der Zielgeraden, besser schon vorher.</li>
+    </ul>
+  </div>
+
+  <details class="block">
+    <summary><h3>Typische Fehler</h3></summary>
+    <div class="inner">
+      <div class="err"><b>Zu schneller Start</b><span>Erste 200 Meter im Training mit Vorgabe laufen und die Zeit ansagen. Im Wettkampf eine realistische Zielzeit vereinbaren.</span></div>
+      <div class="err"><b>Läuft die ganze Runde außen</b><span>Positionsspiele im Training: nach der Abbruchlinie zügig an die Innenbahn.</span></div>
+      <div class="err"><b>Verkrampft auf der Zielgeraden</b><span>Endspurt separat üben, zum Beispiel lockere Steigerungen nach lockeren Dauerläufen mit der Ansage „locker schnell“.</span></div>
+      <div class="err"><b>Spurtet gar nicht</b><span>Wechselspiele und kurze Antritte im Training, damit der Körper das Tempowechseln kennt.</span></div>
+    </div>
+  </details>
+
+  <div class="block">
+    <h3>Ansagen</h3>
+    <div class="cues"><span class="cue">Ruhig, dein Tempo</span><span class="cue">Innen bleiben</span><span class="cue">Schultern locker</span><span class="cue">Jetzt drücken</span></div>
+  </div>
+
+  <details class="block safe">
+    <summary><h3>Alter und Regeln</h3></summary>
+    <div class="inner">
+      <p class="note" style="margin-top:0"><b>U12 und U14:</b> Tempogefühl spielerisch schulen, Läufe mit Tempowechsel, keine harten Zielzeiten. <b>Ab U16:</b> mit Abschnittszeiten arbeiten. Nach harten 800-Meter-Einheiten braucht der Körper ausreichend Erholung.</p>
+      <p class="note"><b>Regeln:</b> Start in Bahnen bis zur Abbruchlinie, danach freie Bahnwahl. Behinderung anderer Läufer führt zur Disqualifikation. Beim Überholen ist der Überholende verantwortlich.</p>
+    </div>
+  </details>
+</section>
+
+<section id="quellen">
+  <h2>Hinweis</h2>
+  <div class="block">
+    <p style="margin-top:0">Die Inhalte sind allgemein anerkannte Technikgrundlagen, zusammengestellt als Hilfe für Übungsleiter und Helfer. Sie ersetzen keine Trainerausbildung und keine Betreuung vor Ort. Maße, Gewichte und Wettkampfregeln stehen auf der <a href="masse.html">Maße-Seite</a> nach DLV und World Athletics.</p>
+    <p>Wenn euer Lehrwart oder ein lizenzierter Trainer Anmerkungen hat, lassen sich die Texte jederzeit anpassen.</p>
+  </div>
+</section>
+</main>
+
+<footer>Stand der Zusammenstellung: September 2026 <span class="ver">Technik · Version 2026-09-26</span></footer>
+
+<script>
+(function(){
+const picker = document.querySelector('.picker');
+const links = [...document.querySelectorAll('nav.jump a:not(.ext)')];
+const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setStick(){ document.documentElement.style.setProperty('--stick', picker.offsetHeight + 'px'); }
+function mark(id){ links.forEach(l=>l.classList.toggle('on', l.dataset.target===id)); }
+let lock = 0;
+function goTo(id){
+  const t = document.getElementById(id); if (!t) return;
+  setStick(); mark(id); lock = Date.now();
+  const top = t.getBoundingClientRect().top + window.pageYOffset - picker.offsetHeight - 6;
+  try { window.scrollTo({top, behavior: reduce ? 'auto' : 'smooth'}); } catch(err){ window.scrollTo(0, top); }
+  setTimeout(()=>{ if (Math.abs(t.getBoundingClientRect().top - picker.offsetHeight) > 40) t.scrollIntoView({block:'start'}); }, reduce ? 50 : 700);
+  const l = links.find(x=>x.dataset.target===id);
+  if (l){ const nav = l.parentElement; nav.scrollLeft = l.offsetLeft - (nav.clientWidth - l.offsetWidth)/2; }
+}
+links.forEach(l=>{
+  l.dataset.target = l.getAttribute('href').slice(1);
+  l.addEventListener('click', e=>{ e.preventDefault(); goTo(l.dataset.target); });
+});
+function onScroll(){
+  if (Date.now() - lock < 900) return;
+  const line = picker.offsetHeight + 40;
+  let cur = links[0].dataset.target;
+  document.querySelectorAll('main section').forEach(sec=>{ if (sec.getBoundingClientRect().top <= line) cur = sec.id; });
+  mark(cur);
+}
+setStick(); window.addEventListener('resize', setStick);
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+})();
+</script>
+<script data-sw>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  navigator.serviceWorker.register('sw.js').then(function(){ return navigator.serviceWorker.ready; }).then(function(){
+    var v = document.querySelector('.ver'); if (v && !v.dataset.off){ v.dataset.off = 1; v.textContent += ' · offline verfügbar'; }
+  }).catch(function(){});
+}
+</script>
+</body>
+</html>
