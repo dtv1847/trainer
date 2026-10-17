@@ -38,6 +38,22 @@ h2{font:700 24px var(--cond);margin:22px 0 8px}
 .msg{background:#E8F5EC;border-left:5px solid #2E9D55;border-radius:8px;padding:10px 12px;margin:0 0 12px;font-size:15px}
 .msg.err{background:#FDECEC;border-left-color:var(--red)}
 ol{margin:6px 0 0;padding-left:20px}
+.msg .btn{min-height:36px;padding:5px 12px;margin-top:8px;font-size:14px}
+.pov{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:14px}
+.pov[hidden]{display:none}
+.povbox{background:#fff;border-radius:14px;max-width:560px;width:100%;max-height:calc(100vh - 28px);overflow:auto;padding:16px 18px 18px;border-top:8px solid var(--red)}
+.povbox h3{font:700 24px/1.1 var(--cond);margin:0 0 4px}
+.povbox .sub{font-size:14px;color:var(--muted);margin:0 0 10px}
+.area{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;cursor:pointer}
+.area input{width:20px;height:20px;margin:2px 0 0;flex:0 0 auto;accent-color:var(--red)}
+.area b{display:block}
+.area span{display:block;font-size:13.5px;color:var(--muted)}
+.mode{display:grid;gap:8px;margin:12px 0 4px}
+.mode label{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer}
+.mode label:has(input:checked){border-color:var(--ink);background:#FAFAF8}
+.mode input{width:20px;height:20px;margin:2px 0 0;flex:0 0 auto;accent-color:var(--red)}
+.mode b{display:block;font-size:16px}
+.mode span{display:block;font-size:13.5px;color:var(--muted)}
 ol li{margin:3px 0}
 footer{max-width:980px;margin:0 auto;padding:0 14px 40px;font-size:13px;color:var(--muted)}
 .ver{display:block;margin-top:6px}
@@ -67,7 +83,7 @@ body.running .appbar,body.running .subbar{display:none}
 <main>
   <div id="msg" hidden></div>
   <div class="tiles">
-    <a class="tile" href="plan.html" style="--c:#1D6FB8"><div class="ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(52.7 88) scale(0.726)" stroke-width="6.5"><g opacity=".4"><path d="M-22 -41.2L-23 -22.2L-23 -3.2"/><path d="M-22 -62.7L-24.4 -48.9L-25.3 -36"/></g><path d="M-22 -41.2L-22 -65.2"/><path d="M-22 -41.2L-21 -22.2L-21 -3.2"/><path d="M-22 -62.7L-11.3 -71.7L-4.8 -83"/><circle cx="-22" cy="-75.2" r="6.5" fill="currentColor" stroke="none"/><g opacity=".4"><path d="M22 -41.2L23 -22.2L23 -3.2"/><path d="M22 -62.7L23.9 -48.9L24.9 -35.9"/></g><path d="M22 -41.2L22 -65.2"/><path d="M22 -41.2L21 -22.2L21 -3.2"/><path d="M22 -62.7L20.1 -48.9L19.1 -35.9"/><circle cx="22" cy="-75.2" r="6.5" fill="currentColor" stroke="none"/><path d="M-32 -112h24a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-14l-6 5v-5h-4a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z" stroke-width="2.4"/><path d="M-26 -105h12M-26 -100h8" stroke-width="2"/></g></svg></div><div><b>Planung</b><span>Woche, Einheit, Saison, 143 Übungen</span></div></a>
+    <a class="tile" href="plan.html" style="--c:#1D6FB8"><div class="ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(52.7 88) scale(0.726)" stroke-width="6.5"><g opacity=".4"><path d="M-22 -41.2L-23 -22.2L-23 -3.2"/><path d="M-22 -62.7L-24.4 -48.9L-25.3 -36"/></g><path d="M-22 -41.2L-22 -65.2"/><path d="M-22 -41.2L-21 -22.2L-21 -3.2"/><path d="M-22 -62.7L-11.3 -71.7L-4.8 -83"/><circle cx="-22" cy="-75.2" r="6.5" fill="currentColor" stroke="none"/><g opacity=".4"><path d="M22 -41.2L23 -22.2L23 -3.2"/><path d="M22 -62.7L23.9 -48.9L24.9 -35.9"/></g><path d="M22 -41.2L22 -65.2"/><path d="M22 -41.2L21 -22.2L21 -3.2"/><path d="M22 -62.7L20.1 -48.9L19.1 -35.9"/><circle cx="22" cy="-75.2" r="6.5" fill="currentColor" stroke="none"/><path d="M-32 -112h24a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-14l-6 5v-5h-4a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z" stroke-width="2.4"/><path d="M-26 -105h12M-26 -100h8" stroke-width="2"/></g></svg></div><div><b>Planung</b><span>Woche, Einheit, über 160 Übungen, Reihen, Bausteine</span></div></a>
     <a class="tile" href="zirkel.html" style="--c:#2E9D55"><div class="ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(1)" stroke-width="6.5"><path d="M-41.5 0L-36 -12L-30.5 0Z" fill="currentColor" fill-opacity=".75" stroke-width="2"/><path d="M30.5 0L36 -12L41.5 0Z" fill="currentColor" fill-opacity=".75" stroke-width="2"/><g opacity=".4"><path d="M0 -25L18.7 -21.7L14.1 -3.2"/><path d="M10.7 -43.6L24.7 -44.8L37.7 -45.3"/></g><path d="M0 -25L12 -45.8"/><path d="M0 -25L18.9 -23L14.9 -4.4"/><path d="M10.7 -43.6L24.6 -45.6L37.6 -46.7"/><circle cx="17" cy="-54.4" r="6.5" fill="currentColor" stroke="none"/><g opacity=".7"><path d="M-31.9 -51.6A34 34 0 1 1 -31.9 -28.4" stroke-width="2.6"/><path d="M-27.9 -25.5L-31.9 -28.4L-32.2 -23.4" stroke-width="2.6"/></g></g></svg></div><div><b>Zirkel</b><span>Kader, Anwesenheit, Stationen, Timer</span></div></a>
     <a class="tile" href="training.html" style="--c:#D7191C"><div class="ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(0.92)" stroke-width="6.5"><path d="M-49.5 0L-44 -12L-38.5 0Z" fill="currentColor" fill-opacity=".75" stroke-width="2"/><path d="M38.5 0L44 -12L49.5 0Z" fill="currentColor" fill-opacity=".75" stroke-width="2"/><g opacity=".4"><path d="M0 -30.4L-10.1 -14.3L-28.8 -17.6"/><path d="M3.7 -51.6L14.5 -42.6L21 -53.9"/></g><path d="M0 -30.4L4.2 -54.1"/><path d="M0 -30.4L17.6 -23.3L11.7 -5.2"/><path d="M3.7 -51.6L-6.7 -42.2L1.7 -32.3"/><circle cx="5.9" cy="-63.9" r="6.5" fill="currentColor" stroke="none"/><path d="M-20 -58h-9M-18 -51h-12M-20 -44h-8" stroke-width="2.4" opacity=".6"/></g></svg></div><div><b>Athleten</b><span>Zeiten-Rechner, Trainingsbereiche, Gruppe, Normen-Vergleich</span></div></a>
     <a class="tile" href="wissen.html" style="--c:#E2A81B"><div class="ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(41.9 88) scale(1)" stroke-width="6.5"><g opacity=".4"><path d="M-14 -41.2L-15 -22.2L-15 -3.2"/><path d="M-14 -62.7L-16.4 -48.9L-17.6 -36"/></g><path d="M-14 -41.2L-14 -65.2"/><path d="M-14 -41.2L-13 -22.2L-13 -3.2"/><path d="M-14 -62.7L-7 -50.6L-0.5 -61.9"/><circle cx="-14" cy="-75.2" r="6.5" fill="currentColor" stroke="none"/><rect x="8" y="-66" width="28" height="20" rx="3" stroke-width="3"/><path d="M19 -61L27 -56L19 -51Z" fill="currentColor" stroke="none"/></g></svg></div><div><b>Wissen</b><span>Technik, Athletik, Normen, Maße</span></div></a>
@@ -76,11 +92,12 @@ body.running .appbar,body.running .subbar{display:none}
   <h2>Daten auf diesem Gerät</h2>
   <div class="block">
     <div class="stat" id="stat"></div>
-    <p class="note">Alles bleibt auf diesem Gerät. Jeder Trainer hat seine eigenen Daten. Weitergeben geht über „Einheit teilen“ oder eine Sicherung.</p>
+    <p class="note">Alles bleibt auf diesem Gerät. Zum Abgleich zwischen iPhone und iPad oder zum Weitergeben an Kollegen: „Sicherung teilen“ und auf dem anderen Gerät „Sicherung laden“. Beim Laden wählst du, ob die Daten ergänzt oder ersetzt werden.</p>
     <div class="btns">
+      <button class="btn primary" type="button" id="shareAll">Sicherung teilen</button>
       <button class="btn" type="button" id="expAll">Alles sichern</button>
       <button class="btn" type="button" id="impAll">Sicherung laden</button>
-      <input type="file" id="impFile" accept=".json,application/json" hidden>
+      <input type="file" id="impFile" accept=".json,.txt,application/json,text/plain" hidden>
     </div>
   </div>
 
@@ -95,7 +112,8 @@ body.running .appbar,body.running .subbar{display:none}
     <p class="note">Alternativ: In der alten App unter „Daten“ eine Sicherung speichern und hier mit „Sicherung laden“ einlesen. Spotify muss an der neuen Adresse einmal neu verbunden werden.</p>
   </div>
 </main>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-17b</span></footer>
+<div class="pov" id="impView" hidden><div class="povbox" id="impBox"></div></div>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-17c</span></footer>
 <script>
 (function(){
 const $ = s => document.querySelector(s);
@@ -103,17 +121,151 @@ const KEYS = {'dtv-plan-v1':'Planung', 'dtv-zirkel-v1':'Zirkel', 'dtv-training-v
 /* Spotify-Rücksprung an den Zirkel weiterreichen */
 if (/[?&](code|error)=/.test(location.search)){ location.replace('zirkel.html' + location.search); return; }
 function get(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(e){ return null; } }
-function msg(t, err){ const m = $('#msg'); m.className = 'msg' + (err ? ' err' : ''); m.textContent = t; m.hidden = false; }
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function msg(t, err, undo){ const m = $('#msg'); m.className = 'msg' + (err ? ' err' : ''); m.innerHTML = esc(t) + (undo ? '<br><button class="btn" type="button" id="undoBtn">Rückgängig machen</button>' : ''); m.hidden = false; }
+const pj = v => { try { return typeof v === 'string' ? JSON.parse(v) : v; } catch(e){ return null; } };
+function summary(k, o){
+  if (!o) return 'noch leer';
+  if (k === 'dtv-plan-v1'){ const units = o.units ? Object.values(o.units).filter(u=>u && (u.ref || (u.items && u.items.length))).length : 0;
+    const g = (o.groups||[]).length; return `${g} ${g===1?'Gruppe':'Gruppen'}, ${units} ${units===1?'geplante Einheit':'geplante Einheiten'}`; }
+  if (k === 'dtv-zirkel-v1'){ const names = o.squads ? Object.values(o.squads).reduce((a,l)=>a + (Array.isArray(l) ? l.length : 0), 0) : 0;
+    const n = (o.stations||[]).length; return `${names} ${names===1?'Name':'Namen'} in den Kadern, ${n} ${n===1?'Station':'Stationen'}`; }
+  const a = (o.athletes||[]).length; return `${a} ${a===1?'Athlet':'Athleten'}`;
+}
 function renderStat(){
-  const p = get('dtv-plan-v1'), z = get('dtv-zirkel-v1'), t = get('dtv-training-v1');
-  const units = p && p.units ? Object.values(p.units).filter(u=>u && (u.ref || (u.items && u.items.length))).length : 0;
-  const names = z && z.squads ? Object.values(z.squads).reduce((a,l)=>a + (l ? l.length : 0), 0) : 0;
-  const rows = [
-    ['Planung', p ? `${(p.groups||[]).length} Gruppen, ${units} geplante Einheiten` : 'noch leer'],
-    ['Zirkel', z ? `${names} Namen in den Kadern, ${(z.stations||[]).length} Stationen` : 'noch leer'],
-    ['Athleten', t ? `${(t.athletes||[]).length} Athleten mit Zeiten` : 'noch leer']
-  ];
-  $('#stat').innerHTML = rows.map(r=>`<b>${r[0]}</b><em>${r[1]}</em>`).join('');
+  $('#stat').innerHTML = Object.keys(KEYS).map(k=>`<b>${KEYS[k]}</b><em>${summary(k, get(k))}</em>`).join('');
+}
+
+/* ---------- Zusammenführen (eigene Fassung hat Vorrang) ---------- */
+const norm = s => String(s == null ? '' : s).trim().toLowerCase();
+const rid = () => Math.random().toString(36).slice(2,7);
+const clone = o => JSON.parse(JSON.stringify(o));
+function mergePlan(m, inc, st){
+  ['groups','lib','peaks','blocks'].forEach(k=>{ if (!Array.isArray(m[k])) m[k] = []; });
+  if (!m.units || typeof m.units !== 'object') m.units = {};
+  if (!m.series || typeof m.series !== 'object') m.series = {};
+  const gmap = {}, xmap = {};
+  (inc.groups||[]).forEach(g=>{ if (!g) return;
+    const t = m.groups.find(x=>x.id===g.id) || m.groups.find(x=>norm(x.name)===norm(g.name));
+    if (t){ gmap[g.id] = t.id; return; }
+    let id = g.id || rid(); if (m.groups.some(x=>x.id===id)) id += '-' + rid();
+    m.groups.push(Object.assign(clone(g), {id})); gmap[g.id] = id; st.push('Gruppe ' + g.name);
+  });
+  let nEx = 0;
+  (inc.lib||[]).forEach(e=>{ if (!e || !e.own) return;
+    const t = m.lib.find(x=>x.id===e.id) || m.lib.find(x=>x.own && norm(x.name)===norm(e.name));
+    if (t){ xmap[e.id] = t.id; return; }
+    m.lib.push(clone(e)); nEx++; });
+  const rk = k => { const i = k.indexOf('|'); if (i < 0) return k; const g = k.slice(0,i); return (gmap[g] || g) + k.slice(i); };
+  let nU = 0;
+  Object.keys(inc.units||{}).forEach(k=>{ const u = inc.units[k]; if (!u) return; const nk = rk(k); if (m.units[nk]) return;
+    if (typeof u.ref === 'string') m.units[nk] = {ref: rk(u.ref)};
+    else { const c = clone(u); c.items = (c.items||[]).map(it=>Object.assign(it, {exId: xmap[it.exId] || it.exId})); m.units[nk] = c; }
+    nU++; });
+  let nP = 0;
+  (inc.peaks||[]).forEach(p=>{ if (!p || m.peaks.some(x=>x.id===p.id || (norm(x.name)===norm(p.name) && x.date===p.date))) return;
+    m.peaks.push(Object.assign(clone(p), {grp: p.grp === 'all' ? 'all' : (gmap[p.grp] || p.grp)})); nP++; });
+  let nS = 0;
+  Object.keys(inc.series||{}).forEach(g=>{ const t = gmap[g] || g; if (!m.groups.some(x=>x.id===t)) return;
+    m.series[t] = m.series[t] || {};
+    Object.keys(inc.series[g]||{}).forEach(r=>{ if (!m.series[t][r]){ m.series[t][r] = clone(inc.series[g][r]); nS++; } }); });
+  let nB = 0;
+  (inc.blocks||[]).forEach(b=>{ if (!b || m.blocks.some(x=>x.id===b.id || norm(x.name)===norm(b.name))) return;
+    m.blocks.push(Object.assign(clone(b), {items:(b.items||[]).map(i=>xmap[i] || i)})); nB++; });
+  if (nU) st.push(nU + (nU===1 ? ' Einheit' : ' Einheiten'));
+  if (nEx) st.push(nEx + ' eigene ' + (nEx===1 ? 'Übung' : 'Übungen'));
+  if (nP) st.push(nP + (nP===1 ? ' Höhepunkt' : ' Höhepunkte'));
+  if (nS) st.push(nS + (nS===1 ? ' Reihe' : ' Reihen'));
+  if (nB) st.push(nB + (nB===1 ? ' Baustein' : ' Bausteine'));
+  return m;
+}
+function mergeZirkel(m, inc, st){
+  if (!m.squads || typeof m.squads !== 'object') m.squads = {};
+  const sq = inc.squads || (inc.names ? {U14: String(inc.names).split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean)} : {});
+  const known = () => [].concat(...Object.values(m.squads).filter(Array.isArray)).map(norm);
+  let nN = 0;
+  Object.keys(sq).forEach(k=>{ if (!Array.isArray(sq[k])) return;
+    if (!Array.isArray(m.squads[k])) m.squads[k] = [];
+    sq[k].forEach(n=>{ if (!known().includes(norm(n))){ m.squads[k].push(n); nN++; } }); });
+  if (nN) st.push(nN + (nN===1 ? ' Name' : ' Namen') + ' in den Kadern');
+  if (!(m.stations||[]).length && (inc.stations||[]).length){ m.stations = clone(inc.stations); m.icons = clone(inc.icons || {}); st.push(inc.stations.length + ' Stationen'); }
+  else if (inc.icons){ m.icons = m.icons || {}; (m.stations||[]).forEach(n=>{ if (!m.icons[n] && inc.icons[n]) m.icons[n] = inc.icons[n]; }); }
+  if (inc.alts && typeof inc.alts === 'object'){ m.alts = m.alts || {}; let nA = 0;
+    Object.keys(inc.alts).forEach(n=>{ const a = inc.alts[n]; if (!a || typeof a !== 'object') return; m.alts[n] = m.alts[n] || {};
+      Object.keys(a).forEach(r=>{ if (!m.alts[n][r]){ m.alts[n][r] = a[r]; nA++; } }); });
+    if (nA) st.push(nA + ' Ersatzübungen'); }
+  return m;
+}
+function mergeAth(m, inc, st){
+  if (!Array.isArray(m.athletes)) m.athletes = [];
+  let nA = 0, nE = 0;
+  const sameEnt = (x, e) => x.id === e.id || (e.ev ? (x.ev === e.ev && +x.v === +e.v) : (!x.ev && +x.d === +e.d && !!x.fly === !!e.fly && +x.t === +e.t));
+  (inc.athletes||[]).forEach(a=>{ if (!a || !a.name) return;
+    const t = m.athletes.find(x=>x.id===a.id) || m.athletes.find(x=>norm(x.name)===norm(a.name) && (!x.jg || !a.jg || +x.jg === +a.jg));
+    if (!t){ let id = a.id || rid(); if (m.athletes.some(x=>x.id===id)) id += '-' + rid();
+      m.athletes.push(Object.assign(clone(a), {id})); nA++; nE += (a.entries||[]).length; return; }
+    if (!t.jg && a.jg) t.jg = a.jg; if (!t.g && a.g) t.g = a.g;
+    if (!Array.isArray(t.entries)) t.entries = [];
+    (a.entries||[]).forEach(e=>{ if (e && !t.entries.some(x=>sameEnt(x, e))){ t.entries.push(clone(e)); nE++; } });
+  });
+  if (nA) st.push(nA + (nA===1 ? ' Athlet' : ' Athleten'));
+  if (nE) st.push(nE + (nE===1 ? ' Leistung' : ' Leistungen'));
+  return m;
+}
+const MERGE = {'dtv-plan-v1':mergePlan, 'dtv-zirkel-v1':mergeZirkel, 'dtv-training-v1':mergeAth};
+const UNDO = 'dtv-trainer-undo';
+function applyImport(keys, areas, mode){
+  const undo = {}, parts = [];
+  areas.forEach(k=>{
+    const have = localStorage.getItem(k), inc = pj(keys[k]); if (!inc) return;
+    undo[k] = have;
+    if (mode === 'replace' || !have || !pj(have)){ localStorage.setItem(k, JSON.stringify(inc)); parts.push(KEYS[k] + (have ? ' ersetzt' : ' übernommen')); return; }
+    const st = []; const out = MERGE[k](pj(have), inc, st);
+    localStorage.setItem(k, JSON.stringify(out));
+    parts.push(KEYS[k] + ': ' + (st.length ? '+ ' + st.join(', ') : 'nichts Neues'));
+  });
+  try { localStorage.setItem(UNDO, JSON.stringify({at:new Date().toISOString(), keys:undo})); } catch(e){}
+  return parts;
+}
+function doUndo(){
+  const u = pj(localStorage.getItem(UNDO)); if (!u || !u.keys) return;
+  Object.keys(u.keys).forEach(k=>{ if (!KEYS[k]) return; if (u.keys[k] == null) localStorage.removeItem(k); else localStorage.setItem(k, u.keys[k]); });
+  localStorage.removeItem(UNDO); renderStat(); msg('Rückgängig gemacht. Es gilt wieder der Stand vor dem Laden.');
+}
+document.addEventListener('click', e=>{ if (e.target.closest('#undoBtn')) doUndo(); });
+
+/* Dialog: Bereiche wählen, Ergänzen oder Ersetzen */
+let pending = null;
+function askImport(keys, source, done){
+  const ks = Object.keys(keys).filter(k=>KEYS[k] && pj(keys[k]));
+  if (!ks.length){ done(null); return; }
+  const conflict = ks.filter(k=>{ const h = localStorage.getItem(k); return h && h !== keys[k]; });
+  if (!conflict.length){ done(applyImport(keys, ks, 'replace')); return; }
+  pending = {keys, ks, done};
+  $('#impBox').innerHTML = `<h3>Sicherung laden</h3><p class="sub">Daten ${esc(source)}. Was soll übernommen werden?</p>
+    ${ks.map(k=>`<label class="area"><input type="checkbox" data-area="${k}" checked><div><b>${KEYS[k]}</b><span>In der Datei: ${esc(summary(k, pj(keys[k])))}</span><span>Auf diesem Gerät: ${esc(summary(k, get(k)))}</span></div></label>`).join('')}
+    <div class="mode">
+      <label><input type="radio" name="impMode" value="merge" checked><div><b>Ergänzen</b><span>Für Daten von Kollegen. Deine Gruppen, Einheiten, Kader und Athleten bleiben, Neues kommt dazu. Gibt es etwas auf beiden Seiten, bleibt deine Fassung.</span></div></label>
+      <label><input type="radio" name="impMode" value="replace"><div><b>Ersetzen</b><span>Für dein eigenes iPhone und iPad. Die Daten auf diesem Gerät werden durch die Datei ersetzt.</span></div></label>
+    </div>
+    <p class="note">Danach kannst du einmal „Rückgängig machen“, falls etwas nicht passt.</p>
+    <div class="btns"><button class="btn primary" type="button" id="impGo">Übernehmen</button><button class="btn" type="button" id="impCancel">Abbrechen</button></div>`;
+  $('#impView').hidden = false;
+}
+$('#impView').addEventListener('click', e=>{
+  if (!pending) return;
+  if (e.target.id === 'impView' || e.target.closest('#impCancel')){ $('#impView').hidden = true; const d = pending.done; pending = null; d([]); return; }
+  if (e.target.closest('#impGo')){
+    const areas = [...document.querySelectorAll('[data-area]')].filter(x=>x.checked).map(x=>x.dataset.area);
+    const mode = (document.querySelector('input[name="impMode"]:checked') || {}).value || 'merge';
+    $('#impView').hidden = true; const p = pending; pending = null;
+    p.done(areas.length ? applyImport(p.keys, areas, mode) : []);
+  }
+});
+function report(parts, lead){
+  renderStat();
+  if (parts === null){ msg('In der Datei waren keine Daten.', true); return; }
+  msg(parts.length ? lead + parts.join(' · ') + '.' : 'Es wurde nichts geladen.', false, parts.length > 0);
 }
 function b64u(bytes){ let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
 function unb64u(str){ str = str.replace(/-/g,'+').replace(/_/g,'/'); while (str.length % 4) str += '='; const bin = atob(str); const out = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out; }
@@ -122,33 +274,44 @@ async function unpack(str){
   if (t === 'z'){ const ds = new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip')); return JSON.parse(await new Response(ds).text()); }
   return JSON.parse(new TextDecoder().decode(b));
 }
-function applyKeys(keys, source){
-  const names = [];
-  for (const k of Object.keys(keys)){
-    if (!KEYS[k]) continue;
-    const have = localStorage.getItem(k);
-    if (have && have !== keys[k] && !confirm(`${KEYS[k]}: Auf diesem Gerät gibt es hier schon Daten. Mit den Daten ${source} ersetzen?`)) continue;
-    try { JSON.parse(keys[k]); localStorage.setItem(k, keys[k]); names.push(KEYS[k]); } catch(e){}
-  }
-  return names;
-}
 async function handleHash(){
   const m = location.hash.match(/^#import=(.+)$/); if (!m) return;
   history.replaceState(null, '', location.pathname);
   try {
     const o = await unpack(m[1]);
     if (!o || !o.keys) throw new Error('format');
-    const done = applyKeys(o.keys, 'von der alten Adresse');
-    msg(done.length ? `Übernommen: ${done.join(', ')}. Lege diese Seite jetzt über „Teilen → Zum Home-Bildschirm“ neu ab.` : 'Es wurden keine Daten übernommen.');
+    askImport(o.keys, 'von der alten Adresse', parts=>{
+      renderStat();
+      if (parts && parts.length) msg('Fertig: ' + parts.join(' · ') + '. Lege diese Seite jetzt über „Teilen → Zum Home-Bildschirm“ neu ab.', false, true);
+      else msg('Es wurden keine Daten übernommen.');
+    });
+    return;
   } catch(e){ msg('Die Übertragung hat nicht geklappt. Bitte in der alten App eine Sicherung speichern und hier mit „Sicherung laden“ einlesen.', true); }
   renderStat();
 }
-$('#expAll').addEventListener('click', ()=>{
+function backupText(){
   const keys = {}; Object.keys(KEYS).forEach(k=>{ const v = localStorage.getItem(k); if (v) keys[k] = v; });
-  const blob = new Blob([JSON.stringify({app:'dtv-trainer', version:1, saved:new Date().toISOString(), keys}, null, 1)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'dtv-trainer-' + new Date().toISOString().slice(0,10) + '.json';
+  return JSON.stringify({app:'dtv-trainer', version:1, saved:new Date().toISOString(), keys}, null, 1);
+}
+const backupName = ext => 'dtv-trainer-' + new Date().toISOString().slice(0,10) + ext;
+function download(){
+  const blob = new Blob([backupText()], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = backupName('.json');
   document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+$('#expAll').addEventListener('click', ()=>{
+  download();
   msg('Sicherung wird gespeichert. Auf iPhone und iPad liegt sie in der Dateien-App unter Downloads.');
+});
+$('#shareAll').addEventListener('click', async ()=>{
+  const text = backupText(); let file = null;
+  try {
+    const cands = [new File([text], backupName('.json'), {type:'application/json'}), new File([text], backupName('.txt'), {type:'text/plain'})];
+    file = cands.find(f=>navigator.canShare && navigator.canShare({files:[f]})) || null;
+  } catch(e){ file = null; }
+  if (!file){ download(); msg('Teilen geht in diesem Browser nicht. Die Sicherung wurde stattdessen gespeichert (Dateien-App, Downloads).'); return; }
+  try { await navigator.share({files:[file], title:'DTV Trainer-Sicherung'}); msg('Sicherung geteilt. Auf dem anderen Gerät die Datei sichern und dort „Sicherung laden“ tippen.'); }
+  catch(e){ if (e && e.name === 'AbortError') return; download(); msg('Teilen hat nicht geklappt. Die Sicherung wurde stattdessen gespeichert.'); }
 });
 $('#impAll').addEventListener('click', ()=>$('#impFile').click());
 $('#impFile').addEventListener('change', e=>{
@@ -162,8 +325,8 @@ $('#impFile').addEventListener('change', e=>{
       else if (o && Array.isArray(o.groups) && Array.isArray(o.lib)) keys = {'dtv-plan-v1': r.result};
       else if (o && o.squads && Array.isArray(o.stations)) keys = {'dtv-zirkel-v1': r.result};
       if (!keys) throw new Error('format');
-      const done = applyKeys(keys, 'aus der Sicherung');
-      msg(done.length ? `Geladen: ${done.join(', ')}.` : 'Es wurde nichts geladen.');
+      const when = o && o.saved ? ' vom ' + new Date(o.saved).toLocaleDateString('de-DE') : '';
+      askImport(keys, 'aus der Sicherung' + when, parts=>report(parts, 'Geladen: '));
     } catch(err){ msg('Diese Datei ist keine Sicherung der DTV-Apps.', true); }
     finally { e.target.value = ''; renderStat(); }
   };
