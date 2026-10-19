@@ -1,6 +1,6 @@
 /* DTV 1847 – Offline-Speicher. Version ändert sich bei jedem Update automatisch. */
-const CACHE = 'dtv-trainer-8baa6080fa';
-const FILES = ["./", "dtv-icon.png", "index.html", "masse.html", "plan.html", "technik.html", "training.html", "wissen.html", "zirkel.html"];
+const CACHE = 'dtv-trainer-6e000e910d';
+const FILES = ["./", "dtv-icon.png", "index.html", "masse.html", "plan.html", "technik.html", "training.html", "video.html", "wissen.html", "zirkel.html"];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
 });
@@ -29,6 +29,17 @@ self.addEventListener('fetch', e => {
       if (r && r.ok){ const cp = r.clone(); caches.open(CACHE).then(c => c.put(req, cp)); }
       return r;
     }).catch(async () => (await caches.match(req, {ignoreSearch:true})) || (await caches.match('./')) || (await caches.match('index.html'))));
+    return;
+  }
+  // Skelett-Erkennung (groß): eigener Speicher, bleibt über Updates erhalten
+  if (/\/pose[^\/]*$/.test(url.pathname)){
+    e.respondWith(caches.open('dtv-pose-1').then(async c => {
+      const hit = await c.match(req, {ignoreSearch:true});
+      if (hit) return hit;
+      const r = await fetch(req);
+      if (r && r.ok) c.put(req, r.clone());
+      return r;
+    }));
     return;
   }
   // Bilder u. Ä.: Speicher zuerst
