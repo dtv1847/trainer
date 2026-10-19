@@ -114,7 +114,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </main>
 <div class="pov" id="impView" hidden><div class="povbox" id="impBox"></div></div>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-19a</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-19b</span></footer>
 <script>
 (function(){
 const $ = s => document.querySelector(s);
@@ -158,10 +158,29 @@ function mergePlan(m, inc, st){
     if (t){ xmap[e.id] = t.id; return; }
     m.lib.push(clone(e)); nEx++; });
   const rk = k => { const i = k.indexOf('|'); if (i < 0) return k; const g = k.slice(0,i); return (gmap[g] || g) + k.slice(i); };
-  let nU = 0;
-  Object.keys(inc.units||{}).forEach(k=>{ const u = inc.units[k]; if (!u) return; const nk = rk(k); if (m.units[nk]) return;
-    if (typeof u.ref === 'string') m.units[nk] = {ref: rk(u.ref)};
-    else { const c = clone(u); c.items = (c.items||[]).map(it=>Object.assign(it, {exId: xmap[it.exId] || it.exId})); m.units[nk] = c; }
+  // Ein Termin gilt als frei, wenn er weder auf eine gemeinsame Einheit zeigt noch Übungen hat
+  // (z. B. nach „Leeren“, nur Notiz oder nur Ort). Dann kommen die Übungen des Kollegen dazu, eigene Notiz und eigener Ort bleiben.
+  const empty = u => !u || (typeof u.ref !== 'string' && !(u.items||[]).length);
+  const mapItems = items => (items||[]).map(it=>Object.assign(clone(it), {exId: xmap[it.exId] || it.exId}));
+  const sig = items => JSON.stringify((items||[]).map(it=>[it.exId, it.min||0]));
+  let nU = 0, nSkip = 0;
+  Object.keys(inc.units||{}).forEach(k=>{ const u = inc.units[k]; if (!u || empty(u)) {
+      const nk = rk(k); if (u && !m.units[nk] && (u.note || u.place)) m.units[nk] = clone(u); return; }
+    const nk = rk(k), ex = m.units[nk];
+    if (!empty(ex)){
+      // gleiche Einheit schon da: kein Hinweis nötig
+      const same = typeof u.ref === 'string' ? ex.ref === rk(u.ref) : (typeof ex.ref !== 'string' && sig(ex.items) === sig(mapItems(u.items)));
+      if (!same) nSkip++;
+      return; }
+    const keep = ex && (ex.note || ex.place);
+    if (typeof u.ref === 'string' && !keep) m.units[nk] = {ref: rk(u.ref)};
+    else {
+      // Gemeinsame Einheit bei eigener Notiz/eigenem Ort: Übungen des Kollegen als eigene Kopie übernehmen
+      const src = typeof u.ref === 'string' ? (inc.units[u.ref] || {}) : u;
+      const c = clone(src); delete c.ref; c.items = mapItems(src.items);
+      if (!c.items.length) return;
+      if (ex){ c.note = ex.note || c.note || ''; c.place = ex.place != null ? ex.place : (c.place != null ? c.place : null); }
+      m.units[nk] = c; }
     nU++; });
   let nP = 0;
   (inc.peaks||[]).forEach(p=>{ if (!p || m.peaks.some(x=>x.id===p.id || (norm(x.name)===norm(p.name) && x.date===p.date))) return;
@@ -178,6 +197,7 @@ function mergePlan(m, inc, st){
   if (nP) st.push(nP + (nP===1 ? ' Höhepunkt' : ' Höhepunkte'));
   if (nS) st.push(nS + (nS===1 ? ' Reihe' : ' Reihen'));
   if (nB) st.push(nB + (nB===1 ? ' Baustein' : ' Bausteine'));
+  if (nSkip) st.skip = (nSkip===1 ? '1 Einheit' : nSkip + ' Einheiten') + ' des Kollegen nicht übernommen, weil an diesem Termin bei dir schon etwas geplant ist (deine Fassung bleibt).';
   return m;
 }
 function mergeZirkel(m, inc, st){
@@ -223,7 +243,7 @@ function applyImport(keys, areas, mode){
     if (mode === 'replace' || !have || !pj(have)){ localStorage.setItem(k, JSON.stringify(inc)); parts.push(KEYS[k] + (have ? ' ersetzt' : ' übernommen')); return; }
     const st = []; const out = MERGE[k](pj(have), inc, st);
     localStorage.setItem(k, JSON.stringify(out));
-    parts.push(KEYS[k] + ': ' + (st.length ? '+ ' + st.join(', ') : 'nichts Neues'));
+    parts.push(KEYS[k] + ': ' + (st.length ? '+ ' + st.join(', ') : 'nichts Neues') + (st.skip ? '. ' + st.skip : ''));
   });
   try { localStorage.setItem(UNDO, JSON.stringify({at:new Date().toISOString(), keys:undo})); } catch(e){}
   return parts;

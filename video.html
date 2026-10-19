@@ -49,6 +49,9 @@ footer{max-width:1100px;margin:0 auto;padding:0 14px 40px;font-size:13px;color:v
 .stage video{position:absolute;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none}
 .zoomb{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
 .zoomb button{width:40px;height:40px;border-radius:8px;border:0;background:rgba(0,0,0,.55);color:#fff;font:700 20px var(--body);cursor:pointer}
+.vhint{position:absolute;left:8px;top:8px;right:56px;pointer-events:none;display:flex}
+.vhint span{background:rgba(0,0,0,.66);color:#fff;border-radius:8px;padding:5px 9px;font:600 13.5px/1.3 var(--body)}
+.vhint:empty{display:none}
 .busy{position:absolute;left:8px;bottom:8px;right:8px;background:rgba(0,0,0,.7);color:#fff;border-radius:8px;padding:7px 10px;font-size:14px;display:none;align-items:center;gap:10px}
 .busy.on{display:flex}
 .busy button{margin-left:auto;background:#fff;color:#000;border:0;border-radius:6px;padding:6px 10px;font:600 14px var(--body)}
@@ -147,6 +150,7 @@ body.running .appbar,body.running .subbar{display:none}
         <video id="vid" playsinline muted preload="auto"></video>
         <canvas id="cv"></canvas>
         <div class="zoomb"><button id="zIn" aria-label="Vergrößern">+</button><button id="zOut" aria-label="Verkleinern">−</button><button id="zFit" aria-label="Einpassen" style="font-size:14px">⤢</button></div>
+        <div class="vhint" id="vhint"></div>
         <div class="busy" id="busy"><span id="busyT">…</span><button id="busyX">Abbrechen</button></div>
       </div>
       <div class="ctrl">
@@ -197,7 +201,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </section>
 </main>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-19a</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-19b</span></footer>
 
 <script>
 (function(){
@@ -241,7 +245,7 @@ let view = {s: 1, ox: 0, oy: 0}, fitS = 1, W = 300, H = 200, dpr = 1;
 let tool = 'view', pend = [], undoStack = [];
 let playing = false, ready = false;
 let poseBox = null; // {x,y,s} in Videopixeln
-let showHand = true, showAng = true;
+let showHand = true, showAng = true, smallSkel = false;
 let timeA = null, timeB = null, timeLabel = '';
 let scaleLen = '1.22';
 
@@ -272,6 +276,7 @@ function openFile(f){
   vid.addEventListener('loadeddata', onLoaded, {once: true});
   vid.addEventListener('error', () => { setBusy(null); showMsg('Dieses Video kann der Browser nicht öffnen. Am iPhone hilft: Kamera → Formate → „Maximale Kompatibilität“.', 'err'); }, {once: true});
   vid.src = url; vid.load();
+  setTimeout(() => { if (!ready && !$('workArea').hidden && vid.readyState < 2) showMsg('Das Video lädt noch. Falls nichts passiert: einmal auf ▶ tippen oder das Video erneut wählen.', 'info'); }, 12000);
   // iPhone lädt oft erst beim Abspielen: kurz anstoßen
   const pp = vid.play(); if (pp && pp.then) pp.then(() => { if (!ready && !fpsRun) vid.pause(); }).catch(() => {});
 }
@@ -283,7 +288,7 @@ async function onLoaded(){
   V.marks = V.marks || []; V.times = V.times || []; V.dev = V.dev || {}; V.pose = V.pose || {};
   undoStack = []; $('bUndo').disabled = true; pend = []; poseBox = null;
   $('note').value = V.note || ''; $('slowSel').value = String(V.slow || 1);
-  layout(); fitView();
+  layout(); lastW = W; fitView();
   vid.pause();
   if (!V.fps){ setBusy('Bildrate wird erkannt …'); fpsRun = true; V.fps = await detectFps(); fpsRun = false; }
   vid.pause();
@@ -324,15 +329,18 @@ $('showAll').addEventListener('change', render);
 $('bClose').addEventListener('click', () => { vid.pause(); playing = false; saveNow(); $('workArea').hidden = true; $('start').hidden = false; $('hero').hidden = false; V = null; showMsg(''); listRecent(); });
 
 /* ---------- Zeit, Bilder ---------- */
+vid.addEventListener('seeked', () => render());
 const slow = () => (V && V.slow) || 1;
 const cur = () => Math.min(N - 1, Math.max(0, Math.floor(vid.currentTime * fps + 1e-4)));
 const secs = frames => frames / fps / slow();
-let seekP = null;
 function seekFrame(n){
   n = Math.max(0, Math.min(N - 1, Math.round(n)));
   const t = (n + 0.5) / fps;
   return new Promise(res => {
-    const done = () => { vid.removeEventListener('seeked', done); clearTimeout(to); render(); res(); };
+    const done = () => { vid.removeEventListener('seeked', done); clearTimeout(to); render();
+      if (!vid.requestVideoFrameCallback) return res();
+      let ok = false; const fin = () => { if (ok) return; ok = true; render(); res(); };
+      vid.requestVideoFrameCallback(fin); setTimeout(fin, 120); };
     vid.addEventListener('seeked', done);
     const to = setTimeout(done, 1500);
     vid.currentTime = Math.min(t, Math.max(0, vid.duration - 0.001));
@@ -341,6 +349,9 @@ function seekFrame(n){
 function lo(){ return (V && V.a != null) ? V.a : 0; }
 function hi(){ return (V && V.b != null) ? V.b : N - 1; }
 function updSeekRange(){ const s = $('seek'); s.min = lo(); s.max = hi(); }
+let seekDrag = false;
+$('seek').addEventListener('pointerdown', () => { seekDrag = true; });
+['pointerup','pointercancel','change'].forEach(ev => $('seek').addEventListener(ev, () => { seekDrag = false; }));
 $('seek').addEventListener('input', e => { pause(); seekFrame(+e.target.value); });
 const step = d => () => { pause(); seekFrame(Math.max(lo(), Math.min(hi(), cur() + d))); };
 $('bBack').onclick = step(-1); $('bFwd').onclick = step(1); $('bBack10').onclick = step(-10); $('bFwd10').onclick = step(10);
@@ -380,7 +391,7 @@ function updCut(){
 function layout(){
   const r = stage.getBoundingClientRect();
   W = Math.max(200, r.width);
-  const maxH = Math.max(240, window.innerHeight * (window.innerWidth >= 900 ? 0.72 : 0.6));
+  const maxH = Math.max(240, window.innerHeight * (window.innerWidth >= 900 ? 0.72 : 0.52));
   H = Math.round(Math.min(maxH, W * vh / vw));
   H = Math.max(H, 220);
   dpr = Math.min(3, window.devicePixelRatio || 1);
@@ -393,7 +404,9 @@ function zoomAt(f, sx, sy){
   const k = ns / view.s;
   view.ox = sx - (sx - view.ox) * k; view.oy = sy - (sy - view.oy) * k; view.s = ns; render();
 }
-window.addEventListener('resize', () => { if (!V) return; const rel = view.s / fitS; layout(); const os = fitS; fitS = Math.min(W / vw, H / vh); if (Math.abs(rel - 1) < 0.01) fitView(); else render(); });
+// Nur bei geänderter Breite neu einteilen (Safari meldet beim Scrollen ständig neue Höhen)
+let lastW = 0;
+window.addEventListener('resize', () => { if (!V) return; const w = stage.getBoundingClientRect().width; if (Math.abs(w - lastW) < 2) return; lastW = w; const rel = view.s / fitS; layout(); fitS = Math.min(W / vw, H / vh); if (Math.abs(rel - 1) < 0.01) fitView(); else render(); });
 $('zIn').onclick = () => zoomAt(1.5, W / 2, H / 2);
 $('zOut').onclick = () => zoomAt(1 / 1.5, W / 2, H / 2);
 $('zFit').onclick = fitView;
@@ -449,7 +462,7 @@ function editablePoints(){
   pend.forEach((q, i) => out.push({p: q, set: v => { pend[i] = v; }}));
   if (V.dev[f]) out.push({p: V.dev[f], set: v => { V.dev[f] = v; }});
   if (V.scale && (tool === 'scale' || all)) V.scale.p.forEach((q, i) => out.push({p: q, set: v => { V.scale.p[i] = v; }}));
-  if (tool === 'pose' && poseBox) out.push({p: [poseBox.x, poseBox.y], set: v => { poseBox.x = v[0]; poseBox.y = v[1]; }, box: true});
+  if (tool === 'pose' && poseBox) out.push({p: [poseBox.x, poseBox.y], set: v => { poseBox.x = v[0]; poseBox.y = v[1]; poseBox.f = cur(); }, box: true});
   return out;
 }
 function hitPoint(sx, sy){
@@ -485,7 +498,7 @@ function tap(sx, sy){
     render(); panel();
   } else if (tool === 'pose'){
     const s = poseBox ? poseBox.s : Math.min(vw, vh) * 0.45;
-    poseBox = {x: v[0], y: v[1], s};
+    poseBox = {x: v[0], y: v[1], s, f};
     detectHere();
   }
 }
@@ -561,14 +574,20 @@ function render(){
   if (L){
     for (const [a, b, c] of BONES){ const A = P(L, a), B = P(L, b); if (A && B) seg(A, B, COL[c], 3.5); }
     for (const n of [0, 11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28]){ const q = P(L, n); if (q) dot(q, n === 0 ? 5 : 4, n % 2 ? COL.l : COL.r); }
-    if (showAng){
+    const ys = L.filter(q => q[2] >= 0.35).map(q => q[1]);
+    const tall = ys.length ? (Math.max(...ys) - Math.min(...ys)) * view.s : 0;
+    if (showAng && tall >= 110){
       const A = poseAngles(L);
       [[A.kneeL, 25], [A.kneeR, 26], [A.hipL, 23], [A.hipR, 24], [A.elbL, 13], [A.elbR, 14]].forEach(([g, n]) => {
-        const q = P(L, n); if (!q || !isFinite(g)) return; const s = toS(q); pill(s[0] + 7, s[1] - 10, Math.round(g) + '°', n % 2 ? 'rgba(150,95,0,.85)' : 'rgba(0,95,140,.85)');
+        const q = P(L, n); if (!q || !isFinite(g)) return; const s = toS(q), t = Math.round(g) + '°';
+        ctx.font = '600 13px Barlow, system-ui, sans-serif'; const w = ctx.measureText(t).width + 10;
+        // links (gelb) links vom Gelenk, rechts (blau) rechts davon, damit sich nichts überdeckt
+        pill(n % 2 ? s[0] - w - 7 : s[0] + 7, s[1] - 10, t, n % 2 ? 'rgba(150,95,0,.85)' : 'rgba(0,95,140,.85)');
       });
     }
+    smallSkel = showAng && tall > 0 && tall < 110;
   }
-  if (tool === 'pose' && poseBox){
+  if (tool === 'pose' && poseBox && (poseBox.f === f || !L)){
     const a = toS([poseBox.x - poseBox.s / 2, poseBox.y - poseBox.s / 2]), w = poseBox.s * view.s;
     ctx.setLineDash([7, 6]); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(a[0], a[1], w, w); ctx.setLineDash([]);
     dot([poseBox.x, poseBox.y], 6, '#fff');
@@ -603,10 +622,23 @@ function render(){
   pend.forEach(q => dot(q, 6, '#fff'));
   if (pend.length === 2 && tool === 'ang') seg(pend[0], pend[1], 'rgba(255,255,255,.7)', 2);
   // Zeitanzeige
-  const t = secs(f) + 0.5 / fps / slow();
   $('tinfo').innerHTML = `${fmt(secs(f), 2)} s <small>· Bild ${f + 1} von ${N}${slow() > 1 ? ' · Echtzeit' : ''}</small>`;
-  if (!playing) $('seek').value = f;
-  if (timeA != null || timeB != null) pill(8, 8, 'Zeit: ' + (timeA != null ? 'Start Bild ' + (timeA + 1) : '') + (timeB != null ? ' · Ende Bild ' + (timeB + 1) : ''));
+  if (!seekDrag) $('seek').value = f;
+  hint();
+  $('bUndo').disabled = !(undoStack.length || pend.length);
+  if (timeA != null || timeB != null) pill(8, H - 28, 'Zeit: ' + (timeA != null ? 'Start Bild ' + (timeA + 1) : '') + (timeB != null ? ' · Ende Bild ' + (timeB + 1) : ''));
+}
+
+function hint(){
+  let t = '';
+  if (tool === 'line') t = pend.length ? 'Zweiten Punkt antippen' : 'Linie: zwei Punkte antippen';
+  else if (tool === 'ang') t = ['Winkel: ersten Arm antippen', 'Jetzt den Scheitel (z. B. Knie)', 'Jetzt den zweiten Arm'][pend.length] || '';
+  else if (tool === 'scale') t = pend.length ? 'Ende der Strecke antippen' : 'Maßstab: Anfang der bekannten Strecke antippen';
+  else if (tool === 'dev') t = 'Gerät antippen, die App springt ein Bild weiter';
+  else if (tool === 'pose') t = !poseBox ? 'Skelett: auf den Athleten tippen' : smallSkel ? 'Zum Lesen der Winkel hineinzoomen oder Tabelle unten' : '';
+  else if (tool === 'time') t = 'Zeit: Start und Ende unten setzen';
+  const h = $('vhint'), html = t ? '<span>' + t + '</span>' : '';
+  if (h.innerHTML !== html) h.innerHTML = html;
 }
 
 /* ---------- Werkzeuge, Seitenleiste ---------- */
@@ -654,10 +686,10 @@ function panel(light){
     let tab = '';
     if (L){ const A = poseAngles(L); const r = (a, b) => `<td>${isFinite(a) ? Math.round(a) + '°' : '–'}</td><td>${isFinite(b) ? Math.round(b) + '°' : '–'}</td>`;
       tab = `<table class="angt"><tr><th></th><th>links</th><th>rechts</th></tr><tr><td>Knie</td>${r(A.kneeL, A.kneeR)}</tr><tr><td>Hüfte</td>${r(A.hipL, A.hipR)}</tr><tr><td>Ellbogen</td>${r(A.elbL, A.elbR)}</tr><tr><td>Rumpf zur Senkrechten</td><td colspan="2">${isFinite(A.trunk) ? Math.round(A.trunk) + '°' : '–'}</td></tr></table>`; }
-    h = `<h3>Skelett</h3><p class="hint">Auf den Athleten tippen. Der Rahmen sollte ihn ganz enthalten und möglichst keine zweite Person. Dann „bis Ende Ausschnitt“: Die App folgt ihm Bild für Bild.</p>
+    h = `<h3>Skelett</h3><p class="hint">Auf den Athleten tippen. Der Rahmen sollte ihn ganz enthalten und möglichst keine zweite Person. Dann „Ausschnitt verfolgen“: Die App folgt ihm Bild für Bild, vor und zurück. Ohne Ausschnitt 1 s davor bis 2 s danach.</p>
       <label class="note" style="display:block">Rahmengröße</label>
       <input type="range" id="pSize" min="0.12" max="1" step="0.01" value="${poseBox ? (poseBox.s / Math.min(vw, vh)).toFixed(2) : 0.45}">
-      <div class="btns" style="margin-top:2px"><button class="btn sm primary" id="pRun" ${poseBox ? '' : 'disabled'}>bis Ende Ausschnitt</button>${L ? '<button class="btn sm" id="pDel1">dieses Bild löschen</button>' : ''}${n ? '<button class="btn sm" id="pDel">alle löschen</button>' : ''}</div>
+      <div class="btns" style="margin-top:2px"><button class="btn sm primary" id="pRun" ${poseBox ? '' : 'disabled'}>Ausschnitt verfolgen</button>${L || poseBox ? '<button class="btn sm" id="pZoom">Heranzoomen</button>' : ''}${L ? '<button class="btn sm" id="pDel1">dieses Bild löschen</button>' : ''}${n ? '<button class="btn sm" id="pDel">alle löschen</button>' : ''}</div>
       ${tab || (n ? '<p class="note">Auf diesem Bild kein Skelett.</p>' : '')}
       <label class="chk"><input type="checkbox" id="pAng" ${showAng ? 'checked' : ''}> Winkel im Bild</label>
       <label class="chk"><input type="checkbox" id="pHand" ${showHand ? 'checked' : ''}> Hand-Spur (links gelb, rechts blau)</label>
@@ -694,9 +726,10 @@ function bindPanel(){
   on('dDel1', 'click', () => { pushUndo(); delete V.dev[cur()]; save(); render(); panel(); });
   on('sLen', 'change', e => { scaleLen = e.target.value; });
   on('sDel', 'click', () => { pushUndo(); V.scale = null; save(); render(); panel(); });
-  on('pSize', 'input', e => { const s = +e.target.value * Math.min(vw, vh); if (poseBox) poseBox.s = s; else poseBox = {x: vw / 2, y: vh / 2, s}; render(); });
+  on('pSize', 'input', e => { const s = +e.target.value * Math.min(vw, vh); if (poseBox){ poseBox.s = s; poseBox.f = cur(); } else poseBox = {x: vw / 2, y: vh / 2, s, f: cur()}; render(); });
   on('pSize', 'change', () => { if (poseBox) detectHere(); });
   on('pRun', 'click', runTrack);
+  on('pZoom', 'click', () => { const L = V.pose[cur()], bb = L ? bodyBox(L) : null, b = bb || poseBox; if (!b) return; const sz = bb ? b.s * 0.75 : b.s; const ns = Math.max(fitS, Math.min(fitS * 12, Math.min(W, H) / sz)); view = {s: ns, ox: W / 2 - b.x * ns, oy: H / 2 - b.y * ns}; render(); });
   on('pDel1', 'click', () => { delete V.pose[cur()]; save(); render(); panel(); });
   on('pDel', 'click', () => { if (confirm('Alle Skelette dieses Videos löschen?')){ V.pose = {}; save(); render(); panel(); } });
   on('pAng', 'change', e => { showAng = e.target.checked; render(); });
@@ -752,34 +785,59 @@ async function detectHere(){
   setBusy(null); render(); panel();
 }
 function showPoseErr(){ showMsg('Die Skelett-Erkennung konnte nicht geladen werden. Beim ersten Mal braucht sie Internet, danach geht sie auch offline.', 'err'); }
-function nextBox(L, box){
-  const vis = PI.map((n, i) => L[i]).filter(q => q[2] >= 0.5);
-  if (vis.length < 6) return box;
+function bodyBox(L){
+  const vis = L.filter(q => q[2] >= 0.5);
+  if (vis.length < 6) return null;
   const xs = vis.map(q => q[0]), ys = vis.map(q => q[1]);
   const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
-  const cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
-  const s = Math.max(Math.min(vw, vh) * 0.12, Math.min(Math.min(vw, vh), Math.max(w, h) * 1.7));
-  return {x: cx, y: cy, s: box.s * 0.5 + s * 0.5};
+  return {x: (Math.max(...xs) + Math.min(...xs)) / 2, y: (Math.max(...ys) + Math.min(...ys)) / 2, s: Math.max(Math.min(vw, vh) * 0.12, Math.min(Math.min(vw, vh), Math.max(w, h) * 1.7))};
+}
+// Eine Richtung verfolgen; Bewegung vom letzten Bild wird vorausberechnet, damit der Rahmen schnellen Athleten nicht hinterherläuft
+async function track(from, to, dir, box, stat){
+  let miss = 0, prev = null;
+  for (let f = from; dir > 0 ? f <= to : f >= to; f += dir){
+    if (cancelRun) return 'cancel';
+    stat.done++;
+    const eta = stat.done > 2 ? Math.round((performance.now() - stat.t0) / stat.done * (stat.total - stat.done) / 1000) : null;
+    setBusy(`Skelett ${stat.done} von ${stat.total}${eta != null && eta > 2 ? ' · noch ca. ' + eta + ' s' : ''}`, true);
+    await seekFrame(f);
+    const L = await detectBox(box);
+    const bb = L && bodyBox(L);
+    // Sprung des Skeletts weit weg vom Rahmen = vermutlich andere Person
+    if (L && bb && Math.hypot(bb.x - box.x, bb.y - box.y) < box.s * (prev ? 0.45 : 0.6)){
+      V.pose[f] = L; stat.found++; miss = 0;
+      const vx = prev ? bb.x - prev.x : 0, vy = prev ? bb.y - prev.y : 0;
+      prev = bb;
+      box = {x: bb.x + vx, y: bb.y + vy, s: box.s * 0.5 + bb.s * 0.5};
+    } else {
+      delete V.pose[f];
+      if (++miss >= 6) return f;
+    }
+    render();
+  }
+  return null;
 }
 async function runTrack(){
   if (!poseBox) return;
   pause(); cancelRun = false;
   try { await loadPose(); } catch (e) { setBusy(null); showPoseErr(); return; }
-  const from = cur(), to = Math.max(from, hi());
-  let box = {...poseBox}, miss = 0, found = 0;
-  const t0 = performance.now();
-  for (let f = from; f <= to; f++){
-    if (cancelRun) break;
-    const eta = f > from ? Math.round((performance.now() - t0) / (f - from) * (to - f + 1) / 1000) : null;
-    setBusy(`Skelett Bild ${f - from + 1} von ${to - from + 1}${eta != null && eta > 2 ? ' · noch ca. ' + eta + ' s' : ''}`, true);
-    await seekFrame(f);
-    const L = await detectBox(box);
-    if (L){ V.pose[f] = L; found++; miss = 0; box = nextBox(L, box); poseBox = {...box}; }
-    else { delete V.pose[f]; if (++miss >= 6){ showMsg(`Bei Bild ${f + 1} hat die App den Athleten verloren. Dort neu antippen und weitermachen.`, 'info'); break; } }
-    render();
-  }
-  setBusy(null); save(); render(); panel();
-  if (!cancelRun && miss < 6) showMsg(`Skelett auf ${found} Bildern erkannt. Mit „‹ Bild“ und „Bild ›“ durchsehen.`);
+  const f0 = cur(), cut = V.a != null || V.b != null;
+  const a = cut ? lo() : Math.max(0, f0 - fps), b = cut ? hi() : Math.min(N - 1, f0 + 2 * fps);
+  const start = {...poseBox};
+  const stat = {done: 0, found: 0, total: b - a + 1, t0: performance.now()};
+  let lock = null; try { lock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  const lostF = await track(f0, b, 1, {...start}, stat);
+  let lostB = null;
+  if (lostF !== 'cancel' && f0 > a) lostB = await track(f0 - 1, a, -1, {...start}, stat);
+  setBusy(null); save();
+  try { if (lock) lock.release(); } catch (e) {}
+  await seekFrame(f0); poseBox = {...start, f: f0}; render(); panel();
+  if (lostF === 'cancel' || lostB === 'cancel') return showMsg(`Abgebrochen. Skelett auf ${stat.found} Bildern.`, 'info');
+  const lost = [lostF, lostB].filter(x => x != null);
+  let t = `Skelett auf ${stat.found} von ${b - a + 1} Bildern erkannt (Bild ${a + 1} bis ${b + 1}). Mit „‹ Bild“ und „Bild ›“ durchsehen.`;
+  if (lost.length) t += ` Bei Bild ${lost.map(x => x + 1).join(' und ')} hat die App den Athleten verloren. Dort neu antippen und noch einmal starten.`;
+  if (!cut) t += ' Tipp: Mit „Anfang hier“ und „Ende hier“ bestimmst du selbst, welcher Teil verfolgt wird.';
+  showMsg(t, lost.length ? 'info' : '');
 }
 
 /* ---------- Bild speichern ---------- */

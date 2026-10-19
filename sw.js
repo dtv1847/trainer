@@ -1,5 +1,5 @@
 /* DTV 1847 – Offline-Speicher. Version ändert sich bei jedem Update automatisch. */
-const CACHE = 'dtv-trainer-6e000e910d';
+const CACHE = 'dtv-trainer-5c8514f07c';
 const FILES = ["./", "dtv-icon.png", "index.html", "masse.html", "plan.html", "technik.html", "training.html", "video.html", "wissen.html", "zirkel.html"];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
