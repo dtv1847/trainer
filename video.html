@@ -201,7 +201,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </section>
 </main>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-19b</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-19c</span></footer>
 
 <script>
 (function(){
@@ -748,11 +748,12 @@ function loadPose(){
   if (poseLoading) return poseLoading;
   setBusy('Skelett-Erkennung wird geladen (beim ersten Mal ca. 16 MB) …');
   poseLoading = (async () => {
+    await checkPoseFiles();
     if (!window.Pose) await loadScript('pose.js');
     const p = new window.Pose({locateFile: f => f});
     p.setOptions({modelComplexity: 1, smoothLandmarks: false, enableSegmentation: false, minDetectionConfidence: 0.4, minTrackingConfidence: 0.4, staticImageMode: true});
     p.onResults(r => { lastRes = r; });
-    await p.initialize();
+    await Promise.race([p.initialize(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 120000))]);
     poseObj = p; return p;
   })().catch(e => { poseLoading = null; throw e; });
   return poseLoading;
@@ -781,10 +782,27 @@ async function detectHere(){
     const f = cur();
     if (L){ V.pose[f] = L; save(); showMsg(''); }
     else { delete V.pose[f]; showMsg('Auf diesem Bild wurde kein Skelett gefunden. Rahmen verschieben oder größer machen.', 'info'); }
-  } catch (e) { showPoseErr(); }
+  } catch (e) { showPoseErr(e); }
   setBusy(null); render(); panel();
 }
-function showPoseErr(){ showMsg('Die Skelett-Erkennung konnte nicht geladen werden. Beim ersten Mal braucht sie Internet, danach geht sie auch offline.', 'err'); }
+// Vorab prüfen, ob alle Dateien der Skelett-Erkennung auf der Website liegen (sonst wartet sie endlos)
+const POSE_FILES = ['pose.js', 'pose_solution_packed_assets_loader.js', 'pose_solution_packed_assets.data', 'pose_solution_simd_wasm_bin.js', 'pose_solution_simd_wasm_bin.wasm', 'pose_web.binarypb', 'pose_landmark_full.tflite'];
+async function checkPoseFiles(){
+  const miss = [];
+  await Promise.all(POSE_FILES.map(async f => {
+    try {
+      if (window.caches && await caches.match(f)) return;
+      const r = await fetch(f, {method: 'HEAD', cache: 'no-store'});
+      if (!r.ok) miss.push(f);
+    } catch (e) { if (navigator.onLine !== false) miss.push(f); }
+  }));
+  if (miss.length){ const e = new Error('missing'); e.files = miss; throw e; }
+}
+function showPoseErr(e){
+  if (e && e.files) return showMsg('Die Skelett-Erkennung ist auf der Website unvollständig. Es fehlt: <b>' + e.files.join(', ') + '</b>. Bitte ins GitHub-Repo „trainer“ hochladen, ein paar Minuten warten und die App neu öffnen.', 'err');
+  if (e && e.message === 'timeout') return showMsg('Die Skelett-Erkennung lädt sehr lange. Bitte im WLAN noch einmal versuchen.', 'err');
+  showMsg('Die Skelett-Erkennung konnte nicht geladen werden. Beim ersten Mal braucht sie Internet, danach geht sie auch offline.', 'err');
+}
 function bodyBox(L){
   const vis = L.filter(q => q[2] >= 0.5);
   if (vis.length < 6) return null;
@@ -820,7 +838,7 @@ async function track(from, to, dir, box, stat){
 async function runTrack(){
   if (!poseBox) return;
   pause(); cancelRun = false;
-  try { await loadPose(); } catch (e) { setBusy(null); showPoseErr(); return; }
+  try { await loadPose(); } catch (e) { setBusy(null); showPoseErr(e); return; }
   const f0 = cur(), cut = V.a != null || V.b != null;
   const a = cut ? lo() : Math.max(0, f0 - fps), b = cut ? hi() : Math.min(N - 1, f0 + 2 * fps);
   const start = {...poseBox};
