@@ -55,6 +55,12 @@ h3{font-family:var(--cond);font-weight:600;font-size:21px;line-height:1.1;margin
 .block-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .tag{font-size:12.5px;color:var(--muted)}
 .note{font-size:13.5px;color:var(--muted);margin:8px 0 0}
+.mo-h{font-family:var(--cond);font-weight:700;font-size:20px;margin:0 0 2px}
+.mo-list{list-style:none;margin:6px 0 0;padding:0}
+.mo-list li{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:6px 0;font-size:14.5px}
+.mo-list li span{flex:1;min-width:0;overflow-wrap:anywhere}
+.mo-list li.cur span{font-weight:700}
+.mo-list li button{border:0;background:none;color:var(--red);font:600 14px var(--body);padding:6px 8px;cursor:pointer}
 .warn{font-size:13.5px;color:var(--red-deep);margin:8px 0 0}
 .info{background:#fff;border:1px solid var(--line);border-left:6px solid var(--red);border-radius:10px;padding:12px 14px;margin:0 0 10px;font-size:14.5px}
 .f{display:flex;flex-direction:column;gap:3px;min-width:0}
@@ -390,8 +396,23 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 
   <h2 id="musik">Musik</h2>
-  <p class="lead">Spotify spielt während der Belastung und pausiert beim Wechsel. Braucht Spotify Premium und Internet.</p>
+  <p class="lead">Musik läuft während der Belastung und pausiert beim Wechsel. Entweder eigene Musikdateien vom Gerät (offline, ohne Konto) oder Spotify.</p>
+  <div class="block" id="moBox">
+    <h3 class="mo-h">Eigene Musik vom Gerät</h3>
+    <label class="chk"><input type="checkbox" id="moOn"> Eigene Musik im Zirkel abspielen</label>
+    <div class="btns" style="margin-top:4px">
+      <label class="btn small" for="moFile">Musik hinzufügen</label>
+      <input type="file" id="moFile" accept="audio/*,.mp3,.m4a,.aac,.wav" multiple hidden>
+      <button class="btn small" type="button" id="moTest">▶ Probe</button>
+    </div>
+    <label class="chk"><input type="checkbox" id="moShuf"> Zufällige Reihenfolge</label>
+    <ul class="mo-list" id="moList"></ul>
+    <p class="note" id="moInfo"></p>
+    <p class="note">Geht mit Musikdateien (MP3, M4A) aus der Dateien-App, z.&nbsp;B. vom Computer übertragen oder aus der Cloud geladen. Songs aus Apple Music oder Spotify lassen sich nicht wählen, die sind kopiergeschützt. Die Dateien bleiben in der App auf diesem Gerät.</p>
+  </div>
   <div class="block">
+    <h3 class="mo-h">Spotify</h3>
+    <p class="note" style="margin:0 0 4px">Braucht Spotify Premium und Internet.</p>
     <label class="chk"><input type="checkbox" id="spOn"> Spotify im Zirkel steuern</label>
     <div class="sp-state"><span class="sp-dot" id="spDot"></span><span id="spState">Nicht verbunden.</span></div>
     <div id="spDevBox" hidden>
@@ -448,7 +469,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </main>
 
-<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-17b · U12-Kader</span></footer>
+<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-20a · eigene Musik</span></footer>
 </div>
 
 <!-- ============ LAUF ============ -->
@@ -461,7 +482,7 @@ body.running .appbar,body.running .subbar{display:none}
     </div>
     <div class="sp"></div>
     <div class="spst" id="spRun"></div>
-    <button class="tb mus" type="button" id="musBtn" aria-label="Spotify ein oder aus" hidden>♫</button>
+    <button class="tb mus" type="button" id="musBtn" aria-label="Musik ein oder aus" hidden>♫</button>
     <button class="tb" type="button" id="sndBtn" aria-label="Ton ein oder aus">♪</button>
   </div>
   <div class="stage" id="stage"></div>
@@ -1196,6 +1217,94 @@ function renderPlanNote(){
 }
 
 
+/* ---------- Eigene Musik vom Gerät (IndexedDB, offline, ohne Konto) ---------- */
+const MOK = 'dtv-zirkel-musik';
+let mo = (()=>{ try { return Object.assign({on:false, shuf:false}, JSON.parse(localStorage.getItem(MOK)) || {}); } catch(e){ return {on:false, shuf:false}; } })();
+function moSave(){ try { localStorage.setItem(MOK, JSON.stringify({on:mo.on, shuf:mo.shuf})); } catch(e){} }
+let moTracks = [], moIdx = -1, moUrl = null, moWant = false, moErr = 0;
+const moAudio = new Audio(); moAudio.preload = 'auto'; moAudio.setAttribute('playsinline', '');
+let moDbP = null;
+function moDb(){
+  if (!moDbP) moDbP = new Promise((res, rej) => { const r = indexedDB.open('dtv-zirkel-music', 1); r.onupgradeneeded = () => r.result.createObjectStore('t', {keyPath:'id'}); r.onsuccess = () => res(r.result); r.onerror = () => { moDbP = null; rej(r.error); }; });
+  return moDbP;
+}
+function moTx(mode, fn){ return moDb().then(d => new Promise((res, rej) => { const t = d.transaction('t', mode), st = t.objectStore('t'); let out; const r = fn(st); if (r) r.onsuccess = () => { out = r.result; }; t.oncomplete = () => res(out); t.onerror = t.onabort = () => rej(t.error); })); }
+const moActive = () => !!(mo.on && moTracks.length);
+async function moLoadList(){
+  try { const all = await moTx('readonly', st => st.getAll()); moTracks = (all || []).sort((a, b) => a.ts - b.ts); } catch(e){ moTracks = []; }
+  moUi();
+}
+function moUi(){
+  const on = $('#moOn'); if (!on) return;
+  on.checked = !!mo.on; $('#moShuf').checked = !!mo.shuf;
+  const cur = moTracks[moIdx];
+  $('#moList').innerHTML = moTracks.map(t => `<li${cur && cur.id === t.id ? ' class="cur"' : ''}><span>${esc(t.name)}</span><small class="note" style="margin:0">${(t.size/1048576).toFixed(1).replace('.', ',')} MB</small><button type="button" data-mdel="${t.id}" aria-label="Entfernen">✕</button></li>`).join('');
+  const total = moTracks.reduce((a, t) => a + (t.size || 0), 0);
+  $('#moInfo').textContent = moTracks.length ? `${moTracks.length} Titel, ${(total/1048576).toFixed(total < 10485760 ? 1 : 0).replace('.', ',')} MB.` + (mo.on ? '' : ' Zum Abspielen oben einschalten.') : 'Noch keine Musik. „Musik hinzufügen“ tippen.';
+  $('#moTest').disabled = !moTracks.length;
+  musBtnUi();
+}
+function musBtnUi(){
+  const mb = $('#musBtn'); if (!mb) return;
+  mb.hidden = !(spConnected() || moTracks.length);
+  mb.classList.toggle('on', moActive() || (!!sp.on && spConnected()));
+}
+function moPick(){
+  if (!moTracks.length) return -1;
+  if (mo.shuf && moTracks.length > 1){ let i; do { i = Math.floor(Math.random() * moTracks.length); } while (i === moIdx); return i; }
+  return (moIdx + 1) % moTracks.length;
+}
+function moLoad(i){
+  moIdx = i; const t = moTracks[i]; if (!t) return;
+  if (moUrl) URL.revokeObjectURL(moUrl);
+  moUrl = URL.createObjectURL(t.blob); moAudio.src = moUrl; moUi();
+}
+function moStart(){
+  const p = moAudio.play();
+  if (p && p.catch) p.catch(e => { if (e && e.name === 'NotAllowedError') spRunMsg('Musik: einmal auf ▶ tippen', true); });
+}
+moAudio.addEventListener('ended', () => { moErr = 0; moLoad(moPick()); if (moWant) moStart(); });
+moAudio.addEventListener('error', () => { if (++moErr > moTracks.length) { moWant = false; spRunMsg('Musik: Dateien lassen sich nicht abspielen', true); return; } moLoad(moPick()); if (moWant) moStart(); });
+moAudio.addEventListener('playing', () => { moErr = 0; if (run.active) spRunMsg('Musik: ' + ((moTracks[moIdx] || {}).name || '')); });
+function moSync(){
+  const want = moActive() && run.active && !run.paused && !run.done && run.phase === 'work';
+  if (want === moWant) return;
+  moWant = want;
+  if (want){ if (moIdx < 0 || !moTracks[moIdx]) moLoad(mo.shuf ? moPick() : 0); moStart(); }
+  else if (!moAudio.paused) moAudio.pause();
+}
+on('#moFile', 'change', async e => {
+  const fs = [...(e.target.files || [])]; e.target.value = '';
+  if (!fs.length) return;
+  let n = 0;
+  for (const f of fs){
+    if (moTracks.some(t => t.name === f.name && t.size === f.size)) continue;
+    try { await moTx('readwrite', st => st.put({id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: f.name.replace(/\.[^.]+$/, ''), size: f.size, type: f.type, blob: f, ts: Date.now() + n})); n++; }
+    catch(err){ $('#moInfo').textContent = 'Speichern nicht möglich (Speicher voll?).'; }
+  }
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+  if (n && !mo.on){ mo.on = true; if (sp.on){ sp.on = false; spSave(); spUi(); } moSave(); }
+  await moLoadList();
+});
+on('#moList', 'click', async e => {
+  const b = e.target.closest('[data-mdel]'); if (!b) return;
+  const id = b.dataset.mdel;
+  if (moTracks[moIdx] && moTracks[moIdx].id === id){ moAudio.pause(); moAudio.removeAttribute('src'); moIdx = -1; }
+  try { await moTx('readwrite', st => st.delete(id)); } catch(err){}
+  const cur = moTracks[moIdx]; await moLoadList(); moIdx = cur ? moTracks.findIndex(t => t.id === cur.id) : -1; moUi();
+});
+on('#moOn', 'change', e => { mo.on = e.target.checked; if (mo.on && sp.on){ sp.on = false; spSave(); spUi(); } moSave(); moUi(); });
+on('#moShuf', 'change', e => { mo.shuf = e.target.checked; moSave(); });
+let moTestOn = false;
+on('#moTest', 'click', () => {
+  if (moTestOn){ moAudio.pause(); moTestOn = false; $('#moTest').textContent = '▶ Probe'; return; }
+  if (moIdx < 0) moLoad(0);
+  moStart(); moTestOn = true; $('#moTest').textContent = '❚❚ Probe';
+  setTimeout(() => { if (moTestOn){ moAudio.pause(); moTestOn = false; $('#moTest').textContent = '▶ Probe'; } }, 15000);
+});
+window.__mo = {audio: moAudio, get tracks(){ return moTracks; }, get want(){ return moWant; }, reload: moLoadList};
+moLoadList();
+
 /* ---------- Spotify (Connect-Fernsteuerung) ---------- */
 const SPK = 'dtv-zirkel-spotify';
 const SP_SCOPES = 'user-read-playback-state user-modify-playback-state';
@@ -1218,7 +1327,7 @@ function spUi(msg, kind){
   if (document.activeElement !== $('#spClient')) $('#spClient').value = sp.clientId || '';
   $('#spLogout').hidden = !spConnected(); $('#spCodeCopy').hidden = !spConnected();
   if (!spConnected() && !sp._opened){ $('#spSetup').open = !!sp.on; }
-  const mb = $('#musBtn'); mb.hidden = !spConnected(); mb.classList.toggle('on', !!sp.on);
+  musBtnUi();
 }
 function spRunMsg(t, err){ const e = $('#spRun'); if (!e) return; e.textContent = t || ''; e.classList.toggle('err', !!err); }
 function spErrText(e){
@@ -1348,8 +1457,9 @@ async function spApply(target){
 }
 let spWant = 'stop', spBusy = false;
 function musicSync(){
+  moSync();
   let want = 'stop';
-  if (sp.on && spConnected() && run.active && !run.paused && !run.done) want = run.phase === 'work' ? 'play' : (sp.mode === 'leise' ? 'duck' : 'stop');
+  if (!moActive() && sp.on && spConnected() && run.active && !run.paused && !run.done) want = run.phase === 'work' ? 'play' : (sp.mode === 'leise' ? 'duck' : 'stop');
   if (want === spWant) return;
   spWant = want; spPush();
 }
@@ -1813,7 +1923,7 @@ on('#goBtn','click', ()=>{
 });
 on('#nextBtn','click', ()=>{ unlockAudio(); advance(false); });
 on('#prevBtn','click', ()=>{ unlockAudio(); back(); });
-on('#spOn','change', e=>{ sp.on = e.target.checked; spSave(); spUi(); if (sp.on && spConnected()) spLoadDevices(true); });
+on('#spOn','change', e=>{ sp.on = e.target.checked; if (sp.on && mo.on){ mo.on = false; moSave(); moUi(); } spSave(); spUi(); if (sp.on && spConnected()) spLoadDevices(true); });
 on('#spSetup','toggle', ()=>{ sp._opened = true; });
 on('#spCopyUri','click', ()=>{ const t = spRedirect(); (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(()=>spUi('Adresse kopiert.', ''), ()=>spUi('Bitte die Adresse von Hand abschreiben: ' + t, '')); });
 on('#spLogin','click', ()=>{ spLogin(); });
@@ -1850,7 +1960,9 @@ on('#spCodePaste','click', ()=>{
     spUi('Verbindung übernommen.', ''); spLoadDevices(false);
   } catch(e){ spUi('Der Code ist ungültig.', 'err'); }
 });
-on('#musBtn','click', ()=>{ sp.on = !sp.on; spSave(); spUi(); spRunMsg(sp.on ? 'Spotify an' : 'Spotify aus'); renderRun(); });
+on('#musBtn','click', ()=>{
+  if (moTracks.length && (mo.on || !spConnected())){ mo.on = !mo.on; if (mo.on && sp.on){ sp.on = false; spSave(); } moSave(); moUi(); spUi(); spRunMsg(mo.on ? 'Musik an' : 'Musik aus'); renderRun(); return; }
+  sp.on = !sp.on; spSave(); spUi(); spRunMsg(sp.on ? 'Spotify an' : 'Spotify aus'); renderRun(); });
 on('#sndBtn','click', ()=>{ db.sound = !db.sound; save(); if (db.sound){ unlockAudio(); beep(880,.1,.4); } renderRun(); });
 window.addEventListener('resize', ()=>{ if (run.active){ const s=$('#stage'); s.dataset.built=''; renderRun(); } });
 window.addEventListener('orientationchange', ()=>setTimeout(()=>{ if (run.active){ const s=$('#stage'); s.dataset.built=''; renderRun(); } }, 300));

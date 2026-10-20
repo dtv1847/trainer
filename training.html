@@ -212,6 +212,12 @@ ul.pts li::before{content:"";position:absolute;left:4px;top:15px;width:9px;heigh
 .pchip b{display:block;font-size:12.5px;color:var(--muted);font-weight:600}
 .pchip span{font-family:var(--cond);font-weight:700;font-size:23px;font-variant-numeric:tabular-nums}
 .pchip.on{background:var(--ink);color:#fff}
+.tt-in{width:64px;min-width:64px;padding:7px 6px;font-size:16px;text-align:right;font-variant-numeric:tabular-nums}
+.tt-in.bad{border-color:var(--red);background:#FDECEC}
+table.ov td.best{font-family:var(--cond);font-weight:700;font-size:19px}
+table.ov th button.qchip{min-height:28px;padding:3px 9px;font-size:12.5px}
+.up{color:#1E7A3F;font-weight:700}.down{color:var(--red-deep);font-weight:700}
+.mt{font-size:11px;color:var(--muted);font-weight:600;margin-left:3px}
 .pchip.on b{color:#D8D8D8}
 .refline{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;margin-top:14px}
 .refline > span{font-size:14px;color:var(--muted);font-weight:600}
@@ -286,6 +292,7 @@ body.running .appbar,body.running .subbar{display:none}
     <a href="#rechner">Rechner</a>
     <a href="#plan">Plan</a>
     <a href="#gruppe">Gruppe</a>
+    <a href="#tests">Tests</a>
     <a href="#normen">Normen</a>
     <a href="#athletik">Athletik</a>
     <a href="#athleten">Athleten</a>
@@ -395,6 +402,32 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </section>
 
+
+<!-- ============ TESTS ============ -->
+<section id="tests">
+  <h2>Tests</h2>
+  <p class="lead">Leistungsdiagnose: Versuche eintragen, der beste zählt. Ohne Bewertung, verglichen wird nur mit früheren Tests desselben Athleten.</p>
+  <div class="block">
+    <div class="fg">
+      <label class="f"><span>Testtag</span><input type="date" id="ttDate"></label>
+      <label class="f"><span>Messung</span><select id="ttMt"><option value="ls">Lichtschranke</option><option value="hand">Hand gestoppt</option><option value="app">App</option></select></label>
+      <label class="f"><span>Versuche</span><select id="ttN"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>
+      <label class="f" id="ttVarWrap"><span id="ttVarLbl">Gerät</span><select id="ttVar"></select></label>
+    </div>
+    <div class="f" style="margin-top:12px"><span>Test</span><div class="qchips" id="ttChips"></div></div>
+    <div class="qchips" id="ttCls" style="margin-top:10px"></div>
+  </div>
+  <div class="block" id="ttEntry"></div>
+  <div class="block">
+    <div class="block-head"><h3>Übersicht Testtag</h3><span class="tag" id="ttOvTag"></span></div>
+    <div id="ttOv"></div>
+  </div>
+  <div class="block">
+    <div class="block-head"><h3>Verlauf</h3><span class="tag" id="ttHistTag"></span></div>
+    <div id="ttHist"></div>
+    <p class="note">Handzeiten, Lichtschranke und App sind nicht direkt vergleichbar, darum steht die Messart dabei. Fliegende Zeiten nimmt der Rechner automatisch als Referenz für fliegende Strecken, der neueste Test zuerst.</p>
+  </div>
+</section>
 
 <!-- ============ NORMEN ============ -->
 <section id="normen">
@@ -566,7 +599,7 @@ body.running .appbar,body.running .subbar{display:none}
 </section>
 </main>
 
-<footer class="only-js">Die Vorgaben sind Richtwerte und ersetzen nicht das Auge des Trainers. <span class="ver">Trainer · Version 2026-10-17b · NI-Läufe</span></footer>
+<footer class="only-js">Die Vorgaben sind Richtwerte und ersetzen nicht das Auge des Trainers. <span class="ver">Trainer · Version 2026-10-20a · Tests</span></footer>
 
 <script>
 (function(){
@@ -612,8 +645,12 @@ function normEntry(e){
   const date = /^\d{4}-\d{2}-\d{2}$/.test(e.date||'') ? e.date : '';
   const kind = ['SB','PB','Test'].includes(e.kind) ? e.kind : 'SB';
   const season = +e.season || (date ? +date.slice(0,4) : Y);
-  if (e.ev) return {id:e.id||uid(), ev:String(e.ev), label:String(e.label||e.ev), unit:(e.unit==='pts'||e.unit==='s') ? e.unit : 'm', v:+e.v, d:0, fly:false, t:0, kind, date, season};
-  return {id:e.id||uid(), d:+e.d, fly:!!e.fly, t:+e.t, kind, date, season};
+  const x = {};
+  if (e.tt) x.tt = String(e.tt);
+  if (['ls','hand','app'].includes(e.mt)) x.mt = e.mt;
+  if (Array.isArray(e.att)) x.att = e.att.map(v=>+v || 0).slice(0,3);
+  if (e.ev) return Object.assign({id:e.id||uid(), ev:String(e.ev), label:String(e.label||e.ev), unit:(e.unit==='pts'||e.unit==='s') ? e.unit : 'm', v:+e.v, d:0, fly:false, t:0, kind, date, season}, x);
+  return Object.assign({id:e.id||uid(), d:+e.d, fly:!!e.fly, t:+e.t, kind, date, season}, x);
 }
 const defPlan = () => ({
   sprint:[{id:uid(),d:100,fly:false,p:[80,90]},{id:uid(),d:150,fly:false,p:[60,70]}],
@@ -637,6 +674,7 @@ function normalize(o){
   const s = Object.assign({disc:'sprint', mode:'speed', dec:1, k:1.06, sel:null}, o.s||{});
   s.calc = Object.assign({sprint:{d:100,p:80,fly:false}, run:{d:1000,p:90,fly:false}}, s.calc||{});
   s.norm = Object.assign({lk:true, nk2:false, all:false}, s.norm||{});
+  s.tt = Object.assign({date:'', mt:'ls', n:2, act:'30f', wv:'MB2', av:'coop', cls:''}, s.tt||{});
   if (!MOVES_KEYS.includes(s.mv)) s.mv = 'sprint';
   s.grp = Object.assign({sprint:{ref:'auto', d:150, fly:false, p:[60,70]}, run:{ref:'auto', d:1000, fly:false, p:[85,90]}}, s.grp||{});
   ['sprint','run'].forEach(k=>{ const g = s.grp[k]; g.p = Array.isArray(g.p) ? g.p.map(Number).filter(v=>v>=30&&v<=120) : parsePercents(g.p); if (!g.p.length) g.p = k==='run' ? [85,90] : [60,70]; });
@@ -770,7 +808,9 @@ function sortByClass(list){
 }
 function parsePercents(s){ return String(s).replace(/,/g,' ').split(/[^0-9.]+/).map(parseFloat).filter(v=>v>=30 && v<=120).slice(0,8); }
 function rank(e){ return e.kind==='SB' && e.season===Y ? 0 : e.kind==='PB' ? 1 : e.kind==='SB' ? 2 : 3; }
-function pick(list){ return list.slice().sort((x,y)=> rank(x)-rank(y) || x.t-y.t)[0] || null; }
+// Tests: der neueste zählt (aktueller Stand), sonst die schnellste Zeit
+const newer = (x,y) => (x.kind==='Test' && y.kind==='Test') ? (y.date||'').localeCompare(x.date||'') : 0;
+function pick(list){ return list.slice().sort((x,y)=> rank(x)-rank(y) || newer(x,y) || x.t-y.t)[0] || null; }
 function sortEntries(list){ return list.slice().sort((x,y)=> (x.d-y.d) || (x.fly-y.fly) || rank(x)-rank(y) || x.t-y.t); }
 
 function classCode(a){
@@ -796,7 +836,7 @@ function autoRef(a, d, fly, disc){
   }
   return pool.slice().sort((x,y)=>{
     const dx = Math.abs(Math.log(d/x.d)), dy = Math.abs(Math.log(d/y.d));
-    return (Math.round(dx*1000) - Math.round(dy*1000)) || (y.d - x.d) || rank(x)-rank(y) || x.t-y.t;
+    return (Math.round(dx*1000) - Math.round(dy*1000)) || (y.d - x.d) || rank(x)-rank(y) || newer(x,y) || x.t-y.t;
   })[0];
 }
 function chosenRef(a, d, fly, disc){
@@ -1213,8 +1253,152 @@ function renderMoves(){
 }
 
 function refreshValueFields(){ document.querySelectorAll('[data-form]').forEach(updateValueField); }
+/* ---------- Tests (Leistungsdiagnose) ---------- */
+const TT_WV = [['MB2','Medizinball 2 kg'],['MB3','Medizinball 3 kg'],['K3','Kugel 3 kg'],['K4','Kugel 4 kg'],['K5','Kugel 5 kg']];
+const TT_AV = [['coop','Cooper-Test (12 min)','m'],['6min','6-Minuten-Lauf','m'],['800','800 m','t',800],['1000','1.000 m','t',1000],['2000','2.000 m','t',2000]];
+const TT = [['30s','30 m Start'],['30f','30 m fliegend'],['sw','Standweitsprung'],['5er','5er-Sprung'],['wr','Wurf rückwärts'],['aus','Ausdauer']];
+const MT = {ls:'LS', hand:'Hand', app:'App'};
+// Beschreibung eines Tests (mit gewählter Variante): Schlüssel, Art, Strecke oder Disziplin
+function ttSpec(id, st){
+  st = st || db.s.tt;
+  if (id==='30s') return {key:'30s', id, name:'30 m Start', short:'30 m St.', t:true, d:30, fly:false};
+  if (id==='30f') return {key:'30f', id, name:'30 m fliegend', short:'30 m fl.', t:true, d:30, fly:true};
+  if (id==='sw') return {key:'sw', id, name:'Standweitsprung', short:'Standweit', t:false, ev:'X_SW'};
+  if (id==='5er') return {key:'5er', id, name:'5er-Sprung', short:'5er', t:false, ev:'X_5ER'};
+  if (id==='wr'){ const w = TT_WV.find(x=>x[0]===st.wv) || TT_WV[0]; return {key:'wr:'+w[0], id, name:w[1]+' rückwärts', short:w[1].replace('Medizinball','MB')+' rw.', t:false, ev:'X_WR_'+w[0]}; }
+  const a = TT_AV.find(x=>x[0]===st.av) || TT_AV[0];
+  return a[2]==='t' ? {key:'aus:'+a[0], id, name:a[1], short:a[1], t:true, d:a[3], fly:false} : {key:'aus:'+a[0], id, name:a[1], short:a[0]==='coop' ? 'Cooper' : '6 min', t:false, ev:'X_'+a[0].toUpperCase()};
+}
+function ttSpecFromKey(key){
+  const [id, v] = key.split(':');
+  return ttSpec(id, Object.assign({}, db.s.tt, id==='wr' ? {wv:v} : id==='aus' ? {av:v} : {}));
+}
+const ttDate = () => db.s.tt.date || new Date().toISOString().slice(0,10);
+const ttEntry = (a, key, date) => a.entries.find(e=>e.tt===key && e.date===date);
+const ttVal = (sp, e) => e ? (sp.t ? e.t : e.v) : null;
+const ttFmt = (sp, v) => v == null ? '' : sp.t ? fmtT(v, v < 60 ? 2 : 1) : num(v, v >= 100 ? 0 : 2);
+function ttParse(sp, str){
+  if (!String(str).trim()) return 0;
+  const v = sp.t ? parseTimeFlex(str, sp.d) : parseMark(str);
+  if (!(v > 0)) return NaN;
+  if (sp.t && (sp.d / v > 12 || sp.d / v < 0.8)) return NaN;     // unplausible Zeit
+  if (!sp.t && sp.ev !== 'X_COOP' && sp.ev !== 'X_6MIN' && v > 40) return NaN;
+  return v;
+}
+function ttAthletes(){
+  const list = sortByClass(db.athletes);
+  return db.s.tt.cls ? list.filter(a=>classLabel(a)===db.s.tt.cls) : list;
+}
+function ttSave(a, sp, att){
+  const date = ttDate(), vals = att.filter(v=>v > 0);
+  let e = ttEntry(a, sp.key, date);
+  if (!vals.length){ if (e) a.entries = a.entries.filter(x=>x!==e); return null; }
+  const best = sp.t ? Math.min(...vals) : Math.max(...vals);
+  const base = {kind:'Test', date, season:+date.slice(0,4), tt:sp.key, mt:db.s.tt.mt, att};
+  const ne = sp.t ? Object.assign({d:sp.d, fly:sp.fly, t:best}, base) : Object.assign({ev:sp.ev, label:sp.name, unit:'m', v:best}, base);
+  if (e) Object.assign(e, ne); else { e = normEntry(ne); a.entries.push(e); }
+  return e;
+}
+function renderTests(){
+  const st = db.s.tt; if (!$('#ttDate')) return;
+  $('#ttDate').value = ttDate(); $('#ttMt').value = st.mt; $('#ttN').value = String(st.n);
+  $('#ttChips').innerHTML = TT.map(([id, l])=>`<button type="button" class="qchip${st.act===id?' on':''}" data-tt="${id}">${l}</button>`).join('');
+  const varOpts = st.act==='wr' ? TT_WV : st.act==='aus' ? TT_AV : null;
+  $('#ttVarWrap').hidden = !varOpts;
+  if (varOpts){ $('#ttVarLbl').textContent = st.act==='wr' ? 'Gerät' : 'Ausdauertest'; $('#ttVar').innerHTML = varOpts.map(o=>`<option value="${o[0]}"${(st.act==='wr'?st.wv:st.av)===o[0]?' selected':''}>${o[1]}</option>`).join(''); }
+  const cls = [...new Set(sortByClass(db.athletes).map(classLabel))];
+  $('#ttCls').innerHTML = cls.length > 1 ? `<button type="button" class="qchip${!st.cls?' on':''}" data-ttc="">Alle</button>` + cls.map(c=>`<button type="button" class="qchip${st.cls===c?' on':''}" data-ttc="${esc(c)}">${esc(c)}</button>`).join('') : '';
+  renderTtEntry(); renderTtOv(); renderTtHist();
+}
+function renderTtEntry(){
+  const st = db.s.tt, sp = ttSpec(st.act), date = ttDate(), list = ttAthletes();
+  if (!db.athletes.length){ $('#ttEntry').innerHTML = '<p class="note" style="margin:0">Noch keine Athleten. Unter „Athleten“ anlegen.</p>'; return; }
+  const n = +st.n || 2;
+  let h = `<div class="block-head"><h3>${esc(sp.name)}</h3><span class="tag">${fmtDate(date)} · ${sp.t ? 'Zeit in s' : 'Weite in m'} · ${MT[st.mt]}</span></div><div class="tw"><table class="ov"><thead><tr><th>Athlet</th>`;
+  for (let i = 1; i <= n; i++) h += `<th>${n > 1 ? i + '. Versuch' : 'Wert'}</th>`;
+  h += `<th>Bester</th></tr></thead><tbody>`;
+  let last = null;
+  list.forEach(a=>{
+    const lbl = classLabel(a);
+    if (lbl !== last && !st.cls){ h += `<tr class="grp"><td colspan="${n + 2}">${esc(lbl)}</td></tr>`; last = lbl; }
+    const e = ttEntry(a, sp.key, date), att = (e && e.att) || (e ? [ttVal(sp, e)] : []);
+    h += `<tr><td>${esc(a.name)}</td>`;
+    for (let i = 0; i < n; i++) h += `<td><input class="tt-in" type="text" inputmode="decimal" autocomplete="off" data-tti="${a.id}|${i}" value="${att[i] ? ttFmt(sp, att[i]) : ''}" placeholder="${sp.t ? (sp.d > 100 ? '3:45' : '4,2') : (sp.ev==='X_COOP' || sp.ev==='X_6MIN' ? '2400' : '1,85')}" aria-label="${esc(a.name)} Versuch ${i+1}"></td>`;
+    h += `<td class="best" data-ttb="${a.id}">${e ? ttFmt(sp, ttVal(sp, e)) : '–'}</td></tr>`;
+  });
+  $('#ttEntry').innerHTML = h + '</tbody></table></div><p class="note">Zeiten wie 4,21 oder 3:45,0. Leeres Feld = kein Versuch. Gespeichert wird sofort.</p>';
+}
+function ttColumns(date){
+  // Spalten: die sechs Tests mit der aktuellen Variante, dazu weitere Varianten, die an diesem Tag eingetragen sind
+  const keys = TT.map(([id])=>ttSpec(id).key);
+  db.athletes.forEach(a=>a.entries.forEach(e=>{ if (e.tt && e.date===date && !keys.includes(e.tt)) keys.push(e.tt); }));
+  const order = k => TT.findIndex(([id])=>k.split(':')[0]===id);
+  return keys.sort((x,y)=>order(x)-order(y)).map(ttSpecFromKey);
+}
+function renderTtOv(){
+  const date = ttDate(), cols = ttColumns(date), list = ttAthletes();
+  $('#ttOvTag').textContent = fmtDate(date) + ' · bester Versuch';
+  if (!list.length){ $('#ttOv').innerHTML = ''; return; }
+  let h = `<div class="tw"><table class="ov"><thead><tr><th>Athlet</th>${cols.map(c=>`<th><button type="button" class="qchip${ttSpec(db.s.tt.act).key===c.key?' on':''}" data-ttk="${c.key}">${esc(c.short)}</button></th>`).join('')}</tr></thead><tbody>`;
+  list.forEach(a=>{
+    h += `<tr><td>${esc(a.name)}</td>` + cols.map(c=>{ const e = ttEntry(a, c.key, date); return `<td>${e ? ttFmt(c, ttVal(c, e)) + (e.mt && e.mt!=='ls' ? `<span class="mt">${MT[e.mt]}</span>` : '') : '<small>–</small>'}</td>`; }).join('') + '</tr>';
+  });
+  $('#ttOv').innerHTML = h + '</tbody></table></div><p class="note">Spaltenkopf antippen, um diesen Test oben einzutragen.</p>';
+}
+function renderTtHist(){
+  const a = current();
+  $('#ttHistTag').textContent = a ? a.name + ' (oben im Athletenwähler wechseln)' : '';
+  if (!a){ $('#ttHist').innerHTML = ''; return; }
+  const ents = a.entries.filter(e=>e.tt && e.date);
+  if (!ents.length){ $('#ttHist').innerHTML = '<p class="note" style="margin:0">Noch keine Tests für diesen Athleten.</p>'; return; }
+  const order = k => TT.findIndex(([id])=>k.split(':')[0]===id);
+  const keys = [...new Set(ents.map(e=>e.tt))].sort((x,y)=>order(x)-order(y) || x.localeCompare(y));
+  const dates = [...new Set(ents.map(e=>e.date))].sort().reverse();
+  let h = `<div class="tw"><table class="ov"><thead><tr><th>Datum</th>${keys.map(k=>`<th>${esc(ttSpecFromKey(k).short)}</th>`).join('')}</tr></thead><tbody>`;
+  dates.forEach(d=>{
+    h += `<tr><td>${fmtDate(d)}</td>` + keys.map(k=>{
+      const sp = ttSpecFromKey(k), e = ents.find(x=>x.tt===k && x.date===d);
+      if (!e) return '<td><small>–</small></td>';
+      const prev = ents.filter(x=>x.tt===k && x.date < d).sort((x,y)=>y.date.localeCompare(x.date))[0];
+      let tr = '';
+      if (prev){ const v = ttVal(sp, e), pv = ttVal(sp, prev), better = sp.t ? v < pv : v > pv; if (v !== pv) tr = better ? ' <span class="up">▲</span>' : ' <span class="down">▼</span>'; }
+      return `<td>${ttFmt(sp, ttVal(sp, e))}${e.mt && e.mt!=='ls' ? `<span class="mt">${MT[e.mt]}</span>` : ''}${tr}</td>`;
+    }).join('') + '</tr>';
+  });
+  $('#ttHist').innerHTML = h + '</tbody></table></div><p class="note"><span class="up">▲</span> besser als beim vorigen Test, <span class="down">▼</span> schlechter.</p>';
+}
+function ttChanged(){ save(); renderCalc(); renderGroup(); renderNorms(); renderAthletes(); refreshValueFields(); renderTtOv(); renderTtHist(); }
+on('#tests', 'click', e=>{
+  const b = e.target.closest('[data-tt]'), k = e.target.closest('[data-ttk]'), c = e.target.closest('[data-ttc]');
+  if (b){ db.s.tt.act = b.dataset.tt; save(); renderTests(); }
+  else if (k){ const [id, v] = k.dataset.ttk.split(':'); db.s.tt.act = id; if (id==='wr' && v) db.s.tt.wv = v; if (id==='aus' && v) db.s.tt.av = v; save(); renderTests(); $('#ttEntry').scrollIntoView({block:'nearest'}); }
+  else if (c){ db.s.tt.cls = c.dataset.ttc; save(); renderTests(); }
+});
+on('#ttDate', 'change', e=>{ db.s.tt.date = e.target.value; save(); renderTests(); });
+on('#ttMt', 'change', e=>{ db.s.tt.mt = e.target.value; save(); renderTtEntry(); });
+on('#ttN', 'change', e=>{ db.s.tt.n = +e.target.value; save(); renderTtEntry(); });
+on('#ttVar', 'change', e=>{ if (db.s.tt.act==='wr') db.s.tt.wv = e.target.value; else db.s.tt.av = e.target.value; save(); renderTests(); });
+on('#ttEntry', 'change', e=>{
+  const inp = e.target.closest('[data-tti]'); if (!inp) return;
+  const [aid] = inp.dataset.tti.split('|'), a = db.athletes.find(x=>x.id===aid); if (!a) return;
+  const sp = ttSpec(db.s.tt.act), row = [...document.querySelectorAll(`[data-tti^="${aid}|"]`)];
+  const vals = row.map(x=>ttParse(sp, x.value));
+  row.forEach((x, i)=>x.classList.toggle('bad', isNaN(vals[i])));
+  if (vals.some(v=>isNaN(v))) return;
+  const old = ttEntry(a, sp.key, ttDate()), keep = old && old.att ? old.att.slice(row.length) : [];
+  const ent = ttSave(a, sp, vals.map(v=>v || 0).concat(keep).slice(0, 3));
+  row.forEach((x, i)=>{ if (vals[i]) x.value = ttFmt(sp, vals[i]); });
+  const bc = document.querySelector(`[data-ttb="${aid}"]`); if (bc) bc.textContent = ent ? ttFmt(sp, ttVal(sp, ent)) : '–';
+  ttChanged();
+});
+on('#ttEntry', 'keydown', e=>{
+  if (e.key !== 'Enter' || !e.target.matches('[data-tti]')) return;
+  e.preventDefault(); const all = [...document.querySelectorAll('[data-tti]')], i = all.indexOf(e.target);
+  if (all[i+1]) all[i+1].focus(); else e.target.blur();
+});
+
 function renderAll(){
-  renderStorageWarn(); setupCalcControls(); renderCalc(); renderSettings(); renderPlan(); renderPlanRows(); renderGroup(true); renderNorms(); renderMoves(); renderAthletes(); refreshValueFields();
+  renderStorageWarn(); setupCalcControls(); renderCalc(); renderSettings(); renderPlan(); renderPlanRows(); renderGroup(true); renderNorms(); renderMoves(); renderAthletes(); refreshValueFields(); renderTests();
 }
 
 /* ---------- Leistungen zusammenführen ---------- */
@@ -1460,7 +1644,7 @@ if (VIEW){
   if (VIEW === 'normen'){ if (h1) h1.textContent = 'Normen'; if (hp) hp.textContent = 'Kaderrichtwerte des DLV für Landeskader und NK2 zum Nachschlagen'; document.title = 'Dürener TV 1847 – Normen';
     const lead = document.querySelector('#normen .lead'); if (lead) lead.textContent = 'Zum Nachschlagen nach Alter und Geschlecht. Den Vergleich mit deinen Athleten findest du unter Athleten → Normen.'; }
 }
-$('#selA').addEventListener('change', e=>{ db.s.sel = e.target.value; save(); renderCalc(); renderPlan(); renderNorms(); });
+$('#selA').addEventListener('change', e=>{ db.s.sel = e.target.value; save(); renderCalc(); renderPlan(); renderNorms(); renderTtHist(); });
 document.querySelectorAll('input[name="disc"]').forEach(r=>r.addEventListener('change', e=>{
   db.s.disc = e.target.value; save(); setupCalcControls(); renderCalc(); renderPlan(); renderPlanRows(); renderGroup(true);
 }));
@@ -1606,7 +1790,7 @@ athList.addEventListener('click', e=>{
   if (ds.delEntry){
     const [aid, eid] = ds.delEntry.split('|'); const a = db.athletes.find(x=>x.id===aid);
     const e2 = a && a.entries.find(x=>x.id===eid); if (!e2) return;
-    if (!confirm(`${dLabel(e2.d,e2.fly)} ${fmtT(e2.t,2)} löschen?`)) return;
+    if (!confirm(`${e2.ev ? evLabel(e2) : dLabel(e2.d,e2.fly)} ${fmtVal(e2)} löschen?`)) return;
     a.entries = a.entries.filter(x=>x.id!==eid);
     if (a.refS===eid) a.refS = null; if (a.refL===eid) a.refL = null;
     save(); renderAll(); return;
