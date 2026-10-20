@@ -213,7 +213,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </section>
 </main>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-20a</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose Landmarker (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-20b</span></footer>
 
 <script>
 (function(){
@@ -710,9 +710,11 @@ function panel(light){
       <input type="range" id="pSize" min="0.12" max="1" step="0.01" value="${poseBox ? (poseBox.s / Math.min(vw, vh)).toFixed(2) : 0.45}">
       <div class="btns" style="margin-top:2px"><button class="btn sm primary" id="pRun" ${poseBox ? '' : 'disabled'}>Ausschnitt verfolgen</button>${L || poseBox ? '<button class="btn sm" id="pZoom">Heranzoomen</button>' : ''}${L ? '<button class="btn sm" id="pDel1">dieses Bild löschen</button>' : ''}${n ? '<button class="btn sm" id="pDel">alle löschen</button>' : ''}</div>
       ${tab || (n ? '<p class="note">Auf diesem Bild kein Skelett.</p>' : '')}
+      <label class="note" style="display:block;margin-top:8px">Erkennung</label>
+      <select id="pModel" style="width:100%">${Object.entries(POSE_MODELS).map(([k, v]) => `<option value="${k}"${k === poseModel() ? ' selected' : ''}>${v[0]}</option>`).join('')}</select>
       <label class="chk"><input type="checkbox" id="pAng" ${showAng ? 'checked' : ''}> Winkel im Bild</label>
       <label class="chk"><input type="checkbox" id="pHand" ${showHand ? 'checked' : ''}> Hand-Spur (links gelb, rechts blau)</label>
-      <p class="note">${n} Bilder mit Skelett. Links und rechts aus Sicht des Athleten. Winkel nur von der Seite gefilmt verlässlich. Ein verdrehtes Skelett heißt meist: zweite Person im Rahmen. Dann neu antippen oder den Rahmen kleiner machen.</p>`;
+      <p class="note">${n} Bilder mit Skelett. Links und rechts aus Sicht des Athleten. Winkel nur von der Seite gefilmt verlässlich. Erkennt die App jemand anderen, direkt auf den Athleten tippen; sie nimmt immer die Person in der Rahmenmitte. „Schnell“ rechnet etwas schneller, „Normal“ ist genauer.</p>`;
   } else if (tool === 'cmp'){
     const c = cmpState(), d = TECH[c.d];
     h = `<h3>Vergleich mit der Bildfolge</h3><p class="hint">Disziplin und Phase wählen. Das Bild erscheint unten links im Video. Dann im Video zum passenden Moment gehen und die Haltung vergleichen, mit Skelett oder Winkel nachmessen. Antippen des kleinen Bildes zeigt die nächste Phase.</p>
@@ -762,6 +764,7 @@ function bindPanel(){
   on('pZoom', 'click', () => { const L = V.pose[cur()], bb = L ? bodyBox(L) : null, b = bb || poseBox; if (!b) return; const sz = bb ? b.s * 0.75 : b.s; const ns = Math.max(fitS, Math.min(fitS * 12, Math.min(W, H) / sz)); view = {s: ns, ox: W / 2 - b.x * ns, oy: H / 2 - b.y * ns}; render(); });
   on('pDel1', 'click', () => { delete V.pose[cur()]; save(); render(); panel(); });
   on('pDel', 'click', () => { if (confirm('Alle Skelette dieses Videos löschen?')){ V.pose = {}; save(); render(); panel(); } });
+  on('pModel', 'change', e => { DB.poseModel = e.target.value; saveNow(); showMsg(`Erkennung „${POSE_MODELS[poseModel()][0]}“ gewählt. Gilt ab dem nächsten Antippen; schon erkannte Skelette bleiben, bis du sie neu berechnest.`, 'info'); });
   on('pAng', 'change', e => { showAng = e.target.checked; render(); });
   on('pHand', 'change', e => { showHand = e.target.checked; render(); });
   on('lAll', 'click', () => { if (!confirm('Alle Linien, Winkel, Zeiten, Gerätepunkte, Maßstab und Skelette dieses Videos löschen?')) return; pushUndo(); V.marks = []; V.times = []; V.dev = {}; V.scale = null; V.pose = {}; save(); render(); panel(); });
@@ -845,27 +848,40 @@ async function devAuto(){
 }
 
 /* ---------- Skelett-Erkennung ---------- */
-let poseObj = null, poseLoading = null, lastRes = null, cancelRun = false;
+let poseObj = null, poseLoading = null, poseSize = '', cancelRun = false;
 const off = document.createElement('canvas'); off.width = off.height = 512;
 function setBusy(t, cancel){ const b = $('busy'); b.classList.toggle('on', !!t); $('busyT').textContent = t || ''; $('busyX').hidden = !cancel; }
 $('busyX').onclick = () => { cancelRun = true; };
-function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load')); document.head.appendChild(s); }); }
+// Erkennung: MediaPipe Pose Landmarker, findet mehrere Personen; „normal“ (genauer) oder „schnell“ (leicht)
+const POSE_MODELS = {full: ['Normal (genauer)', 23], lite: ['Schnell', 19]};
+const poseModel = () => POSE_MODELS[DB.poseModel] ? DB.poseModel : 'full';
 function loadPose(){
-  if (poseObj) return Promise.resolve(poseObj);
+  const size = poseModel();
+  if (poseObj && poseSize === size) return Promise.resolve(poseObj);
   if (poseLoading) return poseLoading;
-  setBusy('Skelett-Erkennung wird geladen (beim ersten Mal ca. 16 MB) …');
+  setBusy(`Skelett-Erkennung wird geladen (beim ersten Mal ca. ${POSE_MODELS[size][1]} MB) …`);
   poseLoading = (async () => {
-    await checkPoseFiles();
-    if (!window.Pose) await loadScript('pose.js');
-    const p = new window.Pose({locateFile: f => f});
-    p.setOptions({modelComplexity: 1, smoothLandmarks: false, enableSegmentation: false, minDetectionConfidence: 0.4, minTrackingConfidence: 0.4, staticImageMode: true});
-    p.onResults(r => { lastRes = r; });
-    await Promise.race([p.initialize(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 120000))]);
-    poseObj = p; return p;
-  })().catch(e => { poseLoading = null; throw e; });
+    await checkPoseFiles(size);
+    const mod = await import('./pose_tasks_vision.mjs');
+    if (poseObj){ try { poseObj.close(); } catch (e) {} poseObj = null; }
+    const make = () => mod.PoseLandmarker.createFromOptions({wasmLoaderPath: 'pose_wasm_internal.js', wasmBinaryPath: 'pose_wasm_internal.wasm'},
+      {baseOptions: {modelAssetPath: `pose_landmarker_${size}.task`, delegate: 'CPU'}, runningMode: 'IMAGE', numPoses: 5, minPoseDetectionConfidence: 0.3, minPosePresenceConfidence: 0.3});
+    const p = await Promise.race([make(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 120000))]);
+    poseObj = p; poseSize = size; return p;
+  })().then(p => { poseLoading = null; return p; }, e => { poseLoading = null; throw e; });
   return poseLoading;
 }
-async function detectBox(box){
+// Erkennt alle Personen im Rahmen und nimmt die, die der Rahmenmitte am nächsten ist (= angetippt bzw. vorhergesagt)
+// pred: Skelett des Vorbilds, um die Bewegung verschoben. Dann zählt die ähnlichste Haltung statt der Rahmenmitte,
+// damit die App bei überlappenden Personen nicht wechselt.
+const MATCH = [0, 11, 12, 23, 24, 25, 26, 27, 28];
+function poseDist(L, pred){
+  let s = 0, n = 0;
+  for (const i of MATCH){ const a = L[PIx[i]], b = pred[PIx[i]]; if (a[2] < 0.5 || b[2] < 0.5) continue; s += Math.hypot(a[0] - b[0], a[1] - b[1]); n++; }
+  return n >= 3 ? s / n : Infinity;
+}
+function bodyH(L){ const ys = L.filter(q => q[2] >= 0.5).map(q => q[1]); return ys.length ? Math.max(...ys) - Math.min(...ys) : 0; }
+async function detectBox(box, pred){
   const p = await loadPose();
   const S = box.s, x0 = box.x - S / 2, y0 = box.y - S / 2, k = 512 / S;
   const c = off.getContext('2d'); c.fillStyle = '#000'; c.fillRect(0, 0, 512, 512);
@@ -873,11 +889,24 @@ async function detectBox(box){
   const sx = Math.max(0, x0), sy = Math.max(0, y0), ex = Math.min(vw, x0 + S), ey = Math.min(vh, y0 + S);
   if (ex - sx < 2 || ey - sy < 2) return null;
   c.drawImage(vid, sx, sy, ex - sx, ey - sy, (sx - x0) * k, (sy - y0) * k, (ex - sx) * k, (ey - sy) * k);
-  lastRes = null;
-  await p.send({image: off});
-  const L = lastRes && lastRes.poseLandmarks;
-  if (!L) return null;
-  return PI.map(n => { const q = L[n]; return [Math.round(x0 + q.x * S), Math.round(y0 + q.y * S), Math.round((q.visibility || 0) * 100) / 100]; });
+  const r = p.detect(off);
+  const cands = ((r && r.landmarks) || []).filter(L => L.filter(q => (q.visibility == null ? 1 : q.visibility) > 0.5).length >= 5)
+    .map(L => PI.map(n => { const q = L[n]; return [Math.round(x0 + q.x * S), Math.round(y0 + q.y * S), Math.round((q.visibility == null ? 1 : q.visibility) * 100) / 100]; }));
+  if (!cands.length) return null;
+  if (pred){
+    let best = null, bd = Infinity;
+    for (const L of cands){ const d = poseDist(L, pred); if (d < bd){ bd = d; best = L; } }
+    // zu weit weg von der erwarteten Haltung: lieber „nicht gefunden“ als falsche Person
+    const h = bodyH(pred) || S * 0.5;
+    return best && bd < Math.max(h * 0.35, 12) ? best : null;
+  }
+  let best = null, bd = Infinity;
+  for (const L of cands){
+    const v = L.filter(q => q[2] > 0.5), xs = v.map(q => q[0]), ys = v.map(q => q[1]);
+    const d = Math.hypot((Math.min(...xs) + Math.max(...xs)) / 2 - box.x, (Math.min(...ys) + Math.max(...ys)) / 2 - box.y);
+    if (d < bd){ bd = d; best = L; }
+  }
+  return best;
 }
 async function detectHere(){
   if (!poseBox) return;
@@ -893,10 +922,10 @@ async function detectHere(){
   setBusy(null); render(); panel();
 }
 // Vorab prüfen, ob alle Dateien der Skelett-Erkennung auf der Website liegen (sonst wartet sie endlos)
-const POSE_FILES = ['pose.js', 'pose_solution_packed_assets_loader.js', 'pose_solution_packed_assets.data', 'pose_solution_simd_wasm_bin.js', 'pose_solution_simd_wasm_bin.wasm', 'pose_web.binarypb', 'pose_landmark_full.tflite'];
-async function checkPoseFiles(){
+const POSE_FILES = size => ['pose_tasks_vision.mjs', 'pose_wasm_internal.js', 'pose_wasm_internal.wasm', `pose_landmarker_${size}.task`];
+async function checkPoseFiles(size){
   const miss = [];
-  await Promise.all(POSE_FILES.map(async f => {
+  await Promise.all(POSE_FILES(size).map(async f => {
     try {
       if (window.caches && await caches.match(f)) return;
       const r = await fetch(f, {method: 'HEAD', cache: 'no-store'});
@@ -918,24 +947,27 @@ function bodyBox(L){
   return {x: (Math.max(...xs) + Math.min(...xs)) / 2, y: (Math.max(...ys) + Math.min(...ys)) / 2, s: Math.max(Math.min(vw, vh) * 0.12, Math.min(Math.min(vw, vh), Math.max(w, h) * 1.7))};
 }
 // Eine Richtung verfolgen; Bewegung vom letzten Bild wird vorausberechnet, damit der Rahmen schnellen Athleten nicht hinterherläuft
-async function track(from, to, dir, box, stat){
-  let miss = 0, prev = null;
+async function track(from, to, dir, box, stat, L0){
+  let miss = 0, prev = null, prevL = L0 || null, vel = [0, 0];
   for (let f = from; dir > 0 ? f <= to : f >= to; f += dir){
     if (cancelRun) return 'cancel';
     stat.done++;
     const eta = stat.done > 2 ? Math.round((performance.now() - stat.t0) / stat.done * (stat.total - stat.done) / 1000) : null;
     setBusy(`Skelett ${stat.done} von ${stat.total}${eta != null && eta > 2 ? ' · noch ca. ' + eta + ' s' : ''}`, true);
     await seekFrame(f);
-    const L = await detectBox(box);
+    const pred = prevL ? prevL.map(q => [q[0] + vel[0], q[1] + vel[1], q[2]]) : null;
+    const L = await detectBox(box, pred);
     const bb = L && bodyBox(L);
-    // Sprung des Skeletts weit weg vom Rahmen = vermutlich andere Person
-    if (L && bb && Math.hypot(bb.x - box.x, bb.y - box.y) < box.s * (prev ? 0.45 : 0.6)){
+    if (L && bb && (pred || Math.hypot(bb.x - box.x, bb.y - box.y) < box.s * 0.6)){
       V.pose[f] = L; stat.found++; miss = 0;
       const vx = prev ? bb.x - prev.x : 0, vy = prev ? bb.y - prev.y : 0;
-      prev = bb;
+      vel = [vx, vy]; prev = bb; prevL = L;
       box = {x: bb.x + vx, y: bb.y + vy, s: box.s * 0.5 + bb.s * 0.5};
     } else {
       delete V.pose[f];
+      // Vorhersage weiterführen, damit der Rahmen bei kurzer Verdeckung mitläuft
+      box = {x: box.x + vel[0], y: box.y + vel[1], s: box.s};
+      if (prevL) prevL = prevL.map(q => [q[0] + vel[0], q[1] + vel[1], q[2]]);
       if (++miss >= 6) return f;
     }
     render();
@@ -951,9 +983,10 @@ async function runTrack(){
   const start = {...poseBox};
   const stat = {done: 0, found: 0, total: b - a + 1, t0: performance.now()};
   let lock = null; try { lock = await navigator.wakeLock.request('screen'); } catch (e) {}
-  const lostF = await track(f0, b, 1, {...start}, stat);
+  const L0 = V.pose[f0] || null;   // vom Antippen: Ausgangshaltung für beide Richtungen
+  const lostF = await track(f0, b, 1, {...start}, stat, L0);
   let lostB = null;
-  if (lostF !== 'cancel' && f0 > a) lostB = await track(f0 - 1, a, -1, {...start}, stat);
+  if (lostF !== 'cancel' && f0 > a) lostB = await track(f0 - 1, a, -1, {...start}, stat, L0);
   runningJob = false; setBusy(null); save();
   try { if (lock) lock.release(); } catch (e) {}
   await seekFrame(f0); poseBox = {...start, f: f0}; render(); panel();
