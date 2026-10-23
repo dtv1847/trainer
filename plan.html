@@ -493,7 +493,7 @@ body.running .appbar,body.running .subbar{display:none}
 </main>
 
 <div class="pov" id="exView" hidden><div class="povbox" id="exViewBox"></div></div>
-<footer class="only-js">Die Vorschläge sind Richtwerte und ersetzen nicht die Trainerentscheidung. <span class="ver">Planung · Version 2026-10-17b · Reihen und Bausteine</span></footer>
+<footer class="only-js">Die Vorschläge sind Richtwerte und ersetzen nicht die Trainerentscheidung. <span class="ver">Planung · Version 2026-10-23b · Einheit direkt öffnen</span></footer>
 
 <script>
 (function(){
@@ -1764,6 +1764,8 @@ function renderWeek(){
 let curDay = null;
 function ensureDay(){
   const g = group();
+  // eine bereits geplante Einheit bleibt wählbar, auch wenn der Tag kein fester Trainingstag ist
+  if (curDay && db.units[unitKey(g.id, db.s.week, curDay)]) return;
   if (!g.days.length){ curDay = null; return; }
   if (!g.days.includes(curDay)) curDay = g.days[0];
 }
@@ -2424,7 +2426,15 @@ setStick(); window.addEventListener('resize', setStick);
 window.addEventListener('scroll', onScroll, {passive:true});
 
 window.DTVP = {get db(){ return db; }, targets, dayTargets, weekPlan, dayFocus, unitLoad, loadLevel, weekCheck, phaseInfo, group, weekMon, fillSuggestion, get curDay(){ return curDay; }, setDay(d){ curDay = d; renderUnit(); }};
+// Direkt eine Einheit öffnen (von der Startseite „Heute“): plan.html?open=Gruppe|Montag|Tag
+let openUnit = false;
+(()=>{ const o = new URLSearchParams(location.search).get('open'); if (!o) return;
+  const [gid, mon, day] = o.split('|');
+  if (db.groups.some(g=>g.id===gid) && /^\d{4}-\d{2}-\d{2}$/.test(mon) && +day >= 1 && +day <= 7){ db.s.grp = gid; db.s.week = mon; curDay = +day; save(); openUnit = true; }
+  try { history.replaceState(null, '', location.pathname); } catch(e){}
+})();
 renderAll(); onScroll();
+if (openUnit){ renderUnit(); setTimeout(()=>goTo('einheit'), 60); }
 })();
 </script>
 <script data-sw>

@@ -49,6 +49,20 @@ footer{max-width:1100px;margin:0 auto;padding:0 14px 40px;font-size:13px;color:v
 .stage video{position:absolute;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none}
 .zoomb{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
 .zoomb button{width:40px;height:40px;border-radius:8px;border:0;background:rgba(0,0,0,.55);color:#fff;font:700 20px var(--body);cursor:pointer}
+.lfps{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.55);color:#fff;border-radius:6px;padding:3px 7px;font:600 12px var(--body)}
+.lfps:empty{display:none}
+.lrec{position:absolute;left:8px;bottom:8px;background:#D7191C;color:#fff;border-radius:6px;padding:4px 9px;font:700 13px var(--body)}
+#lstage video{position:absolute;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none}
+.ltiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 4px}
+.ltile{border:2px solid var(--line);border-radius:12px;padding:8px 10px;background:#fff;cursor:pointer;text-align:left;font:inherit;color:var(--ink)}
+.ltile b{display:block;font:700 34px/1 var(--cond);font-variant-numeric:tabular-nums}
+.ltile span{display:block;font-size:13px;color:var(--muted);line-height:1.25}
+.ltile.ok{border-color:#2E9D55;background:#E8F5EC}.ltile.ok b{color:#1E7A3F}
+.ltile.near{border-color:#E2A81B;background:#FFF6E0}
+.ltile.bad{border-color:var(--red);background:#FDECEC}.ltile.bad b{color:var(--red-deep)}
+.ledit{border:1px solid var(--line);border-radius:10px;padding:10px;margin:6px 0}
+.ledit .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ledit input{width:80px}
 .cmpbox{position:absolute;left:8px;bottom:8px;width:min(34%,190px);background:rgba(255,255,255,.93);border-radius:10px;padding:5px 7px 6px;color:#2B2B2B;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.35)}
 .cmpbox svg{width:100%;height:auto;display:block}
 .cmpbox b{display:block;font:700 14px/1.1 var(--cond)}
@@ -131,6 +145,7 @@ body.running .appbar,body.running .subbar{display:none}
     <h3>Video öffnen</h3>
     <div class="pick">
       <label class="btn primary" for="file">Video wählen</label>
+      <button class="btn" type="button" id="liveBtn">Live-Kamera</button>
       <input type="file" id="file" accept="video/*">
       <span class="note" style="margin:0">aus Fotos oder Dateien</span>
     </div>
@@ -212,8 +227,40 @@ body.running .appbar,body.running .subbar{display:none}
     </div>
   </div>
 </section>
+<section id="liveArea" hidden>
+  <div class="work">
+    <div>
+      <div class="stage" id="lstage">
+        <video id="lvid" playsinline muted autoplay></video>
+        <canvas id="lcv"></canvas>
+        <div class="vhint" id="lhint"></div>
+        <div class="lfps" id="lfps"></div>
+        <div class="lrec" id="lrecDot" hidden>● Aufnahme</div>
+      </div>
+      <div class="ctrl">
+        <div class="pb">
+          <button class="btn" type="button" id="lFreeze">Standbild</button>
+          <button class="btn" type="button" id="lRec">● Aufnehmen</button>
+          <button class="btn" type="button" id="lFlip">Kamera wechseln</button>
+          <button class="btn" type="button" id="lClose">Beenden</button>
+        </div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="block">
+        <h3>Live-Winkel</h3>
+        <label class="note" style="display:block">Vorgabe</label>
+        <select id="lPreset" style="width:100%"></select>
+        <div class="ltiles" id="lTiles"></div>
+        <div id="lEdit"></div>
+        <p class="note" id="lSrc"></p>
+        <p class="note">Kachel antippen, um den Zielbereich zu ändern. Handy seitlich zum Athleten aufstellen, am besten auf ein Stativ. Bei mehreren Personen auf den Athleten tippen. Für schnelle Bewegungen (Absprung, Abwurf) lieber in Zeitlupe aufnehmen und Bild für Bild auswerten.</p>
+      </div>
+    </div>
+  </div>
+</section>
 </main>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose Landmarker (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-20b</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose Landmarker (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-23b</span></footer>
 
 <script>
 (function(){
@@ -427,13 +474,21 @@ $('zIn').onclick = () => zoomAt(1.5, W / 2, H / 2);
 $('zOut').onclick = () => zoomAt(1 / 1.5, W / 2, H / 2);
 $('zFit').onclick = fitView;
 cv.addEventListener('wheel', e => { e.preventDefault(); const r = cv.getBoundingClientRect(); zoomAt(e.deltaY < 0 ? 1.15 : 1 / 1.15, e.clientX - r.left, e.clientY - r.top); }, {passive: false});
+// Video nie ganz aus dem Bild schieben: mindestens ein gutes Drittel bleibt sichtbar
+function clampView(){
+  const w = vw * view.s, h = vh * view.s, mx = Math.min(W, w) * 0.35, my = Math.min(H, h) * 0.35;
+  view.ox = Math.max(mx - w, Math.min(W - mx, view.ox));
+  view.oy = Math.max(my - h, Math.min(H - my, view.oy));
+}
 const toV = (sx, sy) => [(sx - view.ox) / view.s, (sy - view.oy) / view.s];
 const toS = p => [view.ox + p[0] * view.s, view.oy + p[1] * view.s];
 
 /* ---------- Zeiger: Tippen, Ziehen, Zwei-Finger-Zoom ---------- */
 const ptrs = new Map(); let gest = null;
 cv.addEventListener('pointerdown', e => {
-  cv.setPointerCapture(e.pointerId);
+  // neuer erster Finger: alte, nie beendete Berührungen vergessen (iOS bricht Gesten am Rand manchmal ohne Meldung ab)
+  if (e.isPrimary){ ptrs.clear(); gest = null; }
+  try { cv.setPointerCapture(e.pointerId); } catch (err) {}
   const r = cv.getBoundingClientRect(), p = {x: e.clientX - r.left, y: e.clientY - r.top};
   ptrs.set(e.pointerId, p);
   if (ptrs.size === 2){
@@ -471,6 +526,7 @@ const endPtr = e => {
   gest = null;
 };
 cv.addEventListener('pointerup', endPtr); cv.addEventListener('pointercancel', endPtr);
+cv.addEventListener('lostpointercapture', e => { if (ptrs.has(e.pointerId)) endPtr(Object.assign({}, {pointerId: e.pointerId, type: 'pointercancel'})); });
 
 function editablePoints(){
   const f = cur(), all = $('showAll').checked, out = [];
@@ -565,6 +621,7 @@ function dot(p, r, c){ const s = toS(p); ctx.beginPath(); ctx.arc(s[0], s[1], r,
 function seg(a, b, c, w){ const A = toS(a), B = toS(b); ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.strokeStyle = c; ctx.lineWidth = w || 3; ctx.stroke(); }
 function render(){
   if (!V) return;
+  clampView();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = '#111'; ctx.fillRect(0, 0, cv.width, cv.height);
   ctx.setTransform(dpr * view.s, 0, 0, dpr * view.s, dpr * view.ox, dpr * view.oy);
@@ -1072,7 +1129,244 @@ async function listRecent(){
 }
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c])); }
 listRecent();
-window.__va = {get V(){ return V; }, cur, seekFrame, get fps(){ return fps; }, get N(){ return N; }, tap: (x, y) => { const s = toS([x, y]); tap(s[0], s[1]); }, setTool, runTrack, get poseBox(){ return poseBox; }, view: () => view, devAuto};
+/* ---------- Live-Kamera: Skelett und Winkel in Echtzeit ---------- */
+// Vorgaben: Richtwerte aus der Literatur, vom Trainer anpassbar (DB.live)
+const LIVE = {
+  frei: {n: 'Ohne Vorgabe (eigene Zielbereiche)', src: 'Zielbereiche legst du selbst fest: Kachel antippen.', ang: [
+    {k: 'knee', leg: 'L', t: 'Knie links'}, {k: 'knee', leg: 'R', t: 'Knie rechts'}, {k: 'hip', leg: 'L', t: 'Hüfte links'}, {k: 'hip', leg: 'R', t: 'Hüfte rechts'}, {k: 'trunk', t: 'Rumpf zur Senkrechten'}, {k: 'elbow', leg: 'R', t: 'Ellbogen rechts'}]},
+  ss_fertig: {n: 'Sprint · Tiefstart „Fertig“', legs: 'hands', src: 'Richtwerte: vorderes Knie ca. 90°, hinteres Knie ca. 120°, Hüfte etwas über den Schultern (BrianMac Sports Coach „Sprint Starts“; Übersichtsarbeit zur Biomechanik des Tiefstarts, Coach Athletics). Je nach Athlet anpassen.', ang: [
+    {k: 'knee', leg: 'F', t: 'Vorderes Knie', min: 80, max: 100}, {k: 'knee', leg: 'B', t: 'Hinteres Knie', min: 110, max: 130}, {k: 'hipabove', t: 'Hüfte über Schultern'}, {k: 'hip', leg: 'F', t: 'Hüfte vorn'}]},
+  ku_kraft: {n: 'Kugel · Stoßauslage (Kraftposition)', legs: 'hip', src: 'Richtwert: Druckbein-Knie ca. 120° (HLV, Manual Kugel Angleiten). Für das Stemmbein gibt es keinen festen Wert. Je nach Athlet anpassen.', ang: [
+    {k: 'knee', leg: 'B', t: 'Druckbein-Knie (hinten)', min: 110, max: 130}, {k: 'knee', leg: 'F', t: 'Stemmbein-Knie (vorn)'}, {k: 'trunk', t: 'Rumpf zur Senkrechten'}, {k: 'elbow', leg: 'S', t: 'Ellbogen Stoßarm'}]},
+  sp_stemm: {n: 'Speer / Ballwurf · Stemmschritt', legs: 'hip', src: 'Stemmbein gestreckt aufsetzen, nicht einknicken (Coach Athletics, „The Science of Javelin“). Als Zielbereich ist „fast gestreckt“ mit 160–180° gewählt. Je nach Athlet anpassen.', ang: [
+    {k: 'knee', leg: 'F', t: 'Stemmbein-Knie (vorn)', min: 160, max: 180}, {k: 'knee', leg: 'B', t: 'Hinteres Knie'}, {k: 'trunk', t: 'Rumpf zur Senkrechten'}, {k: 'elbow', leg: 'S', t: 'Ellbogen Wurfarm'}]},
+};
+const live = {on: false, stream: null, face: 'environment', frozen: false, raf: 0, last: null, sel: null, miss: 0, ema: {}, fpsN: 0, fpsT: 0, rec: null, chunks: [], lock: null, ts: 0, edit: null};
+const lvid = $('lvid'), lcv = $('lcv'), lctx = lcv.getContext('2d');
+let LW = 300, LH = 200, ldpr = 1;
+const livePreset = () => LIVE[DB.livePreset] ? DB.livePreset : 'frei';
+function liveRange(pid, i){
+  const o = DB.live && DB.live[pid] && DB.live[pid][i];
+  if (o === null) return null;
+  if (Array.isArray(o)) return o;
+  const a = LIVE[pid].ang[i]; return a.min != null ? [a.min, a.max] : null;
+}
+function liveLayout(){
+  const r = $('lstage').getBoundingClientRect(), vw0 = lvid.videoWidth || 16, vh0 = lvid.videoHeight || 9;
+  LW = Math.max(200, r.width);
+  LH = Math.round(Math.min(LW * vh0 / vw0, Math.max(240, window.innerHeight * (window.innerWidth >= 900 ? 0.72 : 0.55))));
+  ldpr = Math.min(3, window.devicePixelRatio || 1);
+  lcv.width = Math.round(LW * ldpr); lcv.height = Math.round(LH * ldpr); lcv.style.height = LH + 'px';
+}
+async function liveStart(){
+  showMsg('');
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showMsg('Dieser Browser gibt die Kamera nicht frei. Am iPhone in Safari oder in der App vom Home-Bildschirm öffnen.', 'err'); return; }
+  $('start').hidden = true; $('hero').hidden = true; $('liveArea').hidden = false;
+  renderLivePanel();
+  try {
+    live.stream = await navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: live.face, width: {ideal: 1280}, height: {ideal: 720}}});
+  } catch (e) { liveStop(); showMsg('Kein Zugriff auf die Kamera. Bitte in den Einstellungen erlauben (Einstellungen → Safari → Kamera) und erneut versuchen.', 'err'); return; }
+  lvid.srcObject = live.stream; try { await lvid.play(); } catch (e) {}
+  await new Promise(r => { if (lvid.videoWidth) r(); else lvid.addEventListener('loadedmetadata', r, {once: true}); });
+  liveLayout();
+  live.on = true; live.frozen = false; live.last = null; live.sel = null; live.ema = {};
+  try { live.lock = await navigator.wakeLock.request('screen'); } catch (e) {}
+  try {
+    const p = await loadPose(); setBusy(null);
+    await p.setOptions({runningMode: 'VIDEO'});
+  } catch (e) { setBusy(null); showPoseErr(e); }
+  $('lhint').innerHTML = '<span>Bei mehreren Personen: auf den Athleten tippen</span>';
+  setTimeout(() => { if (live.on) $('lhint').innerHTML = ''; }, 5000);
+  liveLoop();
+}
+async function liveStop(){
+  live.on = false; cancelAnimationFrame(live.raf);
+  if (live.rec && live.rec.state === 'recording') live.rec.stop();
+  if (live.stream) live.stream.getTracks().forEach(t => t.stop());
+  live.stream = null; lvid.srcObject = null;
+  try { if (live.lock) live.lock.release(); } catch (e) {}
+  live.lock = null;
+  if (poseObj){ try { await poseObj.setOptions({runningMode: 'IMAGE'}); } catch (e) {} }
+  $('liveArea').hidden = true; $('start').hidden = false; $('hero').hidden = false; listRecent();
+}
+// Kandidaten aus dem Ergebnis in Videopixel (Reihenfolge PI); roi = Ausschnitt, auf dem erkannt wurde
+function liveCands(r, roi){
+  const w = lvid.videoWidth, h = lvid.videoHeight;
+  const m = roi ? (q => [roi.x0 + q.x * roi.S, roi.y0 + q.y * roi.S]) : (q => [q.x * w, q.y * h]);
+  return ((r && r.landmarks) || []).map(L => PI.map(n => { const q = L[n]; return [...m(q), q.visibility == null ? 1 : q.visibility]; }))
+    .filter(L => L.filter(q => q[2] > 0.5).length >= 5);
+}
+// Ausschnitt um die zuletzt gefundene Person: kleine oder weit entfernte Athleten werden so sicherer erkannt
+const loff = document.createElement('canvas'); loff.width = loff.height = 512;
+function liveRoi(){
+  if (!live.last || live.sel) return null;
+  const v = live.last.filter(q => q[2] >= 0.5); if (v.length < 6) return null;
+  const xs = v.map(q => q[0]), ys = v.map(q => q[1]), W0 = lvid.videoWidth, H0 = lvid.videoHeight, mn = Math.min(W0, H0);
+  const S = Math.max(mn * 0.25, Math.min(Math.max(W0, H0), Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) * 2.2));
+  if (S >= mn * 0.95) return null;   // Person füllt das Bild ohnehin
+  const roi = {x0: (Math.max(...xs) + Math.min(...xs)) / 2 - S / 2, y0: (Math.max(...ys) + Math.min(...ys)) / 2 - S / 2, S};
+  const c = loff.getContext('2d'), k = 512 / S; c.fillStyle = '#000'; c.fillRect(0, 0, 512, 512);
+  const sx = Math.max(0, roi.x0), sy = Math.max(0, roi.y0), ex = Math.min(W0, roi.x0 + S), ey = Math.min(H0, roi.y0 + S);
+  if (ex - sx < 2 || ey - sy < 2) return null;
+  c.drawImage(lvid, sx, sy, ex - sx, ey - sy, (sx - roi.x0) * k, (sy - roi.y0) * k, (ex - sx) * k, (ey - sy) * k);
+  return roi;
+}
+function livePick(cands){
+  if (!cands.length) return null;
+  if (live.sel){   // angetippt: nächste Person zum Tippunkt
+    const [x, y] = live.sel; live.sel = null;
+    let best = null, bd = Infinity;
+    for (const L of cands){ const b = bodyBox(L); if (!b) continue; const d = Math.hypot(b.x - x, b.y - y); if (d < bd){ bd = d; best = L; } }
+    return best;
+  }
+  if (live.last){  // gleiche Haltung wie zuletzt = gleiche Person
+    let best = null, bd = Infinity;
+    for (const L of cands){ const d = poseDist(L, live.last); if (d < bd){ bd = d; best = L; } }
+    if (best && bd < Math.max(bodyH(live.last) * 0.5, 20)) return best;
+    return null;
+  }
+  // sonst die größte Person
+  return cands.slice().sort((a, b) => bodyH(b) - bodyH(a))[0];
+}
+function legSide(L, mode){
+  // vorn/hinten bestimmen: „hands“ = Richtung der Hände (Tiefstart), „hip“ = Fuß weiter weg von der Hüfte ist vorn
+  const a = P(L, 27), b = P(L, 28), hl = P(L, 23), hr = P(L, 24);
+  if (!a || !b || !hl || !hr) return null;
+  const hx = (hl[0] + hr[0]) / 2;
+  if (mode === 'hands'){
+    const wl = P(L, 15), wr = P(L, 16); if (!wl && !wr) return null;
+    const wx = wl && wr ? (wl[0] + wr[0]) / 2 : (wl || wr)[0], dir = Math.sign(wx - hx) || 1;
+    return (a[0] - b[0]) * dir > 0 ? {F: 'L', B: 'R'} : {F: 'R', B: 'L'};
+  }
+  return Math.abs(a[0] - hx) > Math.abs(b[0] - hx) ? {F: 'L', B: 'R'} : {F: 'R', B: 'L'};
+}
+function liveValue(L, a, sides){
+  let side = a.leg;
+  if (side === 'F' || side === 'B'){ if (!sides) return null; side = sides[a.leg]; }
+  if (side === 'S'){ const el = P(L, 13), er = P(L, 14); side = el && er ? (el[1] < er[1] ? 'L' : 'R') : el ? 'L' : 'R'; }   // höherer Ellbogen = Stoß-/Wurfarm
+  const s = side === 'L' ? {sh: 11, hip: 23, kn: 25, an: 27, el: 13, wr: 15} : {sh: 12, hip: 24, kn: 26, an: 28, el: 14, wr: 16};
+  const g = (i, j, k) => { const A = P(L, i), B = P(L, j), C = P(L, k); return A && B && C ? angle3(A, B, C) : null; };
+  if (a.k === 'knee') return {v: g(s.hip, s.kn, s.an), j: s.kn};
+  if (a.k === 'hip') return {v: g(s.sh, s.hip, s.kn), j: s.hip};
+  if (a.k === 'elbow') return {v: g(s.sh, s.el, s.wr), j: s.el};
+  if (a.k === 'trunk'){ const A = poseAngles(L).trunk; return {v: isFinite(A) ? A : null, j: 11}; }
+  if (a.k === 'hipabove'){
+    const sl = P(L, 11), sr = P(L, 12), hl = P(L, 23), hr = P(L, 24); if (!sl || !sr || !hl || !hr) return null;
+    return {b: (hl[1] + hr[1]) / 2 < (sl[1] + sr[1]) / 2};
+  }
+  return null;
+}
+function liveLoop(){
+  if (!live.on) return;
+  live.raf = requestAnimationFrame(liveLoop);
+  if (live.frozen || lvid.readyState < 2) return;
+  let L = null;
+  if (poseObj && poseSize){
+    const ts = Math.max(performance.now(), live.ts + 1); live.ts = ts;
+    try {
+      const roi = liveRoi();
+      L = livePick(liveCands(poseObj.detectForVideo(roi ? loff : lvid, ts), roi));
+    } catch (e) { L = null; }
+    if (L){ live.last = L; live.miss = 0; }
+    else if (++live.miss >= 4) live.last = null;   // mehrmals nichts gefunden: wieder im ganzen Bild nach der größten Person suchen
+    live.fpsN++; const now = performance.now();
+    if (now - live.fpsT > 1000){ $('lfps').textContent = Math.round(live.fpsN * 1000 / (now - live.fpsT)) + ' Bilder/s'; live.fpsN = 0; live.fpsT = now; }
+  }
+  liveDraw(L);
+  liveTiles(L);
+}
+const lmap = p => { const k = LW / lvid.videoWidth, x = p[0] * k; return [live.face === 'user' ? LW - x : x, p[1] * LH / lvid.videoHeight]; };
+function liveDraw(L){
+  lctx.setTransform(ldpr, 0, 0, ldpr, 0, 0);
+  lctx.save();
+  if (live.face === 'user'){ lctx.translate(LW, 0); lctx.scale(-1, 1); }
+  lctx.drawImage(lvid, 0, 0, LW, LH);
+  lctx.restore();
+  if (!L) return;
+  lctx.lineCap = 'round';
+  for (const [a, b, c] of BONES){ const A = P(L, a), B = P(L, b); if (!A || !B) continue; const p = lmap(A), q = lmap(B); lctx.beginPath(); lctx.moveTo(p[0], p[1]); lctx.lineTo(q[0], q[1]); lctx.strokeStyle = COL[c]; lctx.lineWidth = 4; lctx.stroke(); }
+  for (const n of [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28]){ const q = P(L, n); if (!q) continue; const p = lmap(q); lctx.beginPath(); lctx.arc(p[0], p[1], 4.5, 0, 7); lctx.fillStyle = n % 2 ? COL.l : COL.r; lctx.fill(); }
+  // Winkel der Vorgabe direkt am Gelenk
+  const pid = livePreset(), pr = LIVE[pid], sides = pr.legs ? legSide(L, pr.legs) : null;
+  pr.ang.forEach((a, i) => {
+    const r = liveValue(L, a, sides); if (!r || r.v == null) return;
+    const q = P(L, r.j); if (!q) return; const p = lmap(q), rg = liveRange(pid, i), v = Math.round(r.v);
+    const st = !rg ? '' : v >= rg[0] && v <= rg[1] ? 'ok' : (v >= rg[0] - 5 && v <= rg[1] + 5) ? 'near' : 'bad';
+    lctx.font = '700 16px Barlow, system-ui, sans-serif'; const t = v + '°', w = lctx.measureText(t).width + 12;
+    lctx.fillStyle = st === 'ok' ? 'rgba(30,122,63,.92)' : st === 'near' ? 'rgba(200,140,0,.92)' : st === 'bad' ? 'rgba(165,16,19,.92)' : 'rgba(0,0,0,.7)';
+    lctx.beginPath(); lctx.roundRect ? lctx.roundRect(p[0] + 8, p[1] - 12, w, 24, 6) : lctx.rect(p[0] + 8, p[1] - 12, w, 24); lctx.fill();
+    lctx.fillStyle = '#fff'; lctx.fillText(t, p[0] + 14, p[1] + 6);
+  });
+}
+function liveTiles(L){
+  const pid = livePreset(), pr = LIVE[pid], sides = L && pr.legs ? legSide(L, pr.legs) : null;
+  pr.ang.forEach((a, i) => {
+    const el = document.querySelector(`[data-lt="${i}"]`); if (!el) return;
+    const r = L ? liveValue(L, a, sides) : null, rg = liveRange(pid, i);
+    let txt = '–', st = '';
+    if (r && r.b != null){ txt = r.b ? 'ja' : 'nein'; st = r.b ? 'ok' : 'bad'; }
+    else if (r && r.v != null){
+      const key = pid + i; live.ema[key] = live.ema[key] == null ? r.v : live.ema[key] * 0.5 + r.v * 0.5;
+      const v = Math.round(live.ema[key]); txt = v + '°';
+      if (rg) st = v >= rg[0] && v <= rg[1] ? 'ok' : (v >= rg[0] - 5 && v <= rg[1] + 5) ? 'near' : 'bad';
+    }
+    const b = el.querySelector('b'); if (b.textContent !== txt) b.textContent = txt;
+    const cls = 'ltile' + (st ? ' ' + st : ''); if (el.className !== cls) el.className = cls;
+  });
+}
+function renderLivePanel(){
+  const pid = livePreset(), pr = LIVE[pid];
+  $('lPreset').innerHTML = Object.entries(LIVE).map(([k, v]) => `<option value="${k}"${k === pid ? ' selected' : ''}>${esc(v.n)}</option>`).join('');
+  $('lTiles').innerHTML = pr.ang.map((a, i) => { const rg = liveRange(pid, i);
+    return `<button type="button" class="ltile" data-lt="${i}"><b>–</b><span>${esc(a.t)}</span><span>${a.k === 'hipabove' ? 'Ziel: ja' : rg ? 'Ziel ' + rg[0] + '–' + rg[1] + '°' : 'ohne Ziel'}</span></button>`; }).join('');
+  $('lSrc').textContent = pr.src;
+  const e = live.edit;
+  $('lEdit').innerHTML = e != null && pr.ang[e] && pr.ang[e].k !== 'hipabove' ? (() => { const rg = liveRange(pid, e) || ['', ''];
+    return `<div class="ledit"><b>${esc(pr.ang[e].t)}</b><div class="row" style="margin-top:6px">von <input type="number" inputmode="numeric" id="leMin" value="${rg[0]}"> bis <input type="number" inputmode="numeric" id="leMax" value="${rg[1]}"> Grad</div>
+      <div class="btns"><button class="btn sm primary" id="leOk">Übernehmen</button><button class="btn sm" id="leNone">Ohne Ziel</button>${pr.ang[e].min != null ? '<button class="btn sm" id="leReset">Richtwert</button>' : ''}<button class="btn sm" id="leX">Schließen</button></div></div>`; })() : '';
+  const set = v => { DB.live = DB.live || {}; DB.live[pid] = DB.live[pid] || {}; if (v === undefined) delete DB.live[pid][e]; else DB.live[pid][e] = v; saveNow(); live.edit = null; renderLivePanel(); };
+  const on = (id, fn) => { const x = $(id); if (x) x.onclick = fn; };
+  on('leOk', () => { const a = +$('leMin').value, b = +$('leMax').value; if (isFinite(a) && isFinite(b) && $('leMin').value !== '' && $('leMax').value !== '') set([Math.min(a, b), Math.max(a, b)]); });
+  on('leNone', () => set(null)); on('leReset', () => set(undefined)); on('leX', () => { live.edit = null; renderLivePanel(); });
+}
+$('liveBtn').onclick = liveStart;
+$('lClose').onclick = liveStop;
+$('lPreset').onchange = e => { DB.livePreset = e.target.value; live.edit = null; live.ema = {}; saveNow(); renderLivePanel(); };
+$('lTiles').addEventListener('click', e => { const t = e.target.closest('[data-lt]'); if (!t) return; live.edit = +t.dataset.lt; renderLivePanel(); });
+$('lFreeze').onclick = () => { live.frozen = !live.frozen; $('lFreeze').textContent = live.frozen ? 'Weiter' : 'Standbild'; $('lFreeze').classList.toggle('primary', live.frozen); };
+$('lFlip').onclick = async () => { live.face = live.face === 'user' ? 'environment' : 'user'; if (live.stream) live.stream.getTracks().forEach(t => t.stop()); live.on = false; cancelAnimationFrame(live.raf); await liveStart(); };
+lcv.addEventListener('pointerup', e => {
+  if (!live.on) return;
+  const r = lcv.getBoundingClientRect(); let x = (e.clientX - r.left) / LW * lvid.videoWidth; const y = (e.clientY - r.top) / LH * lvid.videoHeight;
+  if (live.face === 'user') x = lvid.videoWidth - x;
+  live.sel = [x, y]; live.last = null;
+});
+// Aufnehmen: Kamerabild als Video in „Deine Videos“
+$('lRec').onclick = () => {
+  if (!live.stream) return;
+  if (live.rec && live.rec.state === 'recording'){ live.rec.stop(); return; }
+  if (!window.MediaRecorder){ showMsg('Aufnehmen geht in diesem Browser nicht. Für Aufnahmen die Kamera-App nutzen und das Video hier öffnen.', 'info'); return; }
+  const type = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
+  try { live.rec = new MediaRecorder(live.stream, type ? {mimeType: type} : undefined); } catch (e) { showMsg('Aufnehmen ist hier nicht möglich.', 'info'); return; }
+  live.chunks = [];
+  live.rec.ondataavailable = ev => { if (ev.data && ev.data.size) live.chunks.push(ev.data); };
+  live.rec.onstop = async () => {
+    $('lrecDot').hidden = true; $('lRec').textContent = '● Aufnehmen'; $('lRec').classList.remove('primary');
+    const mt = (live.rec.mimeType || type || 'video/mp4').split(';')[0], ext = mt.includes('webm') ? 'webm' : 'mp4';
+    const d = new Date(), pad = n => String(n).padStart(2, '0');
+    const name = `Live ${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}.${pad(d.getMinutes())}.${pad(d.getSeconds())}.${ext}`;
+    const blob = new Blob(live.chunks, {type: mt}); if (!blob.size) return;
+    const f = new File([blob], name, {type: mt}), k = name + '|' + f.size;
+    DB.v[k] = {name, dur: 0, fps: 0, slow: 1, a: null, b: null, marks: [], times: [], dev: {}, scale: null, pose: {}, note: 'Live-Aufnahme, Vorgabe: ' + LIVE[livePreset()].n, ts: Date.now()};
+    saveNow(); await storeVideo(k, f);
+    showMsg(`Aufnahme gespeichert (${mb(f.size)}). Du findest sie nach „Beenden“ unter „Deine Videos“.`);
+  };
+  live.rec.start(500); $('lrecDot').hidden = false; $('lRec').textContent = '■ Stopp'; $('lRec').classList.add('primary');
+};
+document.addEventListener('visibilitychange', () => { if (document.hidden && live.on) liveStop(); });
+window.addEventListener('resize', () => { if (live.on) liveLayout(); });
+
+window.__va = {get V(){ return V; }, cur, seekFrame, get fps(){ return fps; }, get N(){ return N; }, tap: (x, y) => { const s = toS([x, y]); tap(s[0], s[1]); }, setTool, runTrack, get poseBox(){ return poseBox; }, view: () => view, devAuto, live, liveStart, liveStop};
 })();
 </script>
 <script data-sw>

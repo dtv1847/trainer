@@ -57,6 +57,16 @@ ol{margin:6px 0 0;padding-left:20px}
 ol li{margin:3px 0}
 footer{max-width:980px;margin:0 auto;padding:0 14px 40px;font-size:13px;color:var(--muted)}
 .ver{display:block;margin-top:6px}
+.today{background:var(--paper);border:1px solid var(--line);border-left:7px solid #1D6FB8;border-radius:12px;padding:12px 14px;margin:0 0 14px}
+.today h2{margin:0 0 6px;font:700 22px/1.1 var(--cond)}
+.today a.tu{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);border-top:1px solid var(--line);padding:10px 0;min-height:52px}
+.today a.tu:first-of-type{border-top:0}
+.today a.tu b{font:700 19px/1.1 var(--cond);display:block}
+.today a.tu span{display:block;font-size:13.5px;color:var(--muted)}
+.today a.tu .go{margin-left:auto;flex:0 0 auto;background:#1D6FB8;color:#fff;border-radius:999px;padding:7px 13px;font:600 14px var(--body)}
+.today a.tu .go.plan{background:#fff;color:#1D6FB8;border:1.5px solid #1D6FB8}
+.today .nx{font-size:14px;color:var(--muted);margin:4px 0 0}
+.today .nx a{color:#1D6FB8;font-weight:600;display:inline-block;padding:6px 2px}
 </style>
 <style id="dtv-appbar">
 .appbar{display:flex;align-items:center;gap:6px;background:#2B2B2B;color:#fff;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));overflow-x:auto;scrollbar-width:none;position:relative;z-index:30}
@@ -82,6 +92,7 @@ body.running .appbar,body.running .subbar{display:none}
 <div class="hero"><h1>Trainer-App</h1><p>Planung, Zirkel, Athleten und Wissen unter einem Dach</p></div>
 <main>
   <div id="msg" hidden></div>
+  <div id="today"></div>
   <div class="tiles">
     <a class="tile" href="plan.html" style="--c:#1D6FB8"><div class="ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(52.7 88) scale(0.726)" stroke-width="6.5"><g opacity=".4"><path d="M-22 -41.2L-23 -22.2L-23 -3.2"/><path d="M-22 -62.7L-24.4 -48.9L-25.3 -36"/></g><path d="M-22 -41.2L-22 -65.2"/><path d="M-22 -41.2L-21 -22.2L-21 -3.2"/><path d="M-22 -62.7L-11.3 -71.7L-4.8 -83"/><circle cx="-22" cy="-75.2" r="6.5" fill="currentColor" stroke="none"/><g opacity=".4"><path d="M22 -41.2L23 -22.2L23 -3.2"/><path d="M22 -62.7L23.9 -48.9L24.9 -35.9"/></g><path d="M22 -41.2L22 -65.2"/><path d="M22 -41.2L21 -22.2L21 -3.2"/><path d="M22 -62.7L20.1 -48.9L19.1 -35.9"/><circle cx="22" cy="-75.2" r="6.5" fill="currentColor" stroke="none"/><path d="M-32 -112h24a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-14l-6 5v-5h-4a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z" stroke-width="2.4"/><path d="M-26 -105h12M-26 -100h8" stroke-width="2"/></g></svg></div><div><b>Planung</b><span>Woche, Einheit, über 160 Übungen, Reihen, Bausteine</span></div></a>
     <a class="tile" href="zirkel.html" style="--c:#2E9D55"><div class="ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(50 88) scale(1)" stroke-width="6.5"><path d="M-41.5 0L-36 -12L-30.5 0Z" fill="currentColor" fill-opacity=".75" stroke-width="2"/><path d="M30.5 0L36 -12L41.5 0Z" fill="currentColor" fill-opacity=".75" stroke-width="2"/><g opacity=".4"><path d="M0 -25L18.7 -21.7L14.1 -3.2"/><path d="M10.7 -43.6L24.7 -44.8L37.7 -45.3"/></g><path d="M0 -25L12 -45.8"/><path d="M0 -25L18.9 -23L14.9 -4.4"/><path d="M10.7 -43.6L24.6 -45.6L37.6 -46.7"/><circle cx="17" cy="-54.4" r="6.5" fill="currentColor" stroke="none"/><g opacity=".7"><path d="M-31.9 -51.6A34 34 0 1 1 -31.9 -28.4" stroke-width="2.6"/><path d="M-27.9 -25.5L-31.9 -28.4L-32.2 -23.4" stroke-width="2.6"/></g></g></svg></div><div><b>Zirkel</b><span>Kader, Anwesenheit, Stationen, Timer</span></div></a>
@@ -114,7 +125,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </main>
 <div class="pov" id="impView" hidden><div class="povbox" id="impBox"></div></div>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-20b</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-23b</span></footer>
 <script>
 (function(){
 const $ = s => document.querySelector(s);
@@ -122,6 +133,44 @@ const KEYS = {'dtv-plan-v1':'Planung', 'dtv-zirkel-v1':'Zirkel', 'dtv-training-v
 /* Spotify-Rücksprung an den Zirkel weiterreichen */
 if (/[?&](code|error)=/.test(location.search)){ location.replace('zirkel.html' + location.search); return; }
 function get(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(e){ return null; } }
+/* ---------- Heute: Einheiten aus der Planung ---------- */
+const WD = ['So','Mo','Di','Mi','Do','Fr','Sa'], PLACE = {in:'Halle', out:'draußen', both:'innen und außen'};
+function isoD(d){ const x = new Date(d.getTime() - d.getTimezoneOffset()*60000); return x.toISOString().slice(0,10); }
+function monOf(d){ const m = new Date(d.getFullYear(), d.getMonth(), d.getDate()); m.setDate(m.getDate() - (m.getDay()+6)%7); return m; }
+function planUnit(p, gid, mon, day){
+  let u = (p.units||{})[gid+'|'+mon+'|'+day];
+  if (u && typeof u.ref === 'string') u = p.units[u.ref] && !p.units[u.ref].ref ? p.units[u.ref] : null;
+  return u || null;
+}
+function renderToday(){
+  const box = $('#today'); if (!box) return;
+  const p = get('dtv-plan-v1');
+  if (!p || !Array.isArray(p.groups) || !p.groups.length){ box.innerHTML = ''; return; }
+  const groups = p.groups.slice().sort((a,b)=>(a.age||0)-(b.age||0));
+  const now = new Date(), mon = isoD(monOf(now)), day = (now.getDay()+6)%7 + 1;
+  const rows = [], open = [];
+  groups.forEach(g=>{
+    const u = planUnit(p, g.id, mon, day), items = (u && u.items) || [];
+    const isDay = Array.isArray(g.days) && g.days.includes(day);
+    const href = `plan.html?open=${encodeURIComponent(g.id+'|'+mon+'|'+day)}`;
+    if (!items.length){ if (isDay) open.push(`<a href="${href}">${esc(g.name)}</a>`); return; }
+    const min = items.reduce((a,it)=>a + (+it.min||0), 0);
+    const info = [items.length + (items.length===1 ? ' Übung' : ' Übungen'), min ? min + ' min' : '', u.place && PLACE[u.place] ? PLACE[u.place] : '', u.note ? u.note.slice(0,40) : ''].filter(Boolean).join(' · ');
+    rows.push(`<a class="tu" href="${href}"><div><b>${esc(g.name)}</b><span>${esc(info)}</span></div><span class="go">Öffnen</span></a>`);
+  });
+  const openLine = open.length ? `<p class="nx">Training heute, noch nicht geplant: ${open.join(' · ')}</p>` : '';
+  let nx = '';
+  if (!rows.length && !open.length){
+    // nächste geplante Einheit in den kommenden 3 Wochen
+    for (let k = 1; k <= 21 && !nx; k++){
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate()+k), m = isoD(monOf(d)), dd = (d.getDay()+6)%7 + 1;
+      for (const g of groups){ const u = planUnit(p, g.id, m, dd); if (u && (u.items||[]).length){
+        nx = `<a class="tu" href="plan.html?open=${encodeURIComponent(g.id+'|'+m+'|'+dd)}"><div><b>${WD[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}. · ${esc(g.name)}</b><span>${u.items.length} ${u.items.length===1?'Übung':'Übungen'}</span></div><span class="go">Öffnen</span></a>`; break; } }
+    }
+  }
+  box.innerHTML = `<div class="today"><h2>Heute, ${WD[now.getDay()]} ${now.getDate()}.${now.getMonth()+1}.</h2>${rows.length || open.length ? rows.join('') + openLine : '<p class="nx" style="margin:0 0 4px">Heute ist keine Einheit geplant.' + (nx ? ' Als Nächstes:' : '') + '</p>' + nx}</div>`;
+}
+
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function msg(t, err, undo){ const m = $('#msg'); m.className = 'msg' + (err ? ' err' : ''); m.innerHTML = esc(t) + (undo ? '<br><button class="btn" type="button" id="undoBtn">Rückgängig machen</button>' : ''); m.hidden = false; }
 const pj = v => { try { return typeof v === 'string' ? JSON.parse(v) : v; } catch(e){ return null; } };
@@ -134,6 +183,7 @@ function summary(k, o){
   const a = (o.athletes||[]).length; return `${a} ${a===1?'Athlet':'Athleten'}`;
 }
 function renderStat(){
+  try { renderToday(); } catch(e){}
   $('#stat').innerHTML = Object.keys(KEYS).map(k=>`<b>${KEYS[k]}</b><em>${summary(k, get(k))}</em>`).join('');
 }
 
@@ -354,6 +404,8 @@ $('#impFile').addEventListener('change', e=>{
   r.readAsText(f);
 });
 renderStat(); handleHash();
+document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) renderToday(); });
+window.addEventListener('pageshow', renderToday);
 window.addEventListener('hashchange', handleHash);
 })();
 </script>

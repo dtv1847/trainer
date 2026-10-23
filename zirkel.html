@@ -47,6 +47,15 @@ a{color:var(--red-deep)}
 .lanes::after{content:"";position:absolute;left:68%;top:0;bottom:0;width:4px;background:#fff}
 
 main{max-width:1100px;margin:0 auto;padding:16px 12px 48px}
+/* Startleiste: immer sichtbar unten */
+.startbar{position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(255,255,255,.97);border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(0,0,0,.08);padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+.startbar .sb-in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.startbar .sb-t{flex:1;min-width:0;font-size:13.5px;line-height:1.3;color:var(--muted)}
+.startbar .sb-t b{display:block;color:var(--ink);font-size:15px}
+.startbar .btn{flex:0 0 auto;min-height:48px;padding:10px 16px}
+.startbar .btn.todo{background:#fff;color:var(--ink);border-color:var(--ink)}
+.page{padding-bottom:84px}
+body.running .startbar{display:none}
 h2{font-family:var(--cond);font-weight:700;font-size:28px;line-height:1;margin:22px 0 4px}
 h2:first-child{margin-top:0}
 h3{font-family:var(--cond);font-weight:600;font-size:21px;line-height:1.1;margin:0}
@@ -348,11 +357,11 @@ body.running .appbar,body.running .subbar{display:none}
       <p class="note">Wird sofort gespeichert. Gespeichert werden nur Namen, Schonungen nie dauerhaft.</p>
     </details>
     <div class="fg" style="margin-top:14px">
-      <div class="f"><span>Gruppengröße</span>
+      <div class="f full"><span>Gruppengröße</span>
         <div class="seg" role="radiogroup" aria-label="Gruppengröße">
           <input type="radio" name="gs" id="gs1" value="1"><label for="gs1">einzeln</label>
-          <input type="radio" name="gs" id="gs2" value="2"><label for="gs2">2 pro Gruppe</label>
-          <input type="radio" name="gs" id="gs3" value="3"><label for="gs3">3 pro Gruppe</label>
+          <input type="radio" name="gs" id="gs2" value="2"><label for="gs2">zu zweit</label>
+          <input type="radio" name="gs" id="gs3" value="3"><label for="gs3">zu dritt</label>
         </div>
       </div>
     </div>
@@ -468,8 +477,9 @@ body.running .appbar,body.running .subbar{display:none}
     Im Lauf zeigt ein Tipp auf eine Station die Übung groß mit Ausführungshinweis, gut zum Erklären vor dem Start.
   </div>
 </main>
+<div class="startbar" id="startBar"><div class="sb-in"><div class="sb-t" id="sbText"></div><button class="btn primary" type="button" id="sbBtn">Zirkel starten</button></div></div>
 
-<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-20a · eigene Musik</span></footer>
+<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-23b · Startleiste</span></footer>
 </div>
 
 <!-- ============ LAUF ============ -->
@@ -1205,7 +1215,20 @@ function openDetail(i){
   $('#detail').hidden = false;
 }
 function closeDetail(){ const d = $('#detail'); if (d) d.hidden = true; }
+function renderStartBar(){
+  const t = $('#sbText'), b = $('#sbBtn'); if (!t) return;
+  const ns = db.stations.length, ng = db.groups.length;
+  let todo = null;
+  if (!ng) todo = ['Noch keine Gruppen', 'Anwesende wählen und „Gruppen bilden“.', 'gruppen'];
+  else if (ns < 2) todo = ['Zu wenige Stationen', 'Mindestens zwei Stationen wählen.', 'stationen'];
+  else if (ng > ns) todo = [`${ng-ns} ${ng-ns===1?'Station fehlt':'Stationen fehlen'}`, `${ng} ${db.groups.every(x=>x.length===1)?'Teilnehmer':'Gruppen'}, aber nur ${ns} Stationen.`, 'stationen'];
+  if (todo){ t.innerHTML = `<b>${esc(todo[0])}</b>${esc(todo[1])}`; b.textContent = 'Hinspringen'; b.classList.add('todo'); b.dataset.go = todo[2]; return; }
+  const total = ns * db.rounds * (db.work + db.change), mm = Math.round(total/60);
+  t.innerHTML = `<b>${ng} ${db.groups.every(x=>x.length===1)?'Teilnehmer':'Gruppen'} · ${ns} Stationen</b>${db.work}/${db.change} s · ${db.rounds} ${db.rounds===1?'Durchgang':'Durchgänge'} · ca. ${mm} min`;
+  b.textContent = 'Zirkel starten'; b.classList.remove('todo'); delete b.dataset.go;
+}
 function renderPlanNote(){
+  renderStartBar();
   const ns = db.stations.length, ng = db.groups.length;
   const total = ns * db.rounds * (db.work + db.change);
   const mm = Math.floor(total/60), ss = total % 60;
@@ -1916,6 +1939,9 @@ on('#presets','click', e=>{
 on('#optSound','change', e=>{ db.sound = e.target.checked; save(); if (db.sound){ unlockAudio(); beep(880,.1,.4); } });
 on('#optVoice','change', e=>{ db.voice = e.target.checked; save(); if (db.voice) say('Wechsel'); });
 on('#startBtn','click', startRun);
+on('#sbBtn','click', e=>{ const go = e.currentTarget.dataset.go; if (!go){ startRun(); return; } const el = document.getElementById(go); if (el) el.scrollIntoView({behavior:'smooth', block:'start'}); });
+// Leiste nach jeder Änderung aktuell halten
+['click','change','input'].forEach(ev => document.addEventListener(ev, () => { clearTimeout(window.__sbT); window.__sbT = setTimeout(renderStartBar, 60); }));
 on('#backBtn','click', ()=>{ if (!run.paused && !run.done && !confirm('Zirkel beenden?')) return; endRun(); });
 on('#goBtn','click', ()=>{
   if (run.done){ startRun(); return; }
