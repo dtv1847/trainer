@@ -241,6 +241,7 @@ body.running .appbar,body.running .subbar{display:none}
         <div class="pb">
           <button class="btn" type="button" id="lFreeze">Standbild</button>
           <button class="btn" type="button" id="lRec">● Aufnehmen</button>
+          <label class="chk" style="margin:0 4px"><input type="checkbox" id="lRecSk" checked> mit Skelett und Winkeln</label>
           <button class="btn" type="button" id="lFlip">Kamera wechseln</button>
           <button class="btn" type="button" id="lClose">Beenden</button>
         </div>
@@ -260,7 +261,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </section>
 </main>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose Landmarker (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-23b</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose Landmarker (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-23d</span></footer>
 
 <script>
 (function(){
@@ -571,7 +572,7 @@ function tap(sx, sy){
   } else if (tool === 'pose'){
     const s = poseBox ? poseBox.s : Math.min(vw, vh) * 0.45;
     poseBox = {x: v[0], y: v[1], s, f};
-    detectHere();
+    detectHere(true);
   }
 }
 
@@ -764,7 +765,7 @@ function panel(light){
       tab = `<table class="angt"><tr><th></th><th>links</th><th>rechts</th></tr><tr><td>Knie</td>${r(A.kneeL, A.kneeR)}</tr><tr><td>Hüfte</td>${r(A.hipL, A.hipR)}</tr><tr><td>Ellbogen</td>${r(A.elbL, A.elbR)}</tr><tr><td>Rumpf zur Senkrechten</td><td colspan="2">${isFinite(A.trunk) ? Math.round(A.trunk) + '°' : '–'}</td></tr></table>`; }
     h = `<h3>Skelett</h3><p class="hint">Auf den Athleten tippen. Der Rahmen sollte ihn ganz enthalten und möglichst keine zweite Person. Dann „Ausschnitt verfolgen“: Die App folgt ihm Bild für Bild, vor und zurück. Ohne Ausschnitt 1 s davor bis 2 s danach.</p>
       <label class="note" style="display:block">Rahmengröße</label>
-      <input type="range" id="pSize" min="0.12" max="1" step="0.01" value="${poseBox ? (poseBox.s / Math.min(vw, vh)).toFixed(2) : 0.45}">
+      <input type="range" id="pSize" min="0.12" max="${(Math.max(vw, vh) / Math.min(vw, vh)).toFixed(2)}" step="0.01" value="${poseBox ? (poseBox.s / Math.min(vw, vh)).toFixed(2) : 0.45}">
       <div class="btns" style="margin-top:2px"><button class="btn sm primary" id="pRun" ${poseBox ? '' : 'disabled'}>Ausschnitt verfolgen</button>${L || poseBox ? '<button class="btn sm" id="pZoom">Heranzoomen</button>' : ''}${L ? '<button class="btn sm" id="pDel1">dieses Bild löschen</button>' : ''}${n ? '<button class="btn sm" id="pDel">alle löschen</button>' : ''}</div>
       ${tab || (n ? '<p class="note">Auf diesem Bild kein Skelett.</p>' : '')}
       <label class="note" style="display:block;margin-top:8px">Erkennung</label>
@@ -938,7 +939,7 @@ function poseDist(L, pred){
   return n >= 3 ? s / n : Infinity;
 }
 function bodyH(L){ const ys = L.filter(q => q[2] >= 0.5).map(q => q[1]); return ys.length ? Math.max(...ys) - Math.min(...ys) : 0; }
-async function detectBox(box, pred){
+async function detectBox(box, pred, near){
   const p = await loadPose();
   const S = box.s, x0 = box.x - S / 2, y0 = box.y - S / 2, k = 512 / S;
   const c = off.getContext('2d'); c.fillStyle = '#000'; c.fillRect(0, 0, 512, 512);
@@ -960,18 +961,29 @@ async function detectBox(box, pred){
   let best = null, bd = Infinity;
   for (const L of cands){
     const v = L.filter(q => q[2] > 0.5), xs = v.map(q => q[0]), ys = v.map(q => q[1]);
-    const d = Math.hypot((Math.min(...xs) + Math.max(...xs)) / 2 - box.x, (Math.min(...ys) + Math.max(...ys)) / 2 - box.y);
+    const rx = near ? near[0] : box.x, ry = near ? near[1] : box.y;
+    const d = Math.hypot((Math.min(...xs) + Math.max(...xs)) / 2 - rx, (Math.min(...ys) + Math.max(...ys)) / 2 - ry);
     if (d < bd){ bd = d; best = L; }
   }
   return best;
 }
-async function detectHere(){
+async function detectHere(fresh){
   if (!poseBox) return;
   pause(); render();
   try {
     if (!poseObj) await loadPose();
     setBusy('Skelett wird erkannt …');
-    const L = await detectBox(poseBox);
+    let L = null;
+    if (fresh){
+      // Beim Antippen erst im ganzen Bild suchen, die Person am Tippunkt nehmen und den Rahmen an ihre Größe anpassen
+      const tp = [poseBox.x, poseBox.y], full = await detectBox({x: vw / 2, y: vh / 2, s: Math.max(vw, vh)}, null, tp), bb = full && bodyBox(full);
+      // nur bei großen Personen (z. B. Ganzkörper im Hochformat); kleine Personen erkennt der Ausschnitt um den Tippunkt genauer
+      const onBody = L => { const v = L.filter(q => q[2] >= 0.5), xs = v.map(q => q[0]), ys = v.map(q => q[1]), mx = (Math.max(...xs) - Math.min(...xs)) * 0.15 + 20, my = (Math.max(...ys) - Math.min(...ys)) * 0.1 + 20;
+        return tp[0] > Math.min(...xs) - mx && tp[0] < Math.max(...xs) + mx && tp[1] > Math.min(...ys) - my && tp[1] < Math.max(...ys) + my; };
+      // nur wenn der Tippunkt wirklich auf dieser Person liegt und sie groß ist (z. B. Ganzkörper im Hochformat)
+      if (bb && bodyH(full) > Math.max(vw, vh) * 0.33 && onBody(full)){ poseBox = {x: bb.x, y: bb.y, s: bb.s, f: cur()}; L = await detectBox(poseBox, null, [bb.x, bb.y]) || full; }
+    }
+    if (!L) L = await detectBox(poseBox);
     const f = cur();
     if (L){ V.pose[f] = L; save(); showMsg(''); }
     else { delete V.pose[f]; showMsg('Auf diesem Bild wurde kein Skelett gefunden. Rahmen verschieben oder größer machen.', 'info'); }
@@ -1001,7 +1013,7 @@ function bodyBox(L){
   if (vis.length < 6) return null;
   const xs = vis.map(q => q[0]), ys = vis.map(q => q[1]);
   const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
-  return {x: (Math.max(...xs) + Math.min(...xs)) / 2, y: (Math.max(...ys) + Math.min(...ys)) / 2, s: Math.max(Math.min(vw, vh) * 0.12, Math.min(Math.min(vw, vh), Math.max(w, h) * 1.7))};
+  return {x: (Math.max(...xs) + Math.min(...xs)) / 2, y: (Math.max(...ys) + Math.min(...ys)) / 2, s: Math.max(Math.min(vw, vh) * 0.12, Math.min(Math.max(vw, vh), Math.max(w, h) * 1.7))};
 }
 // Eine Richtung verfolgen; Bewegung vom letzten Bild wird vorausberechnet, damit der Rahmen schnellen Athleten nicht hinterherläuft
 async function track(from, to, dir, box, stat, L0){
@@ -1083,7 +1095,7 @@ function idbDo(mode, fn){ return idb().then(db => new Promise((res, rej) => { co
 const idbKeys = () => idbDo('readonly', st => st.getAllKeys()).catch(() => []);
 const idbGet = k => idbDo('readonly', st => st.get(k));
 const idbDel = k => idbDo('readwrite', st => st.delete(k)).catch(() => {});
-const mb = n => fmt(n / 1048576, 0) + ' MB';
+const mb = n => fmt(n / 1048576, n < 10485760 ? 1 : 0) + ' MB';
 async function storeVideo(k, f){
   try {
     if (await idbDo('readonly', st => st.count(k))) return;
@@ -1157,12 +1169,16 @@ function liveLayout(){
   LH = Math.round(Math.min(LW * vh0 / vw0, Math.max(240, window.innerHeight * (window.innerWidth >= 900 ? 0.72 : 0.55))));
   ldpr = Math.min(3, window.devicePixelRatio || 1);
   lcv.width = Math.round(LW * ldpr); lcv.height = Math.round(LH * ldpr); lcv.style.height = LH + 'px';
+  live.dims = vw0 + 'x' + vh0;
 }
+// Kamerabild unverzerrt einpassen (ganzes Bild sichtbar, Ränder schwarz)
+function lfit(){ const vw0 = lvid.videoWidth || 16, vh0 = lvid.videoHeight || 9, k = Math.min(LW / vw0, LH / vh0); return {k, ox: (LW - vw0 * k) / 2, oy: (LH - vh0 * k) / 2, w: vw0 * k, h: vh0 * k}; }
 async function liveStart(){
   showMsg('');
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ showMsg('Dieser Browser gibt die Kamera nicht frei. Am iPhone in Safari oder in der App vom Home-Bildschirm öffnen.', 'err'); return; }
   $('start').hidden = true; $('hero').hidden = true; $('liveArea').hidden = false;
   renderLivePanel();
+  if (!lcv.captureStream){ $('lRecSk').checked = false; $('lRecSk').disabled = true; }
   try {
     live.stream = await navigator.mediaDevices.getUserMedia({audio: false, video: {facingMode: live.face, width: {ideal: 1280}, height: {ideal: 720}}});
   } catch (e) { liveStop(); showMsg('Kein Zugriff auf die Kamera. Bitte in den Einstellungen erlauben (Einstellungen → Safari → Kamera) und erneut versuchen.', 'err'); return; }
@@ -1260,6 +1276,10 @@ function liveLoop(){
   if (!live.on) return;
   live.raf = requestAnimationFrame(liveLoop);
   if (live.frozen || lvid.readyState < 2) return;
+  if (live.dims !== lvid.videoWidth + 'x' + lvid.videoHeight) liveLayout();   // Handy gedreht
+  const t0 = performance.now();
+  if (t0 - (live.lastDet || 0) < (live.detDur || 0)){ liveDraw(live.cur); return; }   // Bild flüssig halten, Erkennung läuft im eigenen Takt
+  live.lastDet = t0;
   let L = null;
   if (poseObj && poseSize){
     const ts = Math.max(performance.now(), live.ts + 1); live.ts = ts;
@@ -1272,15 +1292,19 @@ function liveLoop(){
     live.fpsN++; const now = performance.now();
     if (now - live.fpsT > 1000){ $('lfps').textContent = Math.round(live.fpsN * 1000 / (now - live.fpsT)) + ' Bilder/s'; live.fpsN = 0; live.fpsT = now; }
   }
+  live.detDur = Math.min(300, performance.now() - t0);
+  live.cur = L;
   liveDraw(L);
   liveTiles(L);
 }
-const lmap = p => { const k = LW / lvid.videoWidth, x = p[0] * k; return [live.face === 'user' ? LW - x : x, p[1] * LH / lvid.videoHeight]; };
+const lmap = p => { const f = lfit(), x = f.ox + p[0] * f.k; return [live.face === 'user' ? LW - x : x, f.oy + p[1] * f.k]; };
 function liveDraw(L){
   lctx.setTransform(ldpr, 0, 0, ldpr, 0, 0);
+  lctx.fillStyle = '#111'; lctx.fillRect(0, 0, LW, LH);
+  const f = lfit();
   lctx.save();
   if (live.face === 'user'){ lctx.translate(LW, 0); lctx.scale(-1, 1); }
-  lctx.drawImage(lvid, 0, 0, LW, LH);
+  lctx.drawImage(lvid, f.ox, f.oy, f.w, f.h);
   lctx.restore();
   if (!L) return;
   lctx.lineCap = 'round';
@@ -1337,8 +1361,8 @@ $('lFreeze').onclick = () => { live.frozen = !live.frozen; $('lFreeze').textCont
 $('lFlip').onclick = async () => { live.face = live.face === 'user' ? 'environment' : 'user'; if (live.stream) live.stream.getTracks().forEach(t => t.stop()); live.on = false; cancelAnimationFrame(live.raf); await liveStart(); };
 lcv.addEventListener('pointerup', e => {
   if (!live.on) return;
-  const r = lcv.getBoundingClientRect(); let x = (e.clientX - r.left) / LW * lvid.videoWidth; const y = (e.clientY - r.top) / LH * lvid.videoHeight;
-  if (live.face === 'user') x = lvid.videoWidth - x;
+  const r = lcv.getBoundingClientRect(), f = lfit(); let sx = e.clientX - r.left; if (live.face === 'user') sx = LW - sx;
+  const x = (sx - f.ox) / f.k, y = (e.clientY - r.top - f.oy) / f.k;
   live.sel = [x, y]; live.last = null;
 });
 // Aufnehmen: Kamerabild als Video in „Deine Videos“
@@ -1347,7 +1371,10 @@ $('lRec').onclick = () => {
   if (live.rec && live.rec.state === 'recording'){ live.rec.stop(); return; }
   if (!window.MediaRecorder){ showMsg('Aufnehmen geht in diesem Browser nicht. Für Aufnahmen die Kamera-App nutzen und das Video hier öffnen.', 'info'); return; }
   const type = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
-  try { live.rec = new MediaRecorder(live.stream, type ? {mimeType: type} : undefined); } catch (e) { showMsg('Aufnehmen ist hier nicht möglich.', 'info'); return; }
+  // mit Skelett: das angezeigte Bild (inkl. Skelett und Winkel) aufnehmen, sonst das reine Kamerabild
+  live.recSk = $('lRecSk').checked && !!lcv.captureStream;
+  const src = live.recSk ? lcv.captureStream(30) : live.stream;
+  try { live.rec = new MediaRecorder(src, type ? {mimeType: type} : undefined); } catch (e) { showMsg('Aufnehmen ist hier nicht möglich.', 'info'); return; }
   live.chunks = [];
   live.rec.ondataavailable = ev => { if (ev.data && ev.data.size) live.chunks.push(ev.data); };
   live.rec.onstop = async () => {
@@ -1357,9 +1384,9 @@ $('lRec').onclick = () => {
     const name = `Live ${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}.${pad(d.getMinutes())}.${pad(d.getSeconds())}.${ext}`;
     const blob = new Blob(live.chunks, {type: mt}); if (!blob.size) return;
     const f = new File([blob], name, {type: mt}), k = name + '|' + f.size;
-    DB.v[k] = {name, dur: 0, fps: 0, slow: 1, a: null, b: null, marks: [], times: [], dev: {}, scale: null, pose: {}, note: 'Live-Aufnahme, Vorgabe: ' + LIVE[livePreset()].n, ts: Date.now()};
+    DB.v[k] = {name, dur: 0, fps: 0, slow: 1, a: null, b: null, marks: [], times: [], dev: {}, scale: null, pose: {}, note: 'Live-Aufnahme' + (live.recSk ? ' mit Skelett' : '') + ', Vorgabe: ' + LIVE[livePreset()].n, ts: Date.now()};
     saveNow(); await storeVideo(k, f);
-    showMsg(`Aufnahme gespeichert (${mb(f.size)}). Du findest sie nach „Beenden“ unter „Deine Videos“.`);
+    showMsg(`Aufnahme gespeichert (${mb(f.size)})${live.recSk ? ' mit Skelett und Winkeln im Bild' : ''}. Du findest sie nach „Beenden“ unter „Deine Videos“.`);
   };
   live.rec.start(500); $('lrecDot').hidden = false; $('lRec').textContent = '■ Stopp'; $('lRec').classList.add('primary');
 };

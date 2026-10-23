@@ -64,6 +64,9 @@ h3{font-family:var(--cond);font-weight:600;font-size:21px;line-height:1.1;margin
 .block-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .tag{font-size:12.5px;color:var(--muted)}
 .note{font-size:13.5px;color:var(--muted);margin:8px 0 0}
+.sigrow{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap;margin:4px 0 0}
+.sigrow .f{min-width:110px;flex:1 1 110px}
+.sigrow .btn{padding-left:10px;padding-right:10px;white-space:nowrap}
 .mo-h{font-family:var(--cond);font-weight:700;font-size:20px;margin:0 0 2px}
 .mo-list{list-style:none;margin:6px 0 0;padding:0}
 .mo-list li{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding:6px 0;font-size:14.5px}
@@ -400,6 +403,12 @@ body.running .appbar,body.running .subbar{display:none}
     </div>
     <div class="chips" style="margin-top:10px" id="presets"></div>
     <label class="chk" style="margin-top:6px"><input type="checkbox" id="optSound"> Signaltöne</label>
+    <div class="sigrow">
+      <label class="f"><span>Klang</span><select id="optSignal"><option value="beep">Piepton</option><option value="whistle">Pfeife</option><option value="gong">Gong</option></select></label>
+      <button class="btn small" type="button" id="sigStart">▶ Start</button>
+      <button class="btn small" type="button" id="sigStop">■ Stop</button>
+    </div>
+    <p class="note" style="margin-top:4px">Start: drei Töne aufsteigend. Stop: zwei Töne absteigend. Davor jeweils 3 kurze Töne Countdown, vor dem Stop etwas tiefer.</p>
     <label class="chk"><input type="checkbox" id="optVoice"> Ansage „Wechsel“ und Stationsname</label>
     <p class="note" id="planNote"></p>
   </div>
@@ -479,7 +488,7 @@ body.running .appbar,body.running .subbar{display:none}
 </main>
 <div class="startbar" id="startBar"><div class="sb-in"><div class="sb-t" id="sbText"></div><button class="btn primary" type="button" id="sbBtn">Zirkel starten</button></div></div>
 
-<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-23b · Startleiste</span></footer>
+<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-23d · Start- und Stop-Signale</span></footer>
 </div>
 
 <!-- ============ LAUF ============ -->
@@ -963,6 +972,7 @@ function normalize(o){
   o.change = clamp(+o.change || 20, 5, 300);
   o.rounds = clamp(+o.rounds || 1, 1, 10);
   o.sound = o.sound !== false;
+  o.signal = ['beep','whistle','gong'].includes(o.signal) ? o.signal : 'beep';
   o.voice = !!o.voice;
   return o;
 }
@@ -993,6 +1003,43 @@ function beep(freq, dur, vol){
     o.connect(g); g.connect(actx.destination);
     o.start(t); o.stop(t + dur + 0.03);
   } catch(e){}
+}
+/* Signale: Start = drei Töne aufsteigend, der letzte lang; Stop = Doppelton absteigend, lang; Countdown = kurze Töne.
+   Klangarten: Piepton, Pfeife (Triller, gut hörbar draußen), Gong. */
+function tone(f, at, dur, vol, o){
+  o = o || {};
+  try {
+    const t = actx.currentTime + at, osc = actx.createOscillator(), g = actx.createGain();
+    osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(f, t);
+    if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+    if (o.trill){ const l = actx.createOscillator(), lg = actx.createGain(); l.frequency.value = o.trill; lg.gain.value = f * 0.06; l.connect(lg); lg.connect(osc.frequency); l.start(t); l.stop(t + dur + 0.05); }
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + (o.att || 0.012));
+    if (o.hold) g.gain.setValueAtTime(vol, t + dur * o.hold);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g); g.connect(actx.destination);
+    osc.start(t); osc.stop(t + dur + 0.05);
+  } catch(e){}
+}
+function gong(f, at, dur, vol){ [[1, 1], [2.76, .45], [5.4, .25], [8.9, .12]].forEach(([m, a]) => tone(f * m, at, dur / Math.sqrt(m), vol * a, {att: 0.006})); }
+function signal(kind, force){
+  if ((!db.sound && !force) || !actx) return;
+  const s = db.signal || 'beep';
+  if (s === 'beep'){
+    if (kind === 'tick') tone(880, 0, .09, .5);
+    else if (kind === 'tickStop') tone(700, 0, .09, .5);
+    else if (kind === 'start'){ tone(660, 0, .13, .55); tone(880, .2, .13, .55); tone(1320, .4, .6, .6, {hold: .6}); }
+    else if (kind === 'stop'){ tone(988, 0, .35, .6, {hold: .5}); tone(494, .38, .7, .6, {hold: .55}); }
+  } else if (s === 'whistle'){
+    const w = (at, d, v) => tone(2900, at, d, v, {type: 'triangle', trill: 26, hold: .7, att: .02});
+    if (kind === 'tick' || kind === 'tickStop') tone(kind === 'tick' ? 3100 : 2600, 0, .07, .35, {type: 'triangle'});
+    else if (kind === 'start'){ w(0, .14, .45); w(.22, .14, .45); w(.44, .7, .5); }
+    else if (kind === 'stop'){ w(0, .45, .5); tone(2400, .55, .9, .5, {type: 'triangle', trill: 26, hold: .7, att: .02}); }
+  } else {
+    if (kind === 'tick' || kind === 'tickStop') gong(kind === 'tick' ? 880 : 700, 0, .25, .25);
+    else if (kind === 'start'){ gong(523, 0, .5, .35); gong(659, .25, .5, .35); gong(784, .5, 1.6, .45); }
+    else if (kind === 'stop'){ gong(392, 0, 1.4, .45); gong(262, .55, 2.0, .5); }
+  }
 }
 function say(text){
   if (!db.voice || !window.speechSynthesis) return;
@@ -1223,8 +1270,8 @@ function renderStartBar(){
   else if (ns < 2) todo = ['Zu wenige Stationen', 'Mindestens zwei Stationen wählen.', 'stationen'];
   else if (ng > ns) todo = [`${ng-ns} ${ng-ns===1?'Station fehlt':'Stationen fehlen'}`, `${ng} ${db.groups.every(x=>x.length===1)?'Teilnehmer':'Gruppen'}, aber nur ${ns} Stationen.`, 'stationen'];
   if (todo){ t.innerHTML = `<b>${esc(todo[0])}</b>${esc(todo[1])}`; b.textContent = 'Hinspringen'; b.classList.add('todo'); b.dataset.go = todo[2]; return; }
-  const total = ns * db.rounds * (db.work + db.change), mm = Math.round(total/60);
-  t.innerHTML = `<b>${ng} ${db.groups.every(x=>x.length===1)?'Teilnehmer':'Gruppen'} · ${ns} Stationen</b>${db.work}/${db.change} s · ${db.rounds} ${db.rounds===1?'Durchgang':'Durchgänge'} · ca. ${mm} min`;
+  const total = ns * db.rounds * (db.work + db.change), mm = Math.floor(total/60), ss = total % 60;
+  t.innerHTML = `<b>${ng} ${db.groups.every(x=>x.length===1)?'Teilnehmer':'Gruppen'} · ${ns} Stationen</b>${db.work}/${db.change} s · ${db.rounds} ${db.rounds===1?'Durchgang':'Durchgänge'} · ca. ${mm}:${String(ss).padStart(2,'0')} min`;
   b.textContent = 'Zirkel starten'; b.classList.remove('todo'); delete b.dataset.go;
 }
 function renderPlanNote(){
@@ -1531,6 +1578,7 @@ function totalSteps(){ return db.stations.length * db.rounds; }
 function play(){
   if (run.done) return;
   unlockAudio();
+  if (run.phase === 'work' && run.left === db.work) signal('start');
   run.paused = false;
   run.endAt = Date.now() + run.left * 1000;
   if (!tick) tick = setInterval(step, 200);
@@ -1547,7 +1595,7 @@ function step(){
   if (run.paused || run.done) return;
   const rem = (run.endAt - Date.now())/1000;
   const sec = Math.ceil(rem);
-  if (sec !== lastBeepSec && sec >= 1 && sec <= 3){ lastBeepSec = sec; beep(880, .09, .5); }
+  if (sec !== lastBeepSec && sec >= 1 && sec <= 3){ lastBeepSec = sec; signal(run.phase === 'work' ? 'tickStop' : 'tick'); }
   if (rem <= 0){ lastBeepSec = -1; advance(true); }
   else { run.left = Math.max(0, sec); renderTimer(); }
 }
@@ -1564,11 +1612,11 @@ function advance(auto){
     }
     rotate();
     run.phase = 'change'; run.left = db.change;
-    if (auto){ beep(440,.5,.55); say('Wechsel'); }
+    if (auto){ signal('stop'); say('Wechsel'); }
   } else {
     run.phase = 'work'; run.left = db.work;
     if (auto){
-      beep(1046,.3,.55);
+      signal('start');
       const st = db.stations[run.assign.findIndex(x=>x===0)];
       say('Los');
     }
@@ -1794,7 +1842,7 @@ function renderSetup(){
   renderAttendance();
   $('#gs1').checked = db.size === 1; $('#gs2').checked = db.size === 2; $('#gs3').checked = db.size === 3;
   $('#tWork').value = db.work; $('#tChange').value = db.change; $('#tRounds').value = db.rounds;
-  $('#optSound').checked = db.sound; $('#optVoice').checked = db.voice;
+  $('#optSound').checked = db.sound; $('#optVoice').checked = db.voice; $('#optSignal').value = db.signal || 'beep';
   $('#presets').innerHTML = PRESETS.map(([w,c,l])=>`<button type="button" class="chip${db.work===w&&db.change===c?' on':''}" data-pre="${w}:${c}">${l} s</button>`).join('');
   renderGroups(); renderStations(); renderWarn();
 }
@@ -1936,7 +1984,10 @@ on('#presets','click', e=>{
   const [w,c] = b.dataset.pre.split(':').map(Number);
   db.work = w; db.change = c; save(); renderSetup();
 });
-on('#optSound','change', e=>{ db.sound = e.target.checked; save(); if (db.sound){ unlockAudio(); beep(880,.1,.4); } });
+on('#optSound','change', e=>{ db.sound = e.target.checked; save(); if (db.sound){ unlockAudio(); signal('tick'); } });
+on('#optSignal','change', e=>{ db.signal = e.target.value; save(); unlockAudio(); signal('start', true); });
+on('#sigStart','click', ()=>{ unlockAudio(); signal('start', true); });
+on('#sigStop','click', ()=>{ unlockAudio(); signal('stop', true); });
 on('#optVoice','change', e=>{ db.voice = e.target.checked; save(); if (db.voice) say('Wechsel'); });
 on('#startBtn','click', startRun);
 on('#sbBtn','click', e=>{ const go = e.currentTarget.dataset.go; if (!go){ startRun(); return; } const el = document.getElementById(go); if (el) el.scrollIntoView({behavior:'smooth', block:'start'}); });
@@ -1989,7 +2040,7 @@ on('#spCodePaste','click', ()=>{
 on('#musBtn','click', ()=>{
   if (moTracks.length && (mo.on || !spConnected())){ mo.on = !mo.on; if (mo.on && sp.on){ sp.on = false; spSave(); } moSave(); moUi(); spUi(); spRunMsg(mo.on ? 'Musik an' : 'Musik aus'); renderRun(); return; }
   sp.on = !sp.on; spSave(); spUi(); spRunMsg(sp.on ? 'Spotify an' : 'Spotify aus'); renderRun(); });
-on('#sndBtn','click', ()=>{ db.sound = !db.sound; save(); if (db.sound){ unlockAudio(); beep(880,.1,.4); } renderRun(); });
+on('#sndBtn','click', ()=>{ db.sound = !db.sound; save(); if (db.sound){ unlockAudio(); signal('tick'); } renderRun(); });
 window.addEventListener('resize', ()=>{ if (run.active){ const s=$('#stage'); s.dataset.built=''; renderRun(); } });
 window.addEventListener('orientationchange', ()=>setTimeout(()=>{ if (run.active){ const s=$('#stage'); s.dataset.built=''; renderRun(); } }, 300));
 

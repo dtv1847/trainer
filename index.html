@@ -125,7 +125,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </main>
 <div class="pov" id="impView" hidden><div class="povbox" id="impBox"></div></div>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-23b</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-23d</span></footer>
 <script>
 (function(){
 const $ = s => document.querySelector(s);
@@ -156,7 +156,7 @@ function renderToday(){
     if (!items.length){ if (isDay) open.push(`<a href="${href}">${esc(g.name)}</a>`); return; }
     const min = items.reduce((a,it)=>a + (+it.min||0), 0);
     const info = [items.length + (items.length===1 ? ' Übung' : ' Übungen'), min ? min + ' min' : '', u.place && PLACE[u.place] ? PLACE[u.place] : '', u.note ? u.note.slice(0,40) : ''].filter(Boolean).join(' · ');
-    rows.push(`<a class="tu" href="${href}"><div><b>${esc(g.name)}</b><span>${esc(info)}</span></div><span class="go">Öffnen</span></a>`);
+    rows.push(`<a class="tu" href="${href.replace('?open=', '?show=')}"><div><b>${esc(g.name)}</b><span>${esc(info)}</span></div><span class="go">Zeigen</span></a>`);
   });
   const openLine = open.length ? `<p class="nx">Training heute, noch nicht geplant: ${open.join(' · ')}</p>` : '';
   let nx = '';
@@ -165,7 +165,7 @@ function renderToday(){
     for (let k = 1; k <= 21 && !nx; k++){
       const d = new Date(now.getFullYear(), now.getMonth(), now.getDate()+k), m = isoD(monOf(d)), dd = (d.getDay()+6)%7 + 1;
       for (const g of groups){ const u = planUnit(p, g.id, m, dd); if (u && (u.items||[]).length){
-        nx = `<a class="tu" href="plan.html?open=${encodeURIComponent(g.id+'|'+m+'|'+dd)}"><div><b>${WD[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}. · ${esc(g.name)}</b><span>${u.items.length} ${u.items.length===1?'Übung':'Übungen'}</span></div><span class="go">Öffnen</span></a>`; break; } }
+        nx = `<a class="tu" href="plan.html?show=${encodeURIComponent(g.id+'|'+m+'|'+dd)}"><div><b>${WD[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}. · ${esc(g.name)}</b><span>${u.items.length} ${u.items.length===1?'Übung':'Übungen'}</span></div><span class="go">Zeigen</span></a>`; break; } }
     }
   }
   box.innerHTML = `<div class="today"><h2>Heute, ${WD[now.getDay()]} ${now.getDate()}.${now.getMonth()+1}.</h2>${rows.length || open.length ? rows.join('') + openLine : '<p class="nx" style="margin:0 0 4px">Heute ist keine Einheit geplant.' + (nx ? ' Als Nächstes:' : '') + '</p>' + nx}</div>`;
