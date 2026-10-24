@@ -67,6 +67,24 @@ footer{max-width:980px;margin:0 auto;padding:0 14px 40px;font-size:13px;color:va
 .today a.tu .go.plan{background:#fff;color:#1D6FB8;border:1.5px solid #1D6FB8}
 .today .nx{font-size:14px;color:var(--muted);margin:4px 0 0}
 .today .nx a{color:#1D6FB8;font-weight:600;display:inline-block;padding:6px 2px}
+.today a.tu .sp{color:#0E7C66;font-weight:600}
+.today a.tu .sp.x{color:var(--red)}
+.today .spx{font-size:14px;margin:6px 0 0;padding-top:8px;border-top:1px solid var(--line)}
+.today .spx b{font-weight:600}
+.spf label{display:block;font-size:14px;color:var(--muted);margin:10px 0 4px}
+.spf input{width:100%;font:16px var(--body);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.sperr{color:var(--red);font-size:14.5px;margin:8px 0 0}
+.spok{color:#0E7C66;font-size:14.5px;margin:8px 0 0}
+.mrow{display:flex;align-items:center;gap:10px;border-top:1px solid var(--line);padding:7px 0}
+.mrow span{flex:1;min-width:0}
+.mrow em{font-style:normal;color:var(--muted);font-size:13.5px}
+.mrow select{font:15px var(--body);padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:108px}
+.povbox h4{font:700 18px var(--cond);margin:14px 0 2px}
+.mpg{border-top:1px solid var(--line);padding:8px 0}
+.mpg b{display:block;margin-bottom:5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:600 13.5px var(--body);border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 11px;cursor:pointer;min-height:34px}
+.chip.on{background:#0E7C66;border-color:#0E7C66;color:#fff}
 </style>
 <style id="dtv-appbar">
 .appbar{display:flex;align-items:center;gap:6px;background:#2B2B2B;color:#fff;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));overflow-x:auto;scrollbar-width:none;position:relative;z-index:30}
@@ -101,6 +119,9 @@ body.running .appbar,body.running .subbar{display:none}
     <a class="tile" href="wissen.html" style="--c:#E2A81B"><div class="ic"><svg class="ico" viewBox="0 0 100 100" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 88H95" stroke-width="2.4" opacity=".3"/><g transform="translate(40.1 88) scale(0.995)" stroke-width="6.5"><path d="M2 0V-24M16 0V-24" stroke-width="3.2"/><path d="M1 -24H17" stroke-width="4.5"/><path d="M-1 0H5M13 0H19" stroke-width="3.2"/><g opacity=".4"><path d="M0 -46.5L-17.9 -40L-14.6 -21.3"/><path d="M10.7 -65.1L24.5 -67.5L37.3 -69.8"/></g><path d="M0 -46.5L12 -67.2"/><path d="M0 -46.5L18.9 -48.4L37.8 -50.4"/><path d="M10.7 -65.1L0.9 -55.2L3.1 -42.4"/><circle cx="17" cy="-75.9" r="6.5" fill="currentColor" stroke="none"/></g></svg></div><div><b>Wissen</b><span>Technik, Athletik, Normen, Maße</span></div></a>
   </div>
 
+  <h2>Spond</h2>
+  <div class="block" id="spBlock"></div>
+
   <h2>Daten auf diesem Gerät</h2>
   <div class="block">
     <div class="stat" id="stat"></div>
@@ -125,9 +146,164 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </main>
 <div class="pov" id="impView" hidden><div class="povbox" id="impBox"></div></div>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-23d</span></footer>
+<div class="pov" id="spMapView" hidden><div class="povbox" id="spMapBox"></div></div>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-24a · Spond</span></footer>
 <script>
 (function(){
+/* ---------- Spond-Anbindung (gemeinsam für Start, Planung, Zirkel) ----------
+   Läuft über den eigenen Vermittler (Cloudflare Worker), weil Spond direkte Anfragen
+   aus dem Browser nicht zulässt. Auf dem Gerät liegen nur: Anmelde-Schlüssel, Name,
+   Jahrgang, Untergruppen, Termine und Zusagen. Speicher: localStorage „dtv-spond-v1“. */
+const SPOND = (function(){
+  const KEY = 'dtv-spond-v1';
+  const SQ = [['U8','U8'],['U10','U10'],['U12','U12'],['U14','U14'],['U16','U16'],['U18','U18'],['MW','M/W'],['Masters','Masters'],['Lauf','Lauf']];
+  const AGEORD = ['U8','U10','U12','U14','U16','U18','U20','Aktive','Masters'];
+  const DAYMS = 864e5;
+  function norm(o){
+    o = (o && typeof o === 'object') ? o : {};
+    o.relay = String(o.relay || '');
+    o.token = typeof o.token === 'string' ? o.token : null;
+    o.at = o.at || null;
+    o.groups = Array.isArray(o.groups) ? o.groups : [];
+    o.events = Array.isArray(o.events) ? o.events : [];
+    const m = (o.map && typeof o.map === 'object') ? o.map : {};
+    o.map = {sq: (m.sq && typeof m.sq === 'object') ? m.sq : {}, pg: (m.pg && typeof m.pg === 'object') ? m.pg : {}, done: !!m.done};
+    return o;
+  }
+  function load(){ try { return norm(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch(e){ return norm(null); } }
+  let st = load(), idx = null;
+  if (!st.relay){ try { st.relay = localStorage.getItem('dtv-spond-relay') || ''; } catch(e){} }
+  function save(){ idx = null; try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
+  function relayUrl(v){ v = String(v || '').trim().replace(/\/+$/, ''); if (v && !/^https?:\/\//.test(v)) v = 'https://' + v; return v; }
+  const isoLocal = d => { const x = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return x.toISOString().slice(0, 10); };
+  const dayStart = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  async function call(path, opt){
+    if (!st.relay) throw Object.assign(new Error('Keine Vermittler-Adresse'), {code: 'relay'});
+    const h = {'Content-Type': 'application/json'}; if (st.token) h.Authorization = 'Bearer ' + st.token;
+    let r;
+    try { r = await fetch(st.relay + '/core/v1/' + path, Object.assign({headers: h, cache: 'no-store'}, opt || {})); }
+    catch(e){ throw Object.assign(new Error(navigator.onLine === false ? 'Kein Internet' : 'Vermittler nicht erreichbar'), {code: 'net'}); }
+    let body = null; try { body = await r.json(); } catch(e){}
+    if (r.status === 401 && path !== 'auth2/login'){ st.token = null; save(); throw Object.assign(new Error('Anmeldung abgelaufen, bitte neu verbinden'), {code: 'auth'}); }
+    if (!r.ok && path !== 'auth2/login') throw Object.assign(new Error('Spond antwortet mit Fehler ' + r.status), {code: 'http'});
+    return {status: r.status, body};
+  }
+  async function login(email, pw, relay){
+    st.relay = relayUrl(relay || st.relay); st.token = null; save();
+    try { localStorage.setItem('dtv-spond-relay', st.relay); } catch(e){}
+    const r = await call('auth2/login', {method: 'POST', body: JSON.stringify({email: String(email).trim(), password: pw})});
+    const b = r.body || {};
+    if (b.accessToken && b.accessToken.token){ st.token = b.accessToken.token; save(); return refresh(); }
+    if (b.twoFactor) throw Object.assign(new Error('Spond verlangt eine Zwei-Faktor-Bestätigung. Das geht hier noch nicht.'), {code: '2fa'});
+    throw Object.assign(new Error(r.status === 401 || r.status === 400 ? 'E-Mail oder Passwort stimmt nicht.' : 'Anmeldung nicht geklappt (' + r.status + ').'), {code: 'login'});
+  }
+  let busy = null;
+  function refresh(){
+    if (busy) return busy;
+    busy = (async () => {
+      const g = await call('groups/');
+      const now = new Date(), from = new Date(dayStart(now).getTime() - DAYMS), to = new Date(dayStart(now).getTime() + 29 * DAYMS);
+      const q = new URLSearchParams({max: '300', scheduled: 'false', minEndTimestamp: from.toISOString(), maxStartTimestamp: to.toISOString()});
+      const e = await call('sponds/?' + q);
+      st.groups = Array.isArray(g.body) ? g.body : [];
+      st.events = (Array.isArray(e.body) ? e.body : []).filter(x => x && x.startTimestamp).sort((a, b) => String(a.startTimestamp).localeCompare(String(b.startTimestamp)));
+      st.at = new Date().toISOString(); save();
+      return st;
+    })();
+    return busy.finally(() => { busy = null; });
+  }
+  // Im Hintergrund auffrischen, wenn verbunden und älter als maxMin Minuten
+  function autoRefresh(maxMin){
+    if (!st.token || !st.relay || navigator.onLine === false) return Promise.resolve(false);
+    if (st.at && Date.now() - new Date(st.at).getTime() < (maxMin == null ? 10 : maxMin) * 60000) return Promise.resolve(false);
+    return refresh().then(() => true, () => false);
+  }
+  function logout(){ st.token = null; st.groups = []; st.events = []; st.at = null; save(); }
+
+  /* ---- Nachschlagen ---- */
+  function index(){
+    if (idx) return idx;
+    idx = {m: {}, sub: {}};
+    st.groups.forEach(g => {
+      (g.subGroups || []).forEach(s => { idx.sub[s.id] = {id: s.id, name: s.name, n: 0}; });
+      (g.members || []).forEach(m => { idx.m[m.id] = m; if (m.profileId) idx.m[m.profileId] = m; (m.subGroups || []).forEach(s => { if (idx.sub[s]) idx.sub[s].n++; }); });
+    });
+    return idx;
+  }
+  const member = id => index().m[id] || null;
+  const fullName = m => m ? ((m.firstName || '') + ' ' + (m.lastName || '')).trim() : 'Unbekannt';
+  function subGroups(){ return Object.values(index().sub); }
+  const subName = id => (index().sub[id] || {}).name || '';
+  function ageClass(jg){
+    if (!jg) return '';
+    const a = new Date().getFullYear() - jg;
+    if (a < 8) return 'U8'; if (a < 10) return 'U10'; if (a < 12) return 'U12'; if (a < 14) return 'U14'; if (a < 16) return 'U16'; if (a < 18) return 'U18'; if (a < 20) return 'U20';
+    return a < 30 ? 'Aktive' : 'Masters';
+  }
+  const ageRank = ac => AGEORD.indexOf(ac);
+  function sqForAge(jg){ const ac = ageClass(jg); return ac === 'U20' || ac === 'Aktive' ? 'MW' : (ac || ''); }
+
+  /* ---- Zuordnung ---- */
+  function suggestSq(name){
+    const n = String(name || '').toLowerCase();
+    if (/übungsleit|trainer|passiv|eltern|vorstand/.test(n)) return '';
+    if (/lauf|langstrecke|mittelstrecke|läufer/.test(n)) return 'Lauf';
+    if (/master|senior/.test(n)) return 'Masters';
+    const u = /\bu\s?(8|10|12|14|16|18|20)\b/.exec(n);
+    if (u) return u[1] === '20' ? 'MW' : 'U' + u[1];
+    if (/\bf\s*\/?\s*m\b|frauen|männer|aktive/.test(n)) return 'MW';
+    return '';
+  }
+  const sqFor = id => (id in st.map.sq) ? st.map.sq[id] : suggestSq(subName(id));
+  function suggestPg(pgName){
+    const n = String(pgName || '').toLowerCase(), subs = subGroups(), out = [];
+    const us = (n.match(/\bu\s?\d{1,2}\b/g) || []).map(x => x.replace(/\s/g, ''));
+    subs.forEach(s => {
+      const sn = s.name.toLowerCase(), su = (sn.match(/\bu\s?\d{1,2}\b/g) || []).map(x => x.replace(/\s/g, ''));
+      if (us.length && su.some(x => us.includes(x))) out.push(s.id);
+      else if (/master|senior/.test(n) && /master|senior/.test(sn)) out.push(s.id);
+      else if (/lauf|mittel|lang/.test(n) && /lauf|mittel|lang/.test(sn)) out.push(s.id);
+      else if (/aktive|männer|frauen/.test(n) && (/\bf\s*\/?\s*m\b|aktive|frauen|männer|\bu\s?20\b/.test(sn))) out.push(s.id);
+    });
+    return out;
+  }
+  const pgSubs = (gid, gname) => Array.isArray(st.map.pg[gid]) ? st.map.pg[gid] : suggestPg(gname);
+  function setMap(sq, pg){ st.map = {sq: sq || {}, pg: pg || {}, done: true}; save(); }
+
+  /* ---- Termine ---- */
+  const evSubs = ev => ((ev.recipients && ev.recipients.group && ev.recipients.group.subGroups) || []).map(s => s.id);
+  const evDate = ev => isoLocal(new Date(ev.startTimestamp));
+  const evTime = ev => { const d = new Date(ev.startTimestamp); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  function eventsOn(dateIso){ return st.events.filter(e => evDate(e) === dateIso); }
+  function eventsFor(subIds, dateIso){
+    if (!subIds || !subIds.length) return [];
+    return eventsOn(dateIso).filter(e => evSubs(e).some(s => subIds.includes(s)));
+  }
+  function counts(ev){
+    const r = ev.responses || {}, L = a => (a || []).length;
+    return {acc: L(r.acceptedIds), dec: L(r.declinedIds), open: L(r.unansweredIds) + L(r.unconfirmedIds), wait: L(r.waitinglistIds)};
+  }
+  function countText(ev){
+    if (ev.cancelled) return 'abgesagt';
+    const c = counts(ev);
+    return `${c.acc} zugesagt · ${c.dec} abgesagt · ${c.open} offen` + (c.wait ? ` · ${c.wait} Warteliste` : '');
+  }
+  function people(ev, homeSubs){
+    const r = ev.responses || {}, home = homeSubs && homeSubs.length ? homeSubs : evSubs(ev), dm = r.declineMessages || {};
+    const one = id => { const m = member(id); const jg = m && m.birthYear;
+      return {id, name: fullName(m), first: m ? m.firstName : '', last: m ? m.lastName : '', jg, ac: ageClass(jg),
+        subs: m ? (m.subGroups || []) : [], guest: !!(m && home.length && !(m.subGroups || []).some(s => home.includes(s))), msg: dm[id] || ''}; };
+    const by = a => (a || []).map(one).sort((x, y) => x.name.localeCompare(y.name, 'de'));
+    return {acc: by(r.acceptedIds), dec: by(r.declinedIds), open: by([].concat(r.unansweredIds || [], r.unconfirmedIds || [])), wait: by(r.waitinglistIds)};
+  }
+  const has = () => !!(st.token && st.groups.length);
+  const ago = () => { if (!st.at) return ''; const d = new Date(st.at); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  return {SQ, get st(){ return st; }, reload(){ st = load(); idx = null; }, save, login, refresh, autoRefresh, logout, relayUrl,
+    member, fullName, subGroups, subName, ageClass, ageRank, sqForAge, suggestSq, sqFor, suggestPg, pgSubs, setMap,
+    evSubs, evDate, evTime, eventsOn, eventsFor, counts, countText, people, has, ago, isoLocal};
+})();
+
 const $ = s => document.querySelector(s);
 const KEYS = {'dtv-plan-v1':'Planung', 'dtv-zirkel-v1':'Zirkel', 'dtv-training-v1':'Athleten'};
 /* Spotify-Rücksprung an den Zirkel weiterreichen */
@@ -142,23 +318,35 @@ function planUnit(p, gid, mon, day){
   if (u && typeof u.ref === 'string') u = p.units[u.ref] && !p.units[u.ref].ref ? p.units[u.ref] : null;
   return u || null;
 }
+function spLine(evs){
+  return evs.map(e=>`<span class="sp${e.cancelled ? ' x' : ''}">Spond ${SPOND.evTime(e)}: ${esc(SPOND.countText(e))}</span>`).join('');
+}
 function renderToday(){
   const box = $('#today'); if (!box) return;
   const p = get('dtv-plan-v1');
-  if (!p || !Array.isArray(p.groups) || !p.groups.length){ box.innerHTML = ''; return; }
-  const groups = p.groups.slice().sort((a,b)=>(a.age||0)-(b.age||0));
-  const now = new Date(), mon = isoD(monOf(now)), day = (now.getDay()+6)%7 + 1;
+  const now = new Date(), mon = isoD(monOf(now)), day = (now.getDay()+6)%7 + 1, todayIso = isoD(now);
+  const groups = (p && Array.isArray(p.groups) ? p.groups : []).slice().sort((a,b)=>(a.age||0)-(b.age||0));
+  const spOn = SPOND.has(), spToday = spOn ? SPOND.eventsOn(todayIso) : [], used = new Set();
+  if (!groups.length && !spToday.length){ box.innerHTML = ''; return; }
   const rows = [], open = [];
   groups.forEach(g=>{
     const u = planUnit(p, g.id, mon, day), items = (u && u.items) || [];
+    const evs = spOn ? SPOND.eventsFor(SPOND.pgSubs(g.id, g.name), todayIso) : [];
+    evs.forEach(e=>used.add(e.id));
     const isDay = Array.isArray(g.days) && g.days.includes(day);
     const href = `plan.html?open=${encodeURIComponent(g.id+'|'+mon+'|'+day)}`;
-    if (!items.length){ if (isDay) open.push(`<a href="${href}">${esc(g.name)}</a>`); return; }
+    if (!items.length){
+      if (evs.length) rows.push(`<a class="tu" href="${href}"><div><b>${esc(g.name)}</b><span>Noch nicht geplant</span>${spLine(evs)}</div><span class="go plan">Planen</span></a>`);
+      else if (isDay) open.push(`<a href="${href}">${esc(g.name)}</a>`);
+      return;
+    }
     const min = items.reduce((a,it)=>a + (+it.min||0), 0);
     const info = [items.length + (items.length===1 ? ' Übung' : ' Übungen'), min ? min + ' min' : '', u.place && PLACE[u.place] ? PLACE[u.place] : '', u.note ? u.note.slice(0,40) : ''].filter(Boolean).join(' · ');
-    rows.push(`<a class="tu" href="${href.replace('?open=', '?show=')}"><div><b>${esc(g.name)}</b><span>${esc(info)}</span></div><span class="go">Zeigen</span></a>`);
+    rows.push(`<a class="tu" href="${href.replace('?open=', '?show=')}"><div><b>${esc(g.name)}</b><span>${esc(info)}</span>${spLine(evs)}</div><span class="go">Zeigen</span></a>`);
   });
   const openLine = open.length ? `<p class="nx">Training heute, noch nicht geplant: ${open.join(' · ')}</p>` : '';
+  const rest = spToday.filter(e=>!used.has(e.id));
+  const spRest = rest.length ? `<p class="nx spx">Laut Spond heute: ${rest.map(e=>`<b>${esc(e.heading || 'Termin')}</b> ${SPOND.evTime(e)} (${esc(SPOND.countText(e))})`).join(' · ')}</p>` : '';
   let nx = '';
   if (!rows.length && !open.length){
     // nächste geplante Einheit in den kommenden 3 Wochen
@@ -168,8 +356,81 @@ function renderToday(){
         nx = `<a class="tu" href="plan.html?show=${encodeURIComponent(g.id+'|'+m+'|'+dd)}"><div><b>${WD[d.getDay()]} ${d.getDate()}.${d.getMonth()+1}. · ${esc(g.name)}</b><span>${u.items.length} ${u.items.length===1?'Übung':'Übungen'}</span></div><span class="go">Zeigen</span></a>`; break; } }
     }
   }
-  box.innerHTML = `<div class="today"><h2>Heute, ${WD[now.getDay()]} ${now.getDate()}.${now.getMonth()+1}.</h2>${rows.length || open.length ? rows.join('') + openLine : '<p class="nx" style="margin:0 0 4px">Heute ist keine Einheit geplant.' + (nx ? ' Als Nächstes:' : '') + '</p>' + nx}</div>`;
+  box.innerHTML = `<div class="today"><h2>Heute, ${WD[now.getDay()]} ${now.getDate()}.${now.getMonth()+1}.</h2>${rows.length || open.length ? rows.join('') + openLine : '<p class="nx" style="margin:0 0 4px">Heute ist keine Einheit geplant.' + (nx ? ' Als Nächstes:' : '') + '</p>' + nx}${spRest}</div>`;
 }
+
+/* ---------- Spond: verbinden, Stand, Zuordnung ---------- */
+let spMsg = null;
+function renderSpond(){
+  const b = $('#spBlock'); if (!b) return;
+  const s = SPOND.st;
+  const m = spMsg ? `<p class="${spMsg.err ? 'sperr' : 'spok'}">${esc(spMsg.t)}</p>` : '';
+  if (!SPOND.has()){
+    b.innerHTML = `<p style="margin:0">Termine, Zusagen und Gruppen aus Spond holen. Einmal anmelden, das Passwort wird nicht gespeichert.</p>
+      <form class="spf" id="spForm" autocomplete="on">
+        <label for="spRelay">Vermittler-Adresse</label><input id="spRelay" type="url" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://….workers.dev" value="${esc(s.relay)}">
+        <label for="spEmail">E-Mail bei Spond</label><input id="spEmail" type="email" autocomplete="username" required>
+        <label for="spPw">Passwort</label><input id="spPw" type="password" autocomplete="current-password" required>
+        <div class="btns"><button class="btn primary" type="submit" id="spGo">Mit Spond verbinden</button></div>
+      </form>${m}
+      <p class="note">Auf dieses Gerät kommen nur Name, Jahrgang, Untergruppen, Termine und Zusagen. Adresse, Telefon und E-Mail der Mitglieder filtert der Vermittler heraus. Spond selbst wird nicht verändert.</p>`;
+    return;
+  }
+  const subs = SPOND.subGroups(), nEv = s.events.length;
+  b.innerHTML = `<div class="stat"><span>Verbunden</span><em>Stand ${esc(SPOND.ago())} Uhr</em><span>Untergruppen</span><em>${subs.length}</em><span>Termine, nächste 4 Wochen</span><em>${nEv}</em></div>
+    ${s.map.done ? '' : '<p class="spok" style="color:var(--ink)"><b>Bitte einmal die Zuordnung prüfen:</b> welche Spond-Untergruppe zu welchem Zirkel-Kader und welcher Planungsgruppe gehört.</p>'}
+    <div class="btns"><button class="btn primary" type="button" id="spRef">Aktualisieren</button><button class="btn" type="button" id="spMap">Zuordnung</button><button class="btn" type="button" id="spOut">Trennen</button></div>${m}
+    <p class="note">Die App holt beim Öffnen automatisch den neuesten Stand, wenn Internet da ist. Nur lesen, in Spond wird nichts geändert.</p>`;
+}
+let mapTmp = null;
+function renderMap(){
+  const subs = SPOND.subGroups().slice().sort((a,b)=>a.name.localeCompare(b.name, 'de'));
+  const p = get('dtv-plan-v1'), pgs = p && Array.isArray(p.groups) ? p.groups.slice().sort((a,b)=>(a.age||0)-(b.age||0)) : [];
+  const opt = cur => '<option value="">–</option>' + SPOND.SQ.map(([k,t])=>`<option value="${k}"${cur===k?' selected':''}>${t}</option>`).join('');
+  $('#spMapBox').innerHTML = `<h3>Zuordnung Spond ↔ App</h3><p class="sub">Vorschläge nach Namen. Einmal prüfen und speichern.</p>
+    <h4>Zirkel-Kader</h4><p class="note" style="margin-top:0">Aus welcher Untergruppe kommen die Namen eines Kaders? „–“ = nicht übernehmen.</p>
+    ${subs.map(x=>`<label class="mrow"><span>${esc(x.name)} <em>(${x.n})</em></span><select data-sq="${x.id}">${opt(mapTmp.sq[x.id])}</select></label>`).join('')}
+    <h4>Planungsgruppen</h4><p class="note" style="margin-top:0">Welche Untergruppen trainieren in dieser Gruppe? Deren Spond-Termine und Zusagen erscheinen bei der Einheit. Mehrere sind möglich, z. B. U10 und U12 zusammen.</p>
+    ${pgs.length ? pgs.map(g=>`<div class="mpg"><b>${esc(g.name)}</b><div class="chips">${subs.map(x=>`<button type="button" class="chip${(mapTmp.pg[g.id]||[]).includes(x.id)?' on':''}" data-pg="${esc(g.id)}" data-sub="${x.id}">${esc(x.name)}</button>`).join('')}</div></div>`).join('') : '<p class="note">Noch keine Planungsgruppen.</p>'}
+    <div class="btns"><button class="btn primary" type="button" id="spMapSave">Speichern</button><button class="btn" type="button" id="spMapNo">Abbrechen</button></div>`;
+}
+function openMap(){
+  const p = get('dtv-plan-v1'), pgs = p && Array.isArray(p.groups) ? p.groups : [];
+  mapTmp = {sq:{}, pg:{}};
+  SPOND.subGroups().forEach(x=>{ mapTmp.sq[x.id] = SPOND.sqFor(x.id); });
+  pgs.forEach(g=>{ mapTmp.pg[g.id] = SPOND.pgSubs(g.id, g.name).slice(); });
+  renderMap(); $('#spMapView').hidden = false;
+}
+document.addEventListener('submit', async e=>{
+  if (e.target.id !== 'spForm') return;
+  e.preventDefault();
+  const btn = $('#spGo'); btn.disabled = true; btn.textContent = 'Verbinde …';
+  try {
+    if (!SPOND.relayUrl($('#spRelay').value)) throw new Error('Bitte die Vermittler-Adresse eintragen.');
+    await SPOND.login($('#spEmail').value, $('#spPw').value, $('#spRelay').value);
+    spMsg = {t: 'Verbunden. ' + SPOND.subGroups().length + ' Untergruppen und ' + SPOND.st.events.length + ' Termine geladen.'};
+    renderSpond(); renderToday();
+    if (!SPOND.st.map.done) openMap();
+  } catch(err){ spMsg = {t: err.message, err: true}; renderSpond(); }
+});
+document.addEventListener('click', async e=>{
+  const t = e.target;
+  if (t.closest('#spRef')){
+    t.disabled = true; t.textContent = 'Lade …';
+    try { await SPOND.refresh(); spMsg = {t: 'Aktualisiert.'}; } catch(err){ spMsg = {t: err.message, err: true}; }
+    renderSpond(); renderToday(); return;
+  }
+  if (t.closest('#spOut')){ SPOND.logout(); spMsg = {t: 'Getrennt. Die Zuordnung bleibt gespeichert.'}; renderSpond(); renderToday(); return; }
+  if (t.closest('#spMap')){ openMap(); return; }
+  if (t.closest('#spMapNo')){ $('#spMapView').hidden = true; return; }
+  if (t.closest('#spMapSave')){
+    document.querySelectorAll('#spMapBox select[data-sq]').forEach(s=>{ mapTmp.sq[s.dataset.sq] = s.value; });
+    SPOND.setMap(mapTmp.sq, mapTmp.pg); $('#spMapView').hidden = true; spMsg = {t: 'Zuordnung gespeichert.'}; renderSpond(); renderToday(); return;
+  }
+  const c = t.closest('#spMapBox .chip[data-pg]');
+  if (c){ const l = mapTmp.pg[c.dataset.pg] = mapTmp.pg[c.dataset.pg] || [], i = l.indexOf(c.dataset.sub);
+    if (i >= 0) l.splice(i, 1); else l.push(c.dataset.sub); c.classList.toggle('on', i < 0); }
+});
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function msg(t, err, undo){ const m = $('#msg'); m.className = 'msg' + (err ? ' err' : ''); m.innerHTML = esc(t) + (undo ? '<br><button class="btn" type="button" id="undoBtn">Rückgängig machen</button>' : ''); m.hidden = false; }
@@ -403,8 +664,9 @@ $('#impFile').addEventListener('change', e=>{
   };
   r.readAsText(f);
 });
-renderStat(); handleHash();
-document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) renderToday(); });
+renderStat(); handleHash(); renderSpond();
+SPOND.autoRefresh(10).then(ch=>{ if (ch){ renderSpond(); renderToday(); } });
+document.addEventListener('visibilitychange', ()=>{ if (!document.hidden){ renderToday(); SPOND.autoRefresh(10).then(ch=>{ if (ch){ renderSpond(); renderToday(); } }); } });
 window.addEventListener('pageshow', renderToday);
 window.addEventListener('hashchange', handleHash);
 })();

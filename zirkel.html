@@ -150,6 +150,11 @@ nav.jump a.ext{background:#fff;border:1px solid var(--line)}
 .att-head .sp{flex:1}
 .att-head b{font-size:15px}
 .att{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.spz{background:#E9F5F1;border:1px solid #BFE0D5;border-left:6px solid #0E7C66;border-radius:10px;padding:9px 12px;margin:10px 0 0;font-size:15px}
+.spz.x{background:#FDECEC;border-color:#F3C4C4;border-left-color:var(--red)}
+.spz b{display:block}
+.spz span{display:block;color:var(--muted);font-size:13.5px}
+.spz .btn{margin-top:8px}
 .att-sq{grid-column:1/-1;font:700 15px var(--cond);letter-spacing:.4px;margin:6px 0 0;color:var(--ink)}
 .att-sq span{font:400 12.5px var(--body);color:var(--muted);margin-left:6px}
 .gsq{font:600 12px var(--body);color:var(--muted);margin-left:4px}
@@ -346,6 +351,7 @@ body.running .appbar,body.running .subbar{display:none}
   <p class="lead">Kader wählen, auch mehrere zusammen, und antippen, wer heute da ist. Mit ⚠ markierst du eine Schonung, sie gilt nur für heute.</p>
   <div class="block">
     <div class="chips sq" id="sqTabs"></div>
+    <div id="spZ"></div>
     <div class="att-head"><b id="attCount"></b><span class="sp"></span>
       <button class="btn small" type="button" id="attAll">Alle da</button>
       <button class="btn small" type="button" id="attNone">Keiner</button></div>
@@ -355,7 +361,7 @@ body.running .appbar,body.running .subbar{display:none}
     <details class="sp" id="sqEdit">
       <summary id="sqEditSum">Kader bearbeiten</summary>
       <label class="f"><span>Welcher Kader</span><select id="sqEditSel"></select></label>
-      <div class="btns" style="margin-top:8px"><button class="btn small" type="button" id="fromAth" hidden>Aus der Athletenliste übernehmen</button></div>
+      <div class="btns" style="margin-top:8px"><button class="btn small" type="button" id="fromAth" hidden>Aus der Athletenliste übernehmen</button><button class="btn small" type="button" id="fromSpond" hidden>Aus Spond ergänzen</button></div>
       <label class="f" style="margin-top:8px"><span>Namen im Kader, einer pro Zeile</span><textarea id="names" placeholder="Anna&#10;Ben&#10;Clara&#10;David"></textarea></label>
       <p class="note">Wird sofort gespeichert. Gespeichert werden nur Namen, Schonungen nie dauerhaft.</p>
     </details>
@@ -488,7 +494,7 @@ body.running .appbar,body.running .subbar{display:none}
 </main>
 <div class="startbar" id="startBar"><div class="sb-in"><div class="sb-t" id="sbText"></div><button class="btn primary" type="button" id="sbBtn">Zirkel starten</button></div></div>
 
-<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-23d · Start- und Stop-Signale</span></footer>
+<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-24a · Spond-Zusagen, U8/U10/Lauf</span></footer>
 </div>
 
 <!-- ============ LAUF ============ -->
@@ -537,8 +543,162 @@ body.running .appbar,body.running .subbar{display:none}
 
 <script>
 (function(){
+/* ---------- Spond-Anbindung (gemeinsam für Start, Planung, Zirkel) ----------
+   Läuft über den eigenen Vermittler (Cloudflare Worker), weil Spond direkte Anfragen
+   aus dem Browser nicht zulässt. Auf dem Gerät liegen nur: Anmelde-Schlüssel, Name,
+   Jahrgang, Untergruppen, Termine und Zusagen. Speicher: localStorage „dtv-spond-v1“. */
+const SPOND = (function(){
+  const KEY = 'dtv-spond-v1';
+  const SQ = [['U8','U8'],['U10','U10'],['U12','U12'],['U14','U14'],['U16','U16'],['U18','U18'],['MW','M/W'],['Masters','Masters'],['Lauf','Lauf']];
+  const AGEORD = ['U8','U10','U12','U14','U16','U18','U20','Aktive','Masters'];
+  const DAYMS = 864e5;
+  function norm(o){
+    o = (o && typeof o === 'object') ? o : {};
+    o.relay = String(o.relay || '');
+    o.token = typeof o.token === 'string' ? o.token : null;
+    o.at = o.at || null;
+    o.groups = Array.isArray(o.groups) ? o.groups : [];
+    o.events = Array.isArray(o.events) ? o.events : [];
+    const m = (o.map && typeof o.map === 'object') ? o.map : {};
+    o.map = {sq: (m.sq && typeof m.sq === 'object') ? m.sq : {}, pg: (m.pg && typeof m.pg === 'object') ? m.pg : {}, done: !!m.done};
+    return o;
+  }
+  function load(){ try { return norm(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch(e){ return norm(null); } }
+  let st = load(), idx = null;
+  if (!st.relay){ try { st.relay = localStorage.getItem('dtv-spond-relay') || ''; } catch(e){} }
+  function save(){ idx = null; try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
+  function relayUrl(v){ v = String(v || '').trim().replace(/\/+$/, ''); if (v && !/^https?:\/\//.test(v)) v = 'https://' + v; return v; }
+  const isoLocal = d => { const x = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return x.toISOString().slice(0, 10); };
+  const dayStart = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  async function call(path, opt){
+    if (!st.relay) throw Object.assign(new Error('Keine Vermittler-Adresse'), {code: 'relay'});
+    const h = {'Content-Type': 'application/json'}; if (st.token) h.Authorization = 'Bearer ' + st.token;
+    let r;
+    try { r = await fetch(st.relay + '/core/v1/' + path, Object.assign({headers: h, cache: 'no-store'}, opt || {})); }
+    catch(e){ throw Object.assign(new Error(navigator.onLine === false ? 'Kein Internet' : 'Vermittler nicht erreichbar'), {code: 'net'}); }
+    let body = null; try { body = await r.json(); } catch(e){}
+    if (r.status === 401 && path !== 'auth2/login'){ st.token = null; save(); throw Object.assign(new Error('Anmeldung abgelaufen, bitte neu verbinden'), {code: 'auth'}); }
+    if (!r.ok && path !== 'auth2/login') throw Object.assign(new Error('Spond antwortet mit Fehler ' + r.status), {code: 'http'});
+    return {status: r.status, body};
+  }
+  async function login(email, pw, relay){
+    st.relay = relayUrl(relay || st.relay); st.token = null; save();
+    try { localStorage.setItem('dtv-spond-relay', st.relay); } catch(e){}
+    const r = await call('auth2/login', {method: 'POST', body: JSON.stringify({email: String(email).trim(), password: pw})});
+    const b = r.body || {};
+    if (b.accessToken && b.accessToken.token){ st.token = b.accessToken.token; save(); return refresh(); }
+    if (b.twoFactor) throw Object.assign(new Error('Spond verlangt eine Zwei-Faktor-Bestätigung. Das geht hier noch nicht.'), {code: '2fa'});
+    throw Object.assign(new Error(r.status === 401 || r.status === 400 ? 'E-Mail oder Passwort stimmt nicht.' : 'Anmeldung nicht geklappt (' + r.status + ').'), {code: 'login'});
+  }
+  let busy = null;
+  function refresh(){
+    if (busy) return busy;
+    busy = (async () => {
+      const g = await call('groups/');
+      const now = new Date(), from = new Date(dayStart(now).getTime() - DAYMS), to = new Date(dayStart(now).getTime() + 29 * DAYMS);
+      const q = new URLSearchParams({max: '300', scheduled: 'false', minEndTimestamp: from.toISOString(), maxStartTimestamp: to.toISOString()});
+      const e = await call('sponds/?' + q);
+      st.groups = Array.isArray(g.body) ? g.body : [];
+      st.events = (Array.isArray(e.body) ? e.body : []).filter(x => x && x.startTimestamp).sort((a, b) => String(a.startTimestamp).localeCompare(String(b.startTimestamp)));
+      st.at = new Date().toISOString(); save();
+      return st;
+    })();
+    return busy.finally(() => { busy = null; });
+  }
+  // Im Hintergrund auffrischen, wenn verbunden und älter als maxMin Minuten
+  function autoRefresh(maxMin){
+    if (!st.token || !st.relay || navigator.onLine === false) return Promise.resolve(false);
+    if (st.at && Date.now() - new Date(st.at).getTime() < (maxMin == null ? 10 : maxMin) * 60000) return Promise.resolve(false);
+    return refresh().then(() => true, () => false);
+  }
+  function logout(){ st.token = null; st.groups = []; st.events = []; st.at = null; save(); }
+
+  /* ---- Nachschlagen ---- */
+  function index(){
+    if (idx) return idx;
+    idx = {m: {}, sub: {}};
+    st.groups.forEach(g => {
+      (g.subGroups || []).forEach(s => { idx.sub[s.id] = {id: s.id, name: s.name, n: 0}; });
+      (g.members || []).forEach(m => { idx.m[m.id] = m; if (m.profileId) idx.m[m.profileId] = m; (m.subGroups || []).forEach(s => { if (idx.sub[s]) idx.sub[s].n++; }); });
+    });
+    return idx;
+  }
+  const member = id => index().m[id] || null;
+  const fullName = m => m ? ((m.firstName || '') + ' ' + (m.lastName || '')).trim() : 'Unbekannt';
+  function subGroups(){ return Object.values(index().sub); }
+  const subName = id => (index().sub[id] || {}).name || '';
+  function ageClass(jg){
+    if (!jg) return '';
+    const a = new Date().getFullYear() - jg;
+    if (a < 8) return 'U8'; if (a < 10) return 'U10'; if (a < 12) return 'U12'; if (a < 14) return 'U14'; if (a < 16) return 'U16'; if (a < 18) return 'U18'; if (a < 20) return 'U20';
+    return a < 30 ? 'Aktive' : 'Masters';
+  }
+  const ageRank = ac => AGEORD.indexOf(ac);
+  function sqForAge(jg){ const ac = ageClass(jg); return ac === 'U20' || ac === 'Aktive' ? 'MW' : (ac || ''); }
+
+  /* ---- Zuordnung ---- */
+  function suggestSq(name){
+    const n = String(name || '').toLowerCase();
+    if (/übungsleit|trainer|passiv|eltern|vorstand/.test(n)) return '';
+    if (/lauf|langstrecke|mittelstrecke|läufer/.test(n)) return 'Lauf';
+    if (/master|senior/.test(n)) return 'Masters';
+    const u = /\bu\s?(8|10|12|14|16|18|20)\b/.exec(n);
+    if (u) return u[1] === '20' ? 'MW' : 'U' + u[1];
+    if (/\bf\s*\/?\s*m\b|frauen|männer|aktive/.test(n)) return 'MW';
+    return '';
+  }
+  const sqFor = id => (id in st.map.sq) ? st.map.sq[id] : suggestSq(subName(id));
+  function suggestPg(pgName){
+    const n = String(pgName || '').toLowerCase(), subs = subGroups(), out = [];
+    const us = (n.match(/\bu\s?\d{1,2}\b/g) || []).map(x => x.replace(/\s/g, ''));
+    subs.forEach(s => {
+      const sn = s.name.toLowerCase(), su = (sn.match(/\bu\s?\d{1,2}\b/g) || []).map(x => x.replace(/\s/g, ''));
+      if (us.length && su.some(x => us.includes(x))) out.push(s.id);
+      else if (/master|senior/.test(n) && /master|senior/.test(sn)) out.push(s.id);
+      else if (/lauf|mittel|lang/.test(n) && /lauf|mittel|lang/.test(sn)) out.push(s.id);
+      else if (/aktive|männer|frauen/.test(n) && (/\bf\s*\/?\s*m\b|aktive|frauen|männer|\bu\s?20\b/.test(sn))) out.push(s.id);
+    });
+    return out;
+  }
+  const pgSubs = (gid, gname) => Array.isArray(st.map.pg[gid]) ? st.map.pg[gid] : suggestPg(gname);
+  function setMap(sq, pg){ st.map = {sq: sq || {}, pg: pg || {}, done: true}; save(); }
+
+  /* ---- Termine ---- */
+  const evSubs = ev => ((ev.recipients && ev.recipients.group && ev.recipients.group.subGroups) || []).map(s => s.id);
+  const evDate = ev => isoLocal(new Date(ev.startTimestamp));
+  const evTime = ev => { const d = new Date(ev.startTimestamp); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  function eventsOn(dateIso){ return st.events.filter(e => evDate(e) === dateIso); }
+  function eventsFor(subIds, dateIso){
+    if (!subIds || !subIds.length) return [];
+    return eventsOn(dateIso).filter(e => evSubs(e).some(s => subIds.includes(s)));
+  }
+  function counts(ev){
+    const r = ev.responses || {}, L = a => (a || []).length;
+    return {acc: L(r.acceptedIds), dec: L(r.declinedIds), open: L(r.unansweredIds) + L(r.unconfirmedIds), wait: L(r.waitinglistIds)};
+  }
+  function countText(ev){
+    if (ev.cancelled) return 'abgesagt';
+    const c = counts(ev);
+    return `${c.acc} zugesagt · ${c.dec} abgesagt · ${c.open} offen` + (c.wait ? ` · ${c.wait} Warteliste` : '');
+  }
+  function people(ev, homeSubs){
+    const r = ev.responses || {}, home = homeSubs && homeSubs.length ? homeSubs : evSubs(ev), dm = r.declineMessages || {};
+    const one = id => { const m = member(id); const jg = m && m.birthYear;
+      return {id, name: fullName(m), first: m ? m.firstName : '', last: m ? m.lastName : '', jg, ac: ageClass(jg),
+        subs: m ? (m.subGroups || []) : [], guest: !!(m && home.length && !(m.subGroups || []).some(s => home.includes(s))), msg: dm[id] || ''}; };
+    const by = a => (a || []).map(one).sort((x, y) => x.name.localeCompare(y.name, 'de'));
+    return {acc: by(r.acceptedIds), dec: by(r.declinedIds), open: by([].concat(r.unansweredIds || [], r.unconfirmedIds || [])), wait: by(r.waitinglistIds)};
+  }
+  const has = () => !!(st.token && st.groups.length);
+  const ago = () => { if (!st.at) return ''; const d = new Date(st.at); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  return {SQ, get st(){ return st; }, reload(){ st = load(); idx = null; }, save, login, refresh, autoRefresh, logout, relayUrl,
+    member, fullName, subGroups, subName, ageClass, ageRank, sqForAge, suggestSq, sqFor, suggestPg, pgSubs, setMap,
+    evSubs, evDate, evTime, eventsOn, eventsFor, counts, countText, people, has, ago, isoLocal};
+})();
+
 const KEY = 'dtv-zirkel-v1';
-const SQUADS = [['U12','U12'],['U14','U14'],['U16','U16'],['U18','U18'],['MW','M/W'],['Masters','Masters']];
+const SQUADS = [['U8','U8'],['U10','U10'],['U12','U12'],['U14','U14'],['U16','U16'],['U18','U18'],['MW','M/W'],['Masters','Masters'],['Lauf','Lauf']];
 const $ = s => document.querySelector(s);
 const on = (sel, ev, fn) => { const el = $(sel); if (el) el.addEventListener(ev, fn); };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1082,7 +1242,71 @@ function groupsStale(){
   return db.groups.length > 0 && a !== b;
 }
 function sqName(k){ return (SQUADS.find(([q])=>q===k) || ['',''])[1]; }
+/* ---------- Spond: Zusagen von heute übernehmen ---------- */
+function normN(t){ return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ß ]/g,' ').replace(/\s+/g,' ').trim(); }
+function findInSquads(m, only){
+  const full = normN(m.firstName + ' ' + m.lastName), first = normN(m.firstName), li = (normN(m.lastName)[0] || '');
+  const same = SPOND.st.groups.flatMap(g=>g.members || []).filter(x=>normN(x.firstName) === first);
+  const sameI = same.filter(x=>(normN(x.lastName)[0] || '') === li);
+  const hits = [];
+  for (const [k] of SQUADS) if (!only || k === only) for (const n of db.squads[k] || []){
+    const nn = normN(n);
+    if (nn === full) return {k, name: n};
+    if ((nn === first && same.length === 1) || (li && nn === first + ' ' + li && sameI.length === 1)) hits.push({k, name: n});
+  }
+  return hits.length ? hits[0] : null;
+}
+function renderSpZ(){
+  const box = $('#spZ'); if (!box) return;
+  $('#fromSpond').hidden = !SPOND.has();
+  if (!SPOND.has()){ box.innerHTML = ''; return; }
+  const evs = SPOND.eventsOn(todayStr());
+  box.innerHTML = evs.map(ev=>{
+    const ks = [...new Set(SPOND.evSubs(ev).map(SPOND.sqFor).filter(Boolean))].map(sqName);
+    if (ev.cancelled) return `<div class="spz x"><b>Spond heute: ${esc(ev.heading || 'Termin')} · ${SPOND.evTime(ev)}</b><span>abgesagt</span></div>`;
+    return `<div class="spz"><b>Spond heute: ${esc(ev.heading || 'Termin')} · ${SPOND.evTime(ev)}</b><span>${esc(SPOND.countText(ev))}${ks.length ? ' · Kader ' + ks.join(' + ') : ''}</span>
+      <button class="btn small" type="button" data-spz="${esc(ev.id)}">Zusagen als anwesend übernehmen</button></div>`;
+  }).join('');
+}
+function applySpond(id){
+  const ev = SPOND.st.events.find(e=>e.id===id); if (!ev) return;
+  const subs = SPOND.evSubs(ev), ks = [...new Set(subs.map(SPOND.sqFor).filter(Boolean))];
+  if (ks.length){ db.sel = SQUADS.map(([q])=>q).filter(q=>ks.includes(q)); if (!db.sel.includes(db.squad)) db.squad = db.sel[0]; }
+  dayCheck();
+  const p = SPOND.people(ev, subs), present = new Set(), guests = [], added = [];
+  p.acc.forEach(x=>{
+    const m = SPOND.member(x.id); if (!m) return;
+    let f = findInSquads(m);
+    if (!f){
+      const mk = (m.subGroups || []).map(SPOND.sqFor).filter(Boolean);
+      const k = mk.find(q=>db.sel.includes(q)) || mk[0] || SPOND.sqForAge(m.birthYear) || db.squad;
+      const name = SPOND.fullName(m).slice(0,24);
+      if (db.squads[k] && db.squads[k].length < 60 && !db.squads[k].includes(name)){ db.squads[k].push(name); added.push(name + ' → ' + sqName(k)); }
+      f = {k: db.squads[k] && db.squads[k].includes(name) ? k : null, name};
+    }
+    if (f.k && db.sel.includes(f.k)) present.add(f.name);
+    else { guests.push(f.name + (x.ac ? ' (' + x.ac + ')' : '')); if (!db.day.guests.includes(f.name)) db.day.guests.push(f.name); }
+  });
+  db.day.present = [...present];
+  save(); renderAttendance();
+  const msg = `${p.acc.length} ${p.acc.length===1?'Zusage':'Zusagen'} übernommen: ${present.size} aus ${db.sel.map(sqName).join(' + ')}` +
+    (guests.length ? `, ${guests.length} als Gast: ${guests.join(', ')}` : '') + (added.length ? `. Neu im Kader: ${added.join(', ')}` : '') +
+    `. ${p.dec.length} abgesagt, ${p.open.length} offen. Wer noch kommt, einfach antippen.`;
+  flash($('#namesMsg'), msg);
+}
+function fromSpond(){
+  const k = db.squad, subs = SPOND.subGroups().filter(x=>SPOND.sqFor(x.id) === k).map(x=>x.id);
+  if (!subs.length){ flash($('#namesMsg'), `Keine Spond-Untergruppe ist dem Kader ${sqName(k)} zugeordnet. Zuordnung auf der Startseite unter Spond.`); return; }
+  const ms = SPOND.st.groups.flatMap(g=>g.members || []).filter(m=>(m.subGroups || []).some(s=>subs.includes(s)));
+  let n = 0; const found = new Set();
+  ms.forEach(m=>{ const f = findInSquads(m, k); if (f){ found.add(f.name); return; }
+    const name = SPOND.fullName(m).slice(0,24); if (db.squads[k].length < 60 && !db.squads[k].includes(name)){ db.squads[k].push(name); found.add(name); n++; } });
+  const notIn = (db.squads[k] || []).filter(x=>!found.has(x));
+  save(); renderAttendance();
+  flash($('#namesMsg'), `${n} ${n===1?'Name':'Namen'} aus Spond im Kader ${sqName(k)} ergänzt.` + (notIn.length ? ` Im Kader, aber nicht in Spond: ${notIn.join(', ')}.` : ''));
+}
 function renderAttendance(){
+  renderSpZ();
   const roster = rosterSel();
   $('#sqTabs').innerHTML = SQUADS.map(([k,t])=>`<button type="button" class="chip${db.sel.includes(k)?' on':''}" data-sq="${k}" aria-pressed="${db.sel.includes(k)}">${t} <span style="opacity:.6">${db.squads[k].length}</span></button>`).join('');
   const tile = (n, guest)=>{
@@ -1125,7 +1349,7 @@ function athleteList(){
 function squadForJg(jg){
   if (!jg) return null;
   const age = new Date().getFullYear() - jg;
-  if (age < 12) return 'U12'; if (age < 14) return 'U14'; if (age < 16) return 'U16'; if (age < 18) return 'U18'; if (age < 30) return 'MW'; return 'Masters';
+  if (age < 8) return 'U8'; if (age < 10) return 'U10'; if (age < 12) return 'U12'; if (age < 14) return 'U14'; if (age < 16) return 'U16'; if (age < 18) return 'U18'; if (age < 30) return 'MW'; return 'Masters';
 }
 function importAthletes(){
   const list = athleteList(); let added = 0, noJg = 0;
@@ -1868,6 +2092,9 @@ on('#sqTabs','click', e=>{
 on('#sqEditSel','change', e=>{ db.squad = e.target.value; if (!db.sel.includes(db.squad)){ db.sel.push(db.squad); db.sel = SQUADS.map(([q])=>q).filter(q=>db.sel.includes(q)); } save(); renderAttendance(); });
 on('#optMix','change', e=>{ db.mix = e.target.checked; save(); });
 on('#fromAth','click', importAthletes);
+on('#fromSpond','click', fromSpond);
+on('#spZ','click', e=>{ const b = e.target.closest('[data-spz]'); if (b) applySpond(b.dataset.spz); });
+SPOND.autoRefresh(10).then(ch=>{ if (ch) renderAttendance(); });
 on('#attList','click', e=>{
   const g = e.target.closest('[data-gdel]');
   if (g){ const n = g.dataset.gdel; db.day.guests = db.day.guests.filter(x=>x!==n); delete db.day.inj[n]; save(); renderAttendance(); return; }

@@ -1,0 +1,113 @@
+/* DTV 1847 Trainer – Spond-Vermittler (Cloudflare Worker)
+ * Reicht Anfragen der Trainer-App an Spond weiter, weil Spond direkte Anfragen
+ * aus dem Browser nicht zulässt. Speichert nichts, protokolliert keine Inhalte.
+ * Erlaubt sind nur: Anmeldung, Gruppen lesen, Termine lesen.
+ * Datensparsam: Adresse, E-Mail, Telefon, Eltern, Bilder und genaues Geburtsdatum
+ * werden hier entfernt und kommen nie auf die Handys. Vom Geburtsdatum bleibt nur der Jahrgang.
+ * Version 2026-10-24b
+ */
+const SPOND = 'https://api.spond.com/core/v1/';
+const ORIGINS = ['https://dtv1847.github.io'];
+const ALLOWED = [
+  {method: 'POST', path: /^auth2\/login$/},
+  {method: 'GET',  path: /^groups\/?$/},
+  {method: 'GET',  path: /^sponds\/?$/},
+  {method: 'GET',  path: /^sponds\/[A-Za-z0-9]+$/},
+];
+
+function cors(origin){
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
+  };
+}
+function reply(status, obj, origin){
+  return new Response(JSON.stringify(obj), {status, headers: Object.assign({'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store'}, origin ? cors(origin) : {})});
+}
+
+const ids = a => (Array.isArray(a) ? a : []).map(x => (x && typeof x === 'object') ? x.id : x).filter(x => typeof x === 'string');
+function slimMember(m){
+  const y = /^(\d{4})/.exec(String(m.dateOfBirth || ''));
+  return {id: m.id, profileId: m.profile && m.profile.id || null, firstName: m.firstName || '', lastName: m.lastName || '',
+    birthYear: y ? +y[1] : null, subGroups: ids(m.subGroups)};
+}
+function slimGroup(g){
+  return {id: g.id, name: g.name, subGroups: (g.subGroups || []).map(s => ({id: s.id, name: s.name})),
+    members: (g.members || []).map(slimMember)};
+}
+function slimEvent(e){
+  const r = e.responses || {}, rc = e.recipients || {}, g = rc.group || {}, loc = e.location || {};
+  const dm = {}; if (r.declineMessages && typeof r.declineMessages === 'object') for (const k in r.declineMessages) dm[k] = String(r.declineMessages[k]).slice(0, 120);
+  return {id: e.id, heading: e.heading || '', type: e.type || '', seriesId: e.seriesId || null,
+    startTimestamp: e.startTimestamp, endTimestamp: e.endTimestamp || null, meetupTimestamp: e.meetupTimestamp || null,
+    cancelled: !!e.cancelled, matchEvent: !!e.matchEvent, location: {feature: loc.feature || '', address: loc.address || ''},
+    recipients: {group: {id: g.id || null, name: g.name || '', subGroups: (g.subGroups || []).map(s => ({id: s.id || s, name: s.name || ''}))}, profiles: ids(rc.profiles)},
+    responses: {acceptedIds: ids(r.acceptedIds), declinedIds: ids(r.declinedIds), unansweredIds: ids(r.unansweredIds),
+      waitinglistIds: ids(r.waitinglistIds), unconfirmedIds: ids(r.unconfirmedIds), declineMessages: dm}};
+}
+function slim(path, data){
+  if (/^auth2\/login$/.test(path)){
+    const out = {}; ['error', 'errorKey', 'errorCode', 'message'].forEach(k => { if (data[k] != null) out[k] = data[k]; });
+    if (data.accessToken && data.accessToken.token) out.accessToken = {token: data.accessToken.token, expiration: data.accessToken.expiration || null};
+    if (!out.accessToken && Object.keys(data).some(k => /phone|2fa|twoFactor|otp|challenge|verification/i.test(k))) out.twoFactor = true;
+    return out;
+  }
+  if (/^groups\/?$/.test(path) && Array.isArray(data)) return data.map(slimGroup);
+  if (/^sponds\/?$/.test(path) && Array.isArray(data)) return data.map(slimEvent);
+  if (/^sponds\/[A-Za-z0-9]+$/.test(path) && data && data.id) return slimEvent(data);
+  return data;
+}
+
+export default {
+  async fetch(request, env){
+    const url = new URL(request.url);
+    const extra = String((env && env.ORIGINS) || '').split(',').map(s => s.trim()).filter(Boolean);
+    const origin = request.headers.get('Origin') || '';
+    const ok = ORIGINS.concat(extra).includes(origin) ? origin : '';
+
+    // Startseite: zeigt nur, dass der Vermittler läuft
+    if (url.pathname === '/' || url.pathname === ''){
+      return new Response('DTV 1847 Spond-Vermittler läuft. Version 2026-10-24b', {headers: {'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*'}});
+    }
+    if (request.method === 'OPTIONS'){
+      return new Response(null, {status: ok ? 204 : 403, headers: ok ? cors(ok) : {}});
+    }
+    if (!ok) return reply(403, {error: 'Herkunft nicht erlaubt'}, '');
+
+    const m = url.pathname.match(/^\/core\/v1\/(.*)$/);
+    const path = m ? m[1] : '';
+    if (!ALLOWED.some(a => a.method === request.method && a.path.test(path))){
+      return reply(403, {error: 'Nicht erlaubt', path, method: request.method}, ok);
+    }
+
+    const headers = {'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0 (compatible; DTV1847-Trainer)'};
+    const ct = request.headers.get('Content-Type'), auth = request.headers.get('Authorization');
+    if (ct) headers['Content-Type'] = ct;
+    if (auth) headers['Authorization'] = auth;
+
+    let upstream;
+    try {
+      upstream = await fetch(SPOND + path + url.search, {
+        method: request.method,
+        headers,
+        body: request.method === 'POST' ? await request.text() : undefined,
+        redirect: 'manual',
+      });
+    } catch (e){
+      return reply(502, {error: 'Spond nicht erreichbar', detail: String(e && e.message || e)}, ok);
+    }
+    const out = new Headers(cors(ok));
+    out.set('Content-Type', 'application/json; charset=utf-8');
+    out.set('Cache-Control', 'no-store');
+    out.set('X-Spond-Status', String(upstream.status));
+    out.set('X-Vermittler', '2026-10-24b');
+    out.set('Access-Control-Expose-Headers', 'X-Spond-Status, X-Vermittler');
+    const text = await upstream.text();
+    let data;
+    try { data = JSON.parse(text); } catch (e){ return new Response(JSON.stringify({error: 'Antwort von Spond unlesbar', status: upstream.status}), {status: upstream.status >= 400 ? upstream.status : 502, headers: out}); }
+    return new Response(JSON.stringify(slim(path, data)), {status: upstream.status, headers: out});
+  },
+};
