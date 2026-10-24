@@ -155,6 +155,7 @@ nav.jump a.ext{background:#fff;border:1px solid var(--line)}
 .spz b{display:block}
 .spz span{display:block;color:var(--muted);font-size:13.5px}
 .spz .btn{margin-top:8px}
+.spzt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 0;font-size:13.5px;color:var(--muted)}
 .att-sq{grid-column:1/-1;font:700 15px var(--cond);letter-spacing:.4px;margin:6px 0 0;color:var(--ink)}
 .att-sq span{font:400 12.5px var(--body);color:var(--muted);margin-left:6px}
 .gsq{font:600 12px var(--body);color:var(--muted);margin-left:4px}
@@ -494,7 +495,7 @@ body.running .appbar,body.running .subbar{display:none}
 </main>
 <div class="startbar" id="startBar"><div class="sb-in"><div class="sb-t" id="sbText"></div><button class="btn primary" type="button" id="sbBtn">Zirkel starten</button></div></div>
 
-<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-24a · Spond-Zusagen, U8/U10/Lauf</span></footer>
+<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-24b · Spond-Zusagen, U8/U10/Lauf</span></footer>
 </div>
 
 <!-- ============ LAUF ============ -->
@@ -560,7 +561,7 @@ const SPOND = (function(){
     o.groups = Array.isArray(o.groups) ? o.groups : [];
     o.events = Array.isArray(o.events) ? o.events : [];
     const m = (o.map && typeof o.map === 'object') ? o.map : {};
-    o.map = {sq: (m.sq && typeof m.sq === 'object') ? m.sq : {}, pg: (m.pg && typeof m.pg === 'object') ? m.pg : {}, done: !!m.done};
+    o.map = {sq: (m.sq && typeof m.sq === 'object') ? m.sq : {}, pg: (m.pg && typeof m.pg === 'object') ? m.pg : {}, done: !!m.done, ath: Array.isArray(m.ath) ? m.ath : null};
     return o;
   }
   function load(){ try { return norm(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch(e){ return norm(null); } }
@@ -662,7 +663,7 @@ const SPOND = (function(){
     return out;
   }
   const pgSubs = (gid, gname) => Array.isArray(st.map.pg[gid]) ? st.map.pg[gid] : suggestPg(gname);
-  function setMap(sq, pg){ st.map = {sq: sq || {}, pg: pg || {}, done: true}; save(); }
+  function setMap(sq, pg){ st.map = {sq: sq || {}, pg: pg || {}, done: true, ath: st.map.ath || null}; save(); }
 
   /* ---- Termine ---- */
   const evSubs = ev => ((ev.recipients && ev.recipients.group && ev.recipients.group.subGroups) || []).map(s => s.id);
@@ -1261,12 +1262,12 @@ function renderSpZ(){
   $('#fromSpond').hidden = !SPOND.has();
   if (!SPOND.has()){ box.innerHTML = ''; return; }
   const evs = SPOND.eventsOn(todayStr());
-  box.innerHTML = evs.map(ev=>{
+  box.innerHTML = (evs.length ? '' : '<div class="spz"><b>Spond: heute kein Termin</b></div>') + evs.map(ev=>{
     const ks = [...new Set(SPOND.evSubs(ev).map(SPOND.sqFor).filter(Boolean))].map(sqName);
     if (ev.cancelled) return `<div class="spz x"><b>Spond heute: ${esc(ev.heading || 'Termin')} · ${SPOND.evTime(ev)}</b><span>abgesagt</span></div>`;
     return `<div class="spz"><b>Spond heute: ${esc(ev.heading || 'Termin')} · ${SPOND.evTime(ev)}</b><span>${esc(SPOND.countText(ev))}${ks.length ? ' · Kader ' + ks.join(' + ') : ''}</span>
       <button class="btn small" type="button" data-spz="${esc(ev.id)}">Zusagen als anwesend übernehmen</button></div>`;
-  }).join('');
+  }).join('') + `<div class="spzt"><span>Spond-Stand ${esc(SPOND.ago())} Uhr</span><button class="btn small" type="button" id="spzRef">Spond aktualisieren</button></div>`;
 }
 function applySpond(id){
   const ev = SPOND.st.events.find(e=>e.id===id); if (!ev) return;
@@ -2093,8 +2094,16 @@ on('#sqEditSel','change', e=>{ db.squad = e.target.value; if (!db.sel.includes(d
 on('#optMix','change', e=>{ db.mix = e.target.checked; save(); });
 on('#fromAth','click', importAthletes);
 on('#fromSpond','click', fromSpond);
-on('#spZ','click', e=>{ const b = e.target.closest('[data-spz]'); if (b) applySpond(b.dataset.spz); });
+on('#spZ','click', async e=>{
+  const r = e.target.closest('#spzRef');
+  if (r){ r.disabled = true; r.textContent = 'Lade …';
+    try { await SPOND.refresh(); renderAttendance(); flash($('#namesMsg'), 'Spond aktualisiert.'); }
+    catch(err){ r.disabled = false; r.textContent = 'Spond aktualisieren'; flash($('#namesMsg'), err.message); }
+    return; }
+  const b = e.target.closest('[data-spz]'); if (b) applySpond(b.dataset.spz);
+});
 SPOND.autoRefresh(10).then(ch=>{ if (ch) renderAttendance(); });
+document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) SPOND.autoRefresh(10).then(ch=>{ if (ch) renderAttendance(); }); });
 on('#attList','click', e=>{
   const g = e.target.closest('[data-gdel]');
   if (g){ const n = g.dataset.gdel; db.day.guests = db.day.guests.filter(x=>x!==n); delete db.day.inj[n]; save(); renderAttendance(); return; }

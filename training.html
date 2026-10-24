@@ -124,6 +124,13 @@ details.block > .inner{padding:0 14px 14px}
 .prow:first-child{border-top:0;padding-top:0}
 .prow .chk{min-height:40px;font-size:14px}
 .ok{color:#1E7A3F;font-size:13.5px;margin:8px 0 0}
+.spa{border-left:6px solid #0E7C66}
+.spa h3{margin:0 0 4px}
+.spchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.spchip{font:600 13.5px var(--body);border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 11px;cursor:pointer;min-height:36px}
+.spchip.on{background:#0E7C66;border-color:#0E7C66;color:#fff}
+.spchip em{font-style:normal;opacity:.7;font-weight:400}
+.gone{color:var(--red-deep)}
 .met{color:#1E7A3F;font-weight:600;font-size:11.5px;display:block}
 .gapv{color:var(--muted);font-size:11.5px;display:block}
 
@@ -514,6 +521,7 @@ body.running .appbar,body.running .subbar{display:none}
       <p class="warn" id="naErr" hidden></p>
     </div>
   </details>
+  <div class="block spa" id="spAth" hidden></div>
   <div id="athList"></div>
 </section>
 
@@ -599,10 +607,164 @@ body.running .appbar,body.running .subbar{display:none}
 </section>
 </main>
 
-<footer class="only-js">Die Vorgaben sind Richtwerte und ersetzen nicht das Auge des Trainers. <span class="ver">Trainer · Version 2026-10-20a · Tests</span></footer>
+<footer class="only-js">Die Vorgaben sind Richtwerte und ersetzen nicht das Auge des Trainers. <span class="ver">Trainer · Version 2026-10-24b · Spond-Abgleich</span></footer>
 
 <script>
 (function(){
+/* ---------- Spond-Anbindung (gemeinsam für Start, Planung, Zirkel) ----------
+   Läuft über den eigenen Vermittler (Cloudflare Worker), weil Spond direkte Anfragen
+   aus dem Browser nicht zulässt. Auf dem Gerät liegen nur: Anmelde-Schlüssel, Name,
+   Jahrgang, Untergruppen, Termine und Zusagen. Speicher: localStorage „dtv-spond-v1“. */
+const SPOND = (function(){
+  const KEY = 'dtv-spond-v1';
+  const SQ = [['U8','U8'],['U10','U10'],['U12','U12'],['U14','U14'],['U16','U16'],['U18','U18'],['MW','M/W'],['Masters','Masters'],['Lauf','Lauf']];
+  const AGEORD = ['U8','U10','U12','U14','U16','U18','U20','Aktive','Masters'];
+  const DAYMS = 864e5;
+  function norm(o){
+    o = (o && typeof o === 'object') ? o : {};
+    o.relay = String(o.relay || '');
+    o.token = typeof o.token === 'string' ? o.token : null;
+    o.at = o.at || null;
+    o.groups = Array.isArray(o.groups) ? o.groups : [];
+    o.events = Array.isArray(o.events) ? o.events : [];
+    const m = (o.map && typeof o.map === 'object') ? o.map : {};
+    o.map = {sq: (m.sq && typeof m.sq === 'object') ? m.sq : {}, pg: (m.pg && typeof m.pg === 'object') ? m.pg : {}, done: !!m.done, ath: Array.isArray(m.ath) ? m.ath : null};
+    return o;
+  }
+  function load(){ try { return norm(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch(e){ return norm(null); } }
+  let st = load(), idx = null;
+  if (!st.relay){ try { st.relay = localStorage.getItem('dtv-spond-relay') || ''; } catch(e){} }
+  function save(){ idx = null; try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
+  function relayUrl(v){ v = String(v || '').trim().replace(/\/+$/, ''); if (v && !/^https?:\/\//.test(v)) v = 'https://' + v; return v; }
+  const isoLocal = d => { const x = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return x.toISOString().slice(0, 10); };
+  const dayStart = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  async function call(path, opt){
+    if (!st.relay) throw Object.assign(new Error('Keine Vermittler-Adresse'), {code: 'relay'});
+    const h = {'Content-Type': 'application/json'}; if (st.token) h.Authorization = 'Bearer ' + st.token;
+    let r;
+    try { r = await fetch(st.relay + '/core/v1/' + path, Object.assign({headers: h, cache: 'no-store'}, opt || {})); }
+    catch(e){ throw Object.assign(new Error(navigator.onLine === false ? 'Kein Internet' : 'Vermittler nicht erreichbar'), {code: 'net'}); }
+    let body = null; try { body = await r.json(); } catch(e){}
+    if (r.status === 401 && path !== 'auth2/login'){ st.token = null; save(); throw Object.assign(new Error('Anmeldung abgelaufen, bitte neu verbinden'), {code: 'auth'}); }
+    if (!r.ok && path !== 'auth2/login') throw Object.assign(new Error('Spond antwortet mit Fehler ' + r.status), {code: 'http'});
+    return {status: r.status, body};
+  }
+  async function login(email, pw, relay){
+    st.relay = relayUrl(relay || st.relay); st.token = null; save();
+    try { localStorage.setItem('dtv-spond-relay', st.relay); } catch(e){}
+    const r = await call('auth2/login', {method: 'POST', body: JSON.stringify({email: String(email).trim(), password: pw})});
+    const b = r.body || {};
+    if (b.accessToken && b.accessToken.token){ st.token = b.accessToken.token; save(); return refresh(); }
+    if (b.twoFactor) throw Object.assign(new Error('Spond verlangt eine Zwei-Faktor-Bestätigung. Das geht hier noch nicht.'), {code: '2fa'});
+    throw Object.assign(new Error(r.status === 401 || r.status === 400 ? 'E-Mail oder Passwort stimmt nicht.' : 'Anmeldung nicht geklappt (' + r.status + ').'), {code: 'login'});
+  }
+  let busy = null;
+  function refresh(){
+    if (busy) return busy;
+    busy = (async () => {
+      const g = await call('groups/');
+      const now = new Date(), from = new Date(dayStart(now).getTime() - DAYMS), to = new Date(dayStart(now).getTime() + 29 * DAYMS);
+      const q = new URLSearchParams({max: '300', scheduled: 'false', minEndTimestamp: from.toISOString(), maxStartTimestamp: to.toISOString()});
+      const e = await call('sponds/?' + q);
+      st.groups = Array.isArray(g.body) ? g.body : [];
+      st.events = (Array.isArray(e.body) ? e.body : []).filter(x => x && x.startTimestamp).sort((a, b) => String(a.startTimestamp).localeCompare(String(b.startTimestamp)));
+      st.at = new Date().toISOString(); save();
+      return st;
+    })();
+    return busy.finally(() => { busy = null; });
+  }
+  // Im Hintergrund auffrischen, wenn verbunden und älter als maxMin Minuten
+  function autoRefresh(maxMin){
+    if (!st.token || !st.relay || navigator.onLine === false) return Promise.resolve(false);
+    if (st.at && Date.now() - new Date(st.at).getTime() < (maxMin == null ? 10 : maxMin) * 60000) return Promise.resolve(false);
+    return refresh().then(() => true, () => false);
+  }
+  function logout(){ st.token = null; st.groups = []; st.events = []; st.at = null; save(); }
+
+  /* ---- Nachschlagen ---- */
+  function index(){
+    if (idx) return idx;
+    idx = {m: {}, sub: {}};
+    st.groups.forEach(g => {
+      (g.subGroups || []).forEach(s => { idx.sub[s.id] = {id: s.id, name: s.name, n: 0}; });
+      (g.members || []).forEach(m => { idx.m[m.id] = m; if (m.profileId) idx.m[m.profileId] = m; (m.subGroups || []).forEach(s => { if (idx.sub[s]) idx.sub[s].n++; }); });
+    });
+    return idx;
+  }
+  const member = id => index().m[id] || null;
+  const fullName = m => m ? ((m.firstName || '') + ' ' + (m.lastName || '')).trim() : 'Unbekannt';
+  function subGroups(){ return Object.values(index().sub); }
+  const subName = id => (index().sub[id] || {}).name || '';
+  function ageClass(jg){
+    if (!jg) return '';
+    const a = new Date().getFullYear() - jg;
+    if (a < 8) return 'U8'; if (a < 10) return 'U10'; if (a < 12) return 'U12'; if (a < 14) return 'U14'; if (a < 16) return 'U16'; if (a < 18) return 'U18'; if (a < 20) return 'U20';
+    return a < 30 ? 'Aktive' : 'Masters';
+  }
+  const ageRank = ac => AGEORD.indexOf(ac);
+  function sqForAge(jg){ const ac = ageClass(jg); return ac === 'U20' || ac === 'Aktive' ? 'MW' : (ac || ''); }
+
+  /* ---- Zuordnung ---- */
+  function suggestSq(name){
+    const n = String(name || '').toLowerCase();
+    if (/übungsleit|trainer|passiv|eltern|vorstand/.test(n)) return '';
+    if (/lauf|langstrecke|mittelstrecke|läufer/.test(n)) return 'Lauf';
+    if (/master|senior/.test(n)) return 'Masters';
+    const u = /\bu\s?(8|10|12|14|16|18|20)\b/.exec(n);
+    if (u) return u[1] === '20' ? 'MW' : 'U' + u[1];
+    if (/\bf\s*\/?\s*m\b|frauen|männer|aktive/.test(n)) return 'MW';
+    return '';
+  }
+  const sqFor = id => (id in st.map.sq) ? st.map.sq[id] : suggestSq(subName(id));
+  function suggestPg(pgName){
+    const n = String(pgName || '').toLowerCase(), subs = subGroups(), out = [];
+    const us = (n.match(/\bu\s?\d{1,2}\b/g) || []).map(x => x.replace(/\s/g, ''));
+    subs.forEach(s => {
+      const sn = s.name.toLowerCase(), su = (sn.match(/\bu\s?\d{1,2}\b/g) || []).map(x => x.replace(/\s/g, ''));
+      if (us.length && su.some(x => us.includes(x))) out.push(s.id);
+      else if (/master|senior/.test(n) && /master|senior/.test(sn)) out.push(s.id);
+      else if (/lauf|mittel|lang/.test(n) && /lauf|mittel|lang/.test(sn)) out.push(s.id);
+      else if (/aktive|männer|frauen/.test(n) && (/\bf\s*\/?\s*m\b|aktive|frauen|männer|\bu\s?20\b/.test(sn))) out.push(s.id);
+    });
+    return out;
+  }
+  const pgSubs = (gid, gname) => Array.isArray(st.map.pg[gid]) ? st.map.pg[gid] : suggestPg(gname);
+  function setMap(sq, pg){ st.map = {sq: sq || {}, pg: pg || {}, done: true, ath: st.map.ath || null}; save(); }
+
+  /* ---- Termine ---- */
+  const evSubs = ev => ((ev.recipients && ev.recipients.group && ev.recipients.group.subGroups) || []).map(s => s.id);
+  const evDate = ev => isoLocal(new Date(ev.startTimestamp));
+  const evTime = ev => { const d = new Date(ev.startTimestamp); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  function eventsOn(dateIso){ return st.events.filter(e => evDate(e) === dateIso); }
+  function eventsFor(subIds, dateIso){
+    if (!subIds || !subIds.length) return [];
+    return eventsOn(dateIso).filter(e => evSubs(e).some(s => subIds.includes(s)));
+  }
+  function counts(ev){
+    const r = ev.responses || {}, L = a => (a || []).length;
+    return {acc: L(r.acceptedIds), dec: L(r.declinedIds), open: L(r.unansweredIds) + L(r.unconfirmedIds), wait: L(r.waitinglistIds)};
+  }
+  function countText(ev){
+    if (ev.cancelled) return 'abgesagt';
+    const c = counts(ev);
+    return `${c.acc} zugesagt · ${c.dec} abgesagt · ${c.open} offen` + (c.wait ? ` · ${c.wait} Warteliste` : '');
+  }
+  function people(ev, homeSubs){
+    const r = ev.responses || {}, home = homeSubs && homeSubs.length ? homeSubs : evSubs(ev), dm = r.declineMessages || {};
+    const one = id => { const m = member(id); const jg = m && m.birthYear;
+      return {id, name: fullName(m), first: m ? m.firstName : '', last: m ? m.lastName : '', jg, ac: ageClass(jg),
+        subs: m ? (m.subGroups || []) : [], guest: !!(m && home.length && !(m.subGroups || []).some(s => home.includes(s))), msg: dm[id] || ''}; };
+    const by = a => (a || []).map(one).sort((x, y) => x.name.localeCompare(y.name, 'de'));
+    return {acc: by(r.acceptedIds), dec: by(r.declinedIds), open: by([].concat(r.unansweredIds || [], r.unconfirmedIds || [])), wait: by(r.waitinglistIds)};
+  }
+  const has = () => !!(st.token && st.groups.length);
+  const ago = () => { if (!st.at) return ''; const d = new Date(st.at); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  return {SQ, get st(){ return st; }, reload(){ st = load(); idx = null; }, save, login, refresh, autoRefresh, logout, relayUrl,
+    member, fullName, subGroups, subName, ageClass, ageRank, sqForAge, suggestSq, sqFor, suggestPg, pgSubs, setMap,
+    evSubs, evDate, evTime, eventsOn, eventsFor, counts, countText, people, has, ago, isoLocal};
+})();
+
 const KEY = 'dtv-training-v1';
 const VIEW = (()=>{ const v = new URLSearchParams(location.search).get('view'); return ['athletik','normen'].includes(v) ? v : ''; })();
 document.documentElement.setAttribute('data-view', VIEW || 'athleten');
@@ -665,6 +827,7 @@ function normalize(o){
     a.jg = +a.jg || null; a.g = (a.g==='m'||a.g==='w') ? a.g : '';
     a.entries = (Array.isArray(a.entries) ? a.entries : []).filter(e=>e && ((e.ev && +e.v>0) || (+e.d>0 && +e.t>0))).map(normEntry);
     a.refS = a.refS || null; a.refL = a.refL || null; a.dlv = a.dlv || null; delete a.ref;
+    a.spondId = typeof a.spondId === 'string' ? a.spondId : null; a.gone = !!a.gone;
   });
   const dp = defPlan();
   if (Array.isArray(o.plan)) o.plan = {sprint:o.plan, run:dp.run};
@@ -1090,13 +1253,61 @@ function groupRows(){
 
 const openSet = new Set(), editSet = new Set();
 let lastDisc = '200|0', lastKind = 'SB';
+/* ---------- Athletenliste aus Spond abgleichen (nur auf Knopfdruck) ---------- */
+let spAthMsg = '', spAthUndo = null;
+function spAthSel(){
+  const st = SPOND.st, keep = Array.isArray(st.map.ath) ? st.map.ath : null;
+  const subs = SPOND.subGroups();
+  if (keep) return keep.filter(id=>subs.some(x=>x.id===id));
+  return subs.filter(x=>['U12','U14','U16','U18','MW','Masters','Lauf'].includes(SPOND.sqFor(x.id))).map(x=>x.id);
+}
+function renderSpAth(){
+  const box = $('#spAth'); if (!box) return;
+  if (!SPOND.has()){ box.hidden = true; return; }
+  box.hidden = false;
+  const sel = spAthSel(), subs = SPOND.subGroups().slice().sort((a,b)=>a.name.localeCompare(b.name,'de'));
+  box.innerHTML = `<h3>Aus Spond abgleichen</h3>
+    <p class="note" style="margin-top:0">Welche Untergruppen gehören in die Athletenliste? Neue Mitglieder werden ergänzt, fehlende Jahrgänge nachgetragen. Leistungen und Tests bleiben unverändert, gelöscht wird nichts.</p>
+    <div class="spchips">${subs.map(x=>`<button type="button" class="spchip${sel.includes(x.id)?' on':''}" data-spa="${x.id}">${esc(x.name)} <em>${x.n}</em></button>`).join('')}</div>
+    <div class="btns"><button class="btn primary" type="button" id="spAthGo">Abgleichen</button>${spAthUndo ? '<button class="btn" type="button" id="spAthUndo">Rückgängig</button>' : ''}</div>
+    ${spAthMsg ? `<p class="ok">${esc(spAthMsg)}</p>` : ''}<p class="note">Spond-Stand ${esc(SPOND.ago())} Uhr. Geschlecht liefert Spond nicht, bitte unter „Bearbeiten“ ergänzen.</p>`;
+}
+function nameKey(t){ return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ß ]/g,' ').replace(/\s+/g,' ').trim(); }
+function spAthSync(){
+  const sel = spAthSel(); if (!sel.length){ spAthMsg = 'Bitte mindestens eine Untergruppe wählen.'; renderSpAth(); return; }
+  spAthUndo = JSON.stringify(db.athletes);
+  const all = SPOND.st.groups.flatMap(g=>g.members || []), allIds = new Set(all.map(m=>m.id));
+  const ms = []; const seen = new Set();
+  all.forEach(m=>{ if (!seen.has(m.id) && (m.subGroups || []).some(x=>sel.includes(x))){ seen.add(m.id); ms.push(m); } });
+  let neu = 0, jg = 0, same = 0; const noG = [];
+  ms.forEach(m=>{
+    const full = nameKey(SPOND.fullName(m)), first = nameKey(m.firstName);
+    let a = db.athletes.find(x=>x.spondId === m.id) || db.athletes.find(x=>!x.spondId && nameKey(x.name) === full);
+    if (!a){ const c = db.athletes.filter(x=>!x.spondId && nameKey(x.name) === first); if (c.length === 1 && ms.filter(y=>nameKey(y.firstName) === first).length === 1) a = c[0]; }
+    if (a){ a.spondId = m.id; a.gone = false; if (!a.jg && m.birthYear){ a.jg = m.birthYear; jg++; } else same++; }
+    else { a = {id:uid(), name:SPOND.fullName(m).slice(0,60), jg:m.birthYear || null, g:'', entries:[], refS:null, refL:null, dlv:null, spondId:m.id, gone:false}; db.athletes.push(a); neu++; }
+    if (!a.g) noG.push(a.name);
+  });
+  const gone = db.athletes.filter(a=>a.spondId && !allIds.has(a.spondId));
+  gone.forEach(a=>{ a.gone = true; });
+  save(); renderAll();
+  spAthMsg = `${ms.length} aus Spond: ${neu} neu, ${jg} ${jg===1?"Jahrgang":"Jahrgänge"} ergänzt, ${same} schon vorhanden.` + (noG.length ? ` Ohne Geschlecht: ${noG.length}.` : '') + (gone.length ? ` Nicht mehr in Spond (nur markiert): ${gone.map(a=>a.name).join(', ')}.` : '');
+  renderSpAth();
+}
+document.addEventListener('click', e=>{
+  const c = e.target.closest('[data-spa]');
+  if (c){ const l = spAthSel(), i = l.indexOf(c.dataset.spa); if (i >= 0) l.splice(i, 1); else l.push(c.dataset.spa); SPOND.st.map.ath = l; SPOND.save(); renderSpAth(); return; }
+  if (e.target.closest('#spAthGo')){ spAthSync(); return; }
+  if (e.target.closest('#spAthUndo') && spAthUndo){ db.athletes = JSON.parse(spAthUndo); db = normalize(db); spAthUndo = null; save(); renderAll(); spAthMsg = 'Rückgängig gemacht.'; renderSpAth(); }
+});
 function renderAthletes(){
+  renderSpAth();
   const list = $('#athList');
   if (!db.athletes.length){ $('#newAthBox').open = true; list.innerHTML = ''; return; }
   if (!openSet.has('new')) $('#newAthBox').open = false;
   list.innerHTML = [...db.athletes].sort(byName).map(a=>{
     const cc = classCode(a), ents = sortEntries(a.entries);
-    const meta = [cc, a.jg ? 'Jg. '+a.jg : '', ents.length + (ents.length===1 ? ' Leistung' : ' Leistungen')].filter(Boolean).join(', ');
+    const meta = [cc, a.jg ? 'Jg. '+a.jg : '', ents.length + (ents.length===1 ? ' Leistung' : ' Leistungen'), a.gone ? 'nicht mehr in Spond' : ''].filter(Boolean).join(', ');
     const groupHtml = (title, arr) => arr.length ? `<p class="grp-title">${title}</p><ul class="plain ents">${arr.map(e=>`<li><span>${e.ev ? esc(evLabel(e)) : dLabel(e.d,e.fly)}<small>${esc(kindLabel(e))}${e.date?', '+fmtDate(e.date):''}</small></span><span class="et">${fmtVal(e)}</span><button class="icon-btn" type="button" data-del-entry="${a.id}|${e.id}" aria-label="Leistung löschen">×</button></li>`).join('')}</ul>` : '';
     return `<details class="block" data-ath="${a.id}"${openSet.has(a.id)?' open':''}>
       <summary><span class="sum"><h3>${esc(a.name)}</h3><span class="tag">${esc(meta)}</span></span></summary>
@@ -1955,6 +2166,8 @@ window.addEventListener('scroll', onScroll, {passive:true});
 
 window.DTVT = {parseDLV, importTable, importDlvExport, target, autoRef, get db(){ return db; }};
 renderAll(); onScroll();
+SPOND.autoRefresh(10).then(ch=>{ if (ch) renderSpAth(); });
+document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) SPOND.autoRefresh(10).then(ch=>{ if (ch) renderSpAth(); }); });
 })();
 </script>
 <script data-sw>

@@ -552,7 +552,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
   <div class="sv-body" id="svBody"></div>
 </div>
-<footer class="only-js">Die Vorschläge sind Richtwerte und ersetzen nicht die Trainerentscheidung. <span class="ver">Planung · Version 2026-10-24a · Spond, QR-Code</span></footer>
+<footer class="only-js">Die Vorschläge sind Richtwerte und ersetzen nicht die Trainerentscheidung. <span class="ver">Planung · Version 2026-10-24b · Spond, QR-Code</span></footer>
 
 <script>
 (function(){
@@ -2871,7 +2871,7 @@ const SPOND = (function(){
     o.groups = Array.isArray(o.groups) ? o.groups : [];
     o.events = Array.isArray(o.events) ? o.events : [];
     const m = (o.map && typeof o.map === 'object') ? o.map : {};
-    o.map = {sq: (m.sq && typeof m.sq === 'object') ? m.sq : {}, pg: (m.pg && typeof m.pg === 'object') ? m.pg : {}, done: !!m.done};
+    o.map = {sq: (m.sq && typeof m.sq === 'object') ? m.sq : {}, pg: (m.pg && typeof m.pg === 'object') ? m.pg : {}, done: !!m.done, ath: Array.isArray(m.ath) ? m.ath : null};
     return o;
   }
   function load(){ try { return norm(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch(e){ return norm(null); } }
@@ -2973,7 +2973,7 @@ const SPOND = (function(){
     return out;
   }
   const pgSubs = (gid, gname) => Array.isArray(st.map.pg[gid]) ? st.map.pg[gid] : suggestPg(gname);
-  function setMap(sq, pg){ st.map = {sq: sq || {}, pg: pg || {}, done: true}; save(); }
+  function setMap(sq, pg){ st.map = {sq: sq || {}, pg: pg || {}, done: true, ath: st.map.ath || null}; save(); }
 
   /* ---- Termine ---- */
   const evSubs = ev => ((ev.recipients && ev.recipients.group && ev.recipients.group.subGroups) || []).map(s => s.id);
@@ -5152,7 +5152,9 @@ renderAll(); onScroll();
 if (openUnit){ renderUnit(); if (showUnitNow) openShow(); else setTimeout(()=>goTo('einheit'), 60); }
 else readHash();
 window.addEventListener('hashchange', readHash);
-SPOND.autoRefresh(10).then(ch=>{ if (ch){ renderUnit(); if (!$('#showView').hidden) renderShow(); } });
+const spRe = ()=>SPOND.autoRefresh(10).then(ch=>{ if (ch){ renderWeek(); renderUnit(); if (!$('#showView').hidden) renderShow(); } });
+spRe();
+document.addEventListener('visibilitychange', ()=>{ if (!document.hidden) spRe(); });
 })();
 </script>
 <script data-sw>
