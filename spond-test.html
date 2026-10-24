@@ -48,8 +48,15 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:16px}
   </div>
 
   <div class="card">
+    <h2>Vermittler</h2>
+    <p class="note">Adresse deines Cloudflare-Workers, z. B. https://dtv-spond.name.workers.dev. Leer lassen = direkt zu Spond.</p>
+    <label for="relay">Vermittler-Adresse</label>
+    <input id="relay" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://….workers.dev">
+  </div>
+
+  <div class="card">
     <h2>1. Verbindung prüfen</h2>
-    <p class="note">Ohne Anmeldung. Prüft, ob Spond Anfragen von dieser Seite überhaupt zulässt.</p>
+    <p class="note">Ohne Anmeldung. Prüft, ob der Weg zu Spond offen ist.</p>
     <button class="btn primary" type="button" id="bConn">Verbindung prüfen</button>
     <div id="rConn"></div>
   </div>
@@ -84,14 +91,17 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:16px}
     <button class="btn primary" type="button" id="bCopy">Ergebnis kopieren</button>
     <pre id="sum"></pre>
   </div>
-  <footer>Spond-Test · Version 2026-10-24a</footer>
+  <footer>Spond-Test · Version 2026-10-24b</footer>
 </main>
 <script>
 (function(){
-const API = 'https://api.spond.com/core/v1/';
+const DIRECT = 'https://api.spond.com/core/v1/';
+let API = DIRECT;
+function relayUrl(){ let v = $('#relay').value.trim().replace(/\/+$/, ''); if (v && !/^https?:\/\//.test(v)) v = 'https://' + v; return v; }
+function setApi(){ const r = relayUrl(); API = r ? r + '/core/v1/' : DIRECT; try { localStorage.setItem('dtv-spond-relay', r); } catch(e){} log.relay = r ? 'ja' : 'nein'; return r; }
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const log = {start: new Date().toISOString(), agent: navigator.userAgent, conn: null, login: null, groups: null, events: null};
+const log = {start: new Date().toISOString(), agent: navigator.userAgent, relay: 'nein', conn: null, login: null, groups: null, events: null};
 function res(el, cls, title, text){ $(el).innerHTML = `<div class="res ${cls}"><b>${esc(title)}</b>${text ? esc(text) : ''}</div>`; }
 function errText(e){ return (e && (e.name + ': ' + e.message)) || String(e); }
 
@@ -102,16 +112,31 @@ async function reachable(){
 }
 async function checkConn(){
   const b = $('#bConn'); b.disabled = true; res('#rConn', '', 'Prüfe …');
-  const out = {};
+  const out = {}, relay = setApi();
+  if (relay){
+    try {
+      const h = await fetch(relay + '/'); const t = await h.text(); out.relayHealth = h.status + ' ' + t.slice(0, 60);
+      if (!/Spond-Vermittler/.test(t)) throw new Error('Antwort passt nicht: ' + t.slice(0, 60));
+    } catch(e){
+      out.cors = 'Vermittler nicht erreichbar'; out.error = errText(e);
+      res('#rConn', 'bad', 'Vermittler nicht erreichbar', 'Adresse prüfen. Öffnet sie im Browser die Zeile „Spond-Vermittler läuft“? (' + out.error + ')');
+      log.conn = out; showSum(); b.disabled = false; return;
+    }
+  }
   try {
     const r = await fetch(API + 'auth2/login', {method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({email:'verbindungstest@example.invalid', password:'x'})});
-    out.cors = 'offen'; out.status = r.status;
-    res('#rConn', 'ok', 'Verbindung offen', `Spond antwortet dieser Seite direkt (Status ${r.status}, bei falscher Test-Anmeldung erwartet). Weiter mit Schritt 2.`);
+    out.cors = 'offen'; out.status = r.status; out.spondStatus = r.headers.get('X-Spond-Status');
+    let j = null; try { j = await r.json(); } catch(e){}
+    if (j && j.error && relay) out.relayError = j.error + (j.detail ? ': ' + j.detail : '');
+    if (relay && (r.status === 502 || r.status === 403)) res('#rConn', 'bad', r.status === 502 ? 'Vermittler erreicht Spond nicht' : 'Vermittler lehnt ab', out.relayError || ('Status ' + r.status));
+    else if (r.status >= 500 || r.status === 403 || r.status === 429) res('#rConn', 'warn', 'Spond antwortet, aber ungewöhnlich', `Status ${r.status}. Eventuell sperrt Spond Anfragen aus Rechenzentren. Schritt 2 trotzdem versuchen.`);
+    else res('#rConn', 'ok', 'Verbindung offen', `Spond antwortet${relay ? ' über den Vermittler' : ' dieser Seite direkt'} (Status ${r.status}, bei falscher Test-Anmeldung erwartet). Weiter mit Schritt 2.`);
   } catch(e){
     out.cors = 'blockiert'; out.error = errText(e);
-    const reach = await reachable(); out.reachable = reach;
+    const reach = relay ? true : await reachable(); out.reachable = reach;
     if (!navigator.onLine) res('#rConn', 'warn', 'Kein Internet', 'Bitte mit dem Internet verbinden und noch einmal prüfen.');
+    else if (relay) res('#rConn', 'bad', 'Vermittler lässt diese Seite nicht zu', 'Die Seite muss von https://dtv1847.github.io geöffnet sein. Sonst im Worker-Code die Zeile ORIGINS prüfen.');
     else if (reach) res('#rConn', 'bad', 'Spond blockiert diese Seite', 'Spond ist erreichbar, lässt aber Anfragen von fremden Webseiten nicht zu. Weg A geht damit nicht, es bräuchte Weg B (Vermittler) oder C. Schritt 2 kannst du trotzdem versuchen.');
     else res('#rConn', 'bad', 'Spond nicht erreichbar', 'Weder Antwort noch Verbindung. Eventuell blockiert ein Netzwerk-Filter. Bitte im Mobilfunk noch einmal versuchen.');
   }
@@ -129,7 +154,7 @@ function keysOf(list){ const s = new Set(); (list || []).forEach(o => o && typeo
 function subIds(m){ const s = m && (m.subGroups || m.subGroupIds || []); return (Array.isArray(s) ? s : []).map(x => typeof x === 'object' ? x.id : x); }
 async function login(ev){
   ev.preventDefault();
-  const b = $('#bLogin'); b.disabled = true; res('#rLogin', '', 'Melde an …');
+  const b = $('#bLogin'); b.disabled = true; res('#rLogin', '', 'Melde an …'); setApi();
   const email = $('#email').value.trim(), pw = $('#pw').value;
   const out = {};
   try {
@@ -150,7 +175,7 @@ async function login(ev){
     res('#rLogin', 'ok', 'Angemeldet', ' Lese Gruppen und Termine …');
   } catch(e){
     out.error = errText(e); log.login = out;
-    res('#rLogin', 'bad', 'Spond blockiert diese Seite', 'Die Anmeldung kam nicht durch (' + out.error + '). Weg A geht so nicht.');
+    res('#rLogin', 'bad', API === DIRECT ? 'Spond blockiert diese Seite' : 'Vermittler nicht erreichbar', 'Die Anmeldung kam nicht durch (' + out.error + ').' + (API === DIRECT ? ' Oben die Vermittler-Adresse eintragen.' : ''));
     showSum(); b.disabled = false; return;
   }
   await readGroups(); await readEvents();
@@ -224,9 +249,9 @@ document.addEventListener('click', e => {
 /* ---------- Ergebnis ---------- */
 function showSum(){
   const L = [];
-  L.push('Spond-Test 2026-10-24a · ' + new Date().toLocaleString('de-DE'));
-  L.push('Gerät: ' + log.agent);
-  if (log.conn) L.push('1 Verbindung: ' + log.conn.cors + (log.conn.status ? ' (Status ' + log.conn.status + ')' : '') + (log.conn.error ? ' · ' + log.conn.error + ' · erreichbar: ' + (log.conn.reachable ? 'ja' : 'nein') : ''));
+  L.push('Spond-Test 2026-10-24b · ' + new Date().toLocaleString('de-DE'));
+  L.push('Gerät: ' + log.agent); L.push('Vermittler: ' + log.relay);
+  if (log.conn) L.push('1 Verbindung: ' + log.conn.cors + (log.conn.status ? ' (Status ' + log.conn.status + (log.conn.spondStatus ? ', Spond ' + log.conn.spondStatus : '') + ')' : '') + (log.conn.relayHealth ? ' · Vermittler: ' + log.conn.relayHealth : '') + (log.conn.relayError ? ' · ' + log.conn.relayError : '') + (log.conn.error ? ' · ' + log.conn.error + ' · erreichbar: ' + (log.conn.reachable ? 'ja' : 'nein') : ''));
   if (log.login){ const l = log.login; L.push('2 Anmeldung: ' + (l.ok ? 'ok' : 'nein') + (l.status ? ' · Status ' + l.status : '') + (l.error ? ' · ' + l.error : '') + (l.twofa ? ' · Zwei-Faktor' : '') + (l.message ? ' · ' + l.message : '') + (l.errorKey ? ' · ' + l.errorKey : '') + ' · Felder: ' + (l.keys || []).join(',')); }
   if (log.groups){ const g = log.groups;
     L.push('Gruppen: ' + (g.error || ('Status ' + g.status + ' · ' + g.count + ' Gruppen')));
@@ -244,6 +269,7 @@ function showSum(){
   }
   $('#sum').textContent = L.join('\n'); $('#cSum').hidden = false;
 }
+try { $('#relay').value = localStorage.getItem('dtv-spond-relay') || ''; } catch(e){}
 $('#bConn').addEventListener('click', checkConn);
 $('#fLogin').addEventListener('submit', login);
 $('#bCopy').addEventListener('click', async () => {
