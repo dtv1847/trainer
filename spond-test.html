@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Spond-Test</title>
+<style>
+:root{--red:#D7191C;--red-deep:#A51013;--ink:#2B2B2B;--bg:#F1F1F0;--line:#DEDEDC;--muted:#6B6B68;--paper:#fff;--ok:#1E8A4C;--warn:#B26B00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+header{background:var(--ink);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 14px}
+header h1{margin:0;font-size:22px}
+header p{margin:2px 0 0;color:#cfcfcc;font-size:14px}
+main{max-width:720px;margin:0 auto;padding:12px 16px 40px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 12px}
+.card h2{margin:0 0 6px;font-size:18px}
+.note{color:var(--muted);font-size:14px;margin:6px 0 0}
+label{display:block;font-size:14px;color:var(--muted);margin:10px 0 4px}
+input{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.btn{display:inline-block;font:inherit;font-weight:600;border:1px solid var(--ink);background:#fff;color:var(--ink);border-radius:10px;padding:10px 14px;margin:12px 8px 0 0;cursor:pointer}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.btn:disabled{opacity:.5}
+.res{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#f6f6f4;border-left:4px solid var(--line);font-size:15px}
+.res.ok{border-color:var(--ok)}.res.bad{border-color:var(--red)}.res.warn{border-color:var(--warn)}
+.res b{display:block}
+ul.plain{list-style:none;margin:6px 0 0;padding:0}
+ul.plain li{padding:7px 0;border-top:1px solid var(--line)}
+ul.plain li:first-child{border-top:0}
+.ev{cursor:pointer}
+.ev small{color:var(--muted);display:block}
+.cnt{display:inline-block;font-size:13px;padding:1px 7px;border-radius:9px;margin:3px 4px 0 0;background:#eee}
+.cnt.a{background:#dff1e6}.cnt.d{background:#f8dcdc}.cnt.u{background:#f1ead8}
+.names{font-size:14px;margin:6px 0 2px;color:var(--ink)}
+.names i{font-style:normal;color:var(--muted)}
+pre{white-space:pre-wrap;word-break:break-word;font-size:12.5px;background:#f6f6f4;border-radius:10px;padding:10px;margin:8px 0 0;max-height:320px;overflow:auto}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:16px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Spond-Test</h1>
+  <p>Kann die Trainer-App direkt mit Spond sprechen?</p>
+</header>
+<main>
+  <div class="card">
+    <p style="margin:0">Diese Seite liest nur. In Spond wird nichts geändert, hier wird nichts gespeichert. Das Passwort geht nur direkt an Spond und ist nach dem Schließen der Seite weg.</p>
+  </div>
+
+  <div class="card">
+    <h2>1. Verbindung prüfen</h2>
+    <p class="note">Ohne Anmeldung. Prüft, ob Spond Anfragen von dieser Seite überhaupt zulässt.</p>
+    <button class="btn primary" type="button" id="bConn">Verbindung prüfen</button>
+    <div id="rConn"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Anmelden und Daten lesen</h2>
+    <p class="note">Mit deinem Spond-Konto. Liest Gruppen, Untergruppen und die Termine der nächsten 14 Tage mit Zusagen.</p>
+    <form id="fLogin" autocomplete="on">
+      <label for="email">E-Mail bei Spond</label>
+      <input id="email" type="email" autocomplete="username" inputmode="email" required>
+      <label for="pw">Passwort</label>
+      <input id="pw" type="password" autocomplete="current-password" required>
+      <button class="btn primary" type="submit" id="bLogin">Anmelden und lesen</button>
+    </form>
+    <div id="rLogin"></div>
+  </div>
+
+  <div class="card" id="cGroups" hidden>
+    <h2>Gruppen</h2>
+    <div id="rGroups"></div>
+  </div>
+
+  <div class="card" id="cEvents" hidden>
+    <h2>Termine, nächste 14 Tage</h2>
+    <p class="note">Antippen zeigt, wer zugesagt hat. Die Namen stehen nur hier auf dem Bildschirm, nicht im Ergebnis zum Kopieren.</p>
+    <div id="rEvents"></div>
+  </div>
+
+  <div class="card" id="cSum" hidden>
+    <h2>Ergebnis für Claude</h2>
+    <p class="note">Ohne Namen von Personen. Kopieren und in den Chat einfügen.</p>
+    <button class="btn primary" type="button" id="bCopy">Ergebnis kopieren</button>
+    <pre id="sum"></pre>
+  </div>
+  <footer>Spond-Test · Version 2026-10-24a</footer>
+</main>
+<script>
+(function(){
+const API = 'https://api.spond.com/core/v1/';
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const log = {start: new Date().toISOString(), agent: navigator.userAgent, conn: null, login: null, groups: null, events: null};
+function res(el, cls, title, text){ $(el).innerHTML = `<div class="res ${cls}"><b>${esc(title)}</b>${text ? esc(text) : ''}</div>`; }
+function errText(e){ return (e && (e.name + ': ' + e.message)) || String(e); }
+
+/* ---------- 1. Verbindung ---------- */
+async function reachable(){
+  try { await fetch(API + 'auth2/login', {method:'POST', mode:'no-cors', body:'{}'}); return true; }
+  catch(e){ return false; }
+}
+async function checkConn(){
+  const b = $('#bConn'); b.disabled = true; res('#rConn', '', 'Prüfe …');
+  const out = {};
+  try {
+    const r = await fetch(API + 'auth2/login', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email:'verbindungstest@example.invalid', password:'x'})});
+    out.cors = 'offen'; out.status = r.status;
+    res('#rConn', 'ok', 'Verbindung offen', `Spond antwortet dieser Seite direkt (Status ${r.status}, bei falscher Test-Anmeldung erwartet). Weiter mit Schritt 2.`);
+  } catch(e){
+    out.cors = 'blockiert'; out.error = errText(e);
+    const reach = await reachable(); out.reachable = reach;
+    if (!navigator.onLine) res('#rConn', 'warn', 'Kein Internet', 'Bitte mit dem Internet verbinden und noch einmal prüfen.');
+    else if (reach) res('#rConn', 'bad', 'Spond blockiert diese Seite', 'Spond ist erreichbar, lässt aber Anfragen von fremden Webseiten nicht zu. Weg A geht damit nicht, es bräuchte Weg B (Vermittler) oder C. Schritt 2 kannst du trotzdem versuchen.');
+    else res('#rConn', 'bad', 'Spond nicht erreichbar', 'Weder Antwort noch Verbindung. Eventuell blockiert ein Netzwerk-Filter. Bitte im Mobilfunk noch einmal versuchen.');
+  }
+  log.conn = out; showSum(); b.disabled = false;
+}
+
+/* ---------- 2. Anmelden und lesen ---------- */
+let token = null, groups = [], events = [], members = {};
+async function api(path, opt){
+  const r = await fetch(API + path, Object.assign({headers:{'Content-Type':'application/json', 'Authorization':'Bearer ' + token}}, opt || {}));
+  let body = null; try { body = await r.json(); } catch(e){}
+  return {status: r.status, ok: r.ok, body};
+}
+function keysOf(list){ const s = new Set(); (list || []).forEach(o => o && typeof o === 'object' && Object.keys(o).forEach(k => s.add(k))); return [...s].sort(); }
+function subIds(m){ const s = m && (m.subGroups || m.subGroupIds || []); return (Array.isArray(s) ? s : []).map(x => typeof x === 'object' ? x.id : x); }
+async function login(ev){
+  ev.preventDefault();
+  const b = $('#bLogin'); b.disabled = true; res('#rLogin', '', 'Melde an …');
+  const email = $('#email').value.trim(), pw = $('#pw').value;
+  const out = {};
+  try {
+    const r = await fetch(API + 'auth2/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password: pw})});
+    let j = null; try { j = await r.json(); } catch(e){}
+    out.status = r.status; out.keys = j ? Object.keys(j).sort() : [];
+    ['error','errorKey','errorCode','message'].forEach(k => { if (j && j[k] != null) out[k] = j[k]; });
+    token = j && j.accessToken && j.accessToken.token;
+    if (!token){
+      const twofa = out.keys.some(k => /phone|2fa|twoFactor|otp|challenge|verification/i.test(k));
+      out.twofa = twofa;
+      res('#rLogin', 'bad', twofa ? 'Spond verlangt eine Zwei-Faktor-Bestätigung' : 'Anmeldung nicht geklappt',
+        twofa ? 'Dein Konto hat eine zusätzliche Bestätigung (z. B. SMS-Code). Das kann diese Testseite noch nicht.' : `Status ${r.status}${out.message ? ': ' + out.message : ''}. E-Mail und Passwort prüfen.`);
+      log.login = out; showSum(); b.disabled = false; return;
+    }
+    out.ok = true; log.login = out;
+    $('#pw').value = '';
+    res('#rLogin', 'ok', 'Angemeldet', ' Lese Gruppen und Termine …');
+  } catch(e){
+    out.error = errText(e); log.login = out;
+    res('#rLogin', 'bad', 'Spond blockiert diese Seite', 'Die Anmeldung kam nicht durch (' + out.error + '). Weg A geht so nicht.');
+    showSum(); b.disabled = false; return;
+  }
+  await readGroups(); await readEvents();
+  res('#rLogin', 'ok', 'Fertig', 'Angemeldet, Gruppen und Termine gelesen. Unten das Ergebnis kopieren.');
+  token = null; b.disabled = false; showSum();
+}
+async function readGroups(){
+  const out = {};
+  try {
+    const r = await api('groups/'); out.status = r.status;
+    groups = Array.isArray(r.body) ? r.body : [];
+    out.count = groups.length; out.groupKeys = keysOf(groups);
+    const allM = [], allS = [];
+    groups.forEach(g => { (g.members || []).forEach(m => { allM.push(m); members[m.id] = m; }); (g.subGroups || []).forEach(s => allS.push(s)); });
+    out.memberKeys = keysOf(allM); out.subGroupKeys = keysOf(allS);
+    out.memberSubgroupField = allM.some(m => m.subGroups) ? 'subGroups' : (allM.some(m => m.subGroupIds) ? 'subGroupIds' : 'nicht gefunden');
+    out.list = groups.map(g => {
+      const ms = g.members || [];
+      return {name: g.name, members: ms.length, subGroups: (g.subGroups || []).map(s => ({name: s.name, members: ms.filter(m => subIds(m).includes(s.id)).length})),
+        multi: ms.filter(m => subIds(m).length > 1).length};
+    });
+    if (!r.ok) out.body = r.body && (r.body.message || r.body.error);
+    $('#cGroups').hidden = false;
+    $('#rGroups').innerHTML = r.ok ? (out.list.length ? '<ul class="plain">' + out.list.map(g => `<li><b>${esc(g.name)}</b> · ${g.members} Mitglieder${g.multi ? ` · ${g.multi} in mehreren Untergruppen` : ''}
+      ${g.subGroups.length ? '<div class="names">' + g.subGroups.map(s => `${esc(s.name)} <i>(${s.members})</i>`).join(' · ') + '</div>' : '<div class="names"><i>keine Untergruppen</i></div>'}</li>`).join('') + '</ul>' : '<p class="note">Keine Gruppen gefunden.</p>')
+      : `<div class="res bad"><b>Gruppen nicht lesbar</b>Status ${r.status}</div>`;
+  } catch(e){ out.error = errText(e); $('#cGroups').hidden = false; $('#rGroups').innerHTML = `<div class="res bad"><b>Gruppen nicht lesbar</b>${esc(out.error)}</div>`; }
+  log.groups = out;
+}
+function dayIso(d){ return d.toISOString().slice(0, 10) + 'T00:00:00.000Z'; }
+function who(e){
+  const rc = e.recipients || {}, g = rc.group || {};
+  const subs = (g.subGroups || rc.subGroups || []).map(s => s.name || (groups.flatMap(x => x.subGroups || []).find(x => x.id === (s.id || s)) || {}).name).filter(Boolean);
+  return [g.name, subs.join(', ')].filter(Boolean).join(' · ');
+}
+function names(ids){ return (ids || []).map(id => { const m = members[id]; return m ? (m.firstName || '') + ' ' + ((m.lastName || '')[0] || '') + '.' : '?'; }).join(', '); }
+async function readEvents(){
+  const out = {};
+  try {
+    const now = new Date(), end = new Date(now.getTime() + 15 * 864e5);
+    const q = new URLSearchParams({max: '50', scheduled: 'false', minEndTimestamp: dayIso(now), maxStartTimestamp: dayIso(end)});
+    const r = await api('sponds/?' + q); out.status = r.status;
+    events = (Array.isArray(r.body) ? r.body : []).sort((a, b) => String(a.startTimestamp).localeCompare(String(b.startTimestamp)));
+    out.count = events.length; out.eventKeys = keysOf(events); out.responseKeys = keysOf(events.map(e => e.responses));
+    out.recipientKeys = keysOf(events.map(e => e.recipients));
+    const L = k => (k || []).length;
+    out.list = events.map(e => ({start: e.startTimestamp, heading: e.heading, type: e.type || e.spondType, who: who(e), cancelled: !!e.cancelled,
+      accepted: L(e.responses && e.responses.acceptedIds), declined: L(e.responses && e.responses.declinedIds), unanswered: L(e.responses && e.responses.unansweredIds),
+      waiting: L(e.responses && e.responses.waitinglistIds), declineMsgs: Object.keys((e.responses && e.responses.declineMessages) || {}).length}));
+    $('#cEvents').hidden = false;
+    if (!r.ok){ $('#rEvents').innerHTML = `<div class="res bad"><b>Termine nicht lesbar</b>Status ${r.status}</div>`; log.events = out; return; }
+    $('#rEvents').innerHTML = events.length ? '<ul class="plain">' + events.map((e, i) => {
+      const x = out.list[i], d = new Date(e.startTimestamp);
+      return `<li class="ev" data-i="${i}"><b>${esc(e.heading || 'Termin')}${x.cancelled ? ' · abgesagt' : ''}</b>
+        <small>${d.toLocaleDateString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit'})} ${d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'})}${x.who ? ' · ' + esc(x.who) : ''}</small>
+        <span class="cnt a">${x.accepted} zugesagt</span><span class="cnt d">${x.declined} abgesagt</span><span class="cnt u">${x.unanswered} offen</span>${x.waiting ? `<span class="cnt">${x.waiting} Warteliste</span>` : ''}
+        <div class="names" hidden></div></li>`;
+    }).join('') + '</ul>' : '<p class="note">Keine Termine in den nächsten 14 Tagen gefunden.</p>';
+  } catch(e){ out.error = errText(e); $('#cEvents').hidden = false; $('#rEvents').innerHTML = `<div class="res bad"><b>Termine nicht lesbar</b>${esc(out.error)}</div>`; }
+  log.events = out;
+}
+document.addEventListener('click', e => {
+  const li = e.target.closest('.ev'); if (!li) return;
+  const ev = events[+li.dataset.i], box = li.querySelector('.names'), r = ev.responses || {};
+  if (!box.hidden){ box.hidden = true; return; }
+  const dm = r.declineMessages || {};
+  box.innerHTML = `<div><i>Zugesagt:</i> ${esc(names(r.acceptedIds)) || '–'}</div><div><i>Abgesagt:</i> ${esc((r.declinedIds || []).map(id => names([id]) + (dm[id] ? ' (' + dm[id] + ')' : '')).join(', ')) || '–'}</div><div><i>Offen:</i> ${esc(names(r.unansweredIds)) || '–'}</div>`;
+  box.hidden = false;
+});
+
+/* ---------- Ergebnis ---------- */
+function showSum(){
+  const L = [];
+  L.push('Spond-Test 2026-10-24a · ' + new Date().toLocaleString('de-DE'));
+  L.push('Gerät: ' + log.agent);
+  if (log.conn) L.push('1 Verbindung: ' + log.conn.cors + (log.conn.status ? ' (Status ' + log.conn.status + ')' : '') + (log.conn.error ? ' · ' + log.conn.error + ' · erreichbar: ' + (log.conn.reachable ? 'ja' : 'nein') : ''));
+  if (log.login){ const l = log.login; L.push('2 Anmeldung: ' + (l.ok ? 'ok' : 'nein') + (l.status ? ' · Status ' + l.status : '') + (l.error ? ' · ' + l.error : '') + (l.twofa ? ' · Zwei-Faktor' : '') + (l.message ? ' · ' + l.message : '') + (l.errorKey ? ' · ' + l.errorKey : '') + ' · Felder: ' + (l.keys || []).join(',')); }
+  if (log.groups){ const g = log.groups;
+    L.push('Gruppen: ' + (g.error || ('Status ' + g.status + ' · ' + g.count + ' Gruppen')));
+    if (g.groupKeys) L.push(' Gruppe-Felder: ' + g.groupKeys.join(','));
+    if (g.memberKeys) L.push(' Mitglied-Felder: ' + g.memberKeys.join(',') + ' · Untergruppen am Mitglied: ' + g.memberSubgroupField);
+    if (g.subGroupKeys) L.push(' Untergruppe-Felder: ' + g.subGroupKeys.join(','));
+    (g.list || []).forEach(x => L.push(' - ' + x.name + ': ' + x.members + ' Mitglieder, ' + x.multi + ' in mehreren Untergruppen · ' + x.subGroups.map(s => s.name + ' (' + s.members + ')').join(', ')));
+  }
+  if (log.events){ const e = log.events;
+    L.push('Termine: ' + (e.error || ('Status ' + e.status + ' · ' + e.count + ' Termine')));
+    if (e.eventKeys) L.push(' Termin-Felder: ' + e.eventKeys.join(','));
+    if (e.responseKeys) L.push(' Antwort-Felder: ' + e.responseKeys.join(','));
+    if (e.recipientKeys) L.push(' Empfänger-Felder: ' + e.recipientKeys.join(','));
+    (e.list || []).slice(0, 15).forEach(x => L.push(' - ' + x.start + ' ' + x.heading + (x.type ? ' [' + x.type + ']' : '') + (x.who ? ' · ' + x.who : '') + (x.cancelled ? ' · abgesagt' : '') + ' · zu ' + x.accepted + ' ab ' + x.declined + ' offen ' + x.unanswered + (x.waiting ? ' warte ' + x.waiting : '') + (x.declineMsgs ? ' · Absagegründe ' + x.declineMsgs : '')));
+  }
+  $('#sum').textContent = L.join('\n'); $('#cSum').hidden = false;
+}
+$('#bConn').addEventListener('click', checkConn);
+$('#fLogin').addEventListener('submit', login);
+$('#bCopy').addEventListener('click', async () => {
+  const t = $('#sum').textContent, b = $('#bCopy');
+  try { await navigator.clipboard.writeText(t); b.textContent = 'Kopiert'; }
+  catch(e){ const rg = document.createRange(); rg.selectNodeContents($('#sum')); const s = getSelection(); s.removeAllRanges(); s.addRange(rg); b.textContent = 'Markiert – jetzt kopieren'; }
+  setTimeout(() => b.textContent = 'Ergebnis kopieren', 2500);
+});
+window.__st = {log};
+})();
+</script>
+</body>
+</html>
