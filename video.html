@@ -242,6 +242,7 @@ body.running .appbar,body.running .subbar{display:none}
           <button class="btn" type="button" id="lFreeze">Standbild</button>
           <button class="btn" type="button" id="lRec">● Aufnehmen</button>
           <label class="chk" style="margin:0 4px"><input type="checkbox" id="lRecSk" checked> mit Skelett und Winkeln</label>
+          <button class="btn" type="button" id="lHipRef" hidden>Höhe merken</button>
           <button class="btn" type="button" id="lFlip">Kamera wechseln</button>
           <button class="btn" type="button" id="lClose">Beenden</button>
         </div>
@@ -252,6 +253,7 @@ body.running .appbar,body.running .subbar{display:none}
         <h3>Live-Winkel</h3>
         <label class="note" style="display:block">Vorgabe</label>
         <select id="lPreset" style="width:100%"></select>
+        <label class="chk"><input type="checkbox" id="lHip"> Hüftlinie (waagerecht durch die Hüfte)</label>
         <div class="ltiles" id="lTiles"></div>
         <div id="lEdit"></div>
         <p class="note" id="lSrc"></p>
@@ -261,7 +263,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
 </section>
 </main>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose Landmarker (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-24a</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik · Skelett-Erkennung: MediaPipe Pose Landmarker (Google, Apache-Lizenz 2.0), läuft auf dem Gerät <span class="ver">Trainer-App · Version 2026-10-27a</span></footer>
 
 <script>
 (function(){
@@ -305,7 +307,7 @@ let view = {s: 1, ox: 0, oy: 0}, fitS = 1, W = 300, H = 200, dpr = 1;
 let tool = 'view', pend = [], undoStack = [];
 let playing = false, ready = false;
 let poseBox = null; // {x,y,s} in Videopixeln
-let showHand = true, showAng = true, smallSkel = false;
+let showHand = true, showAng = true, showHip = false, smallSkel = false;
 let timeA = null, timeB = null, timeLabel = '';
 let scaleLen = '1.22';
 
@@ -602,6 +604,17 @@ function devStats(){
   return {n: fs.length, ang, sp, f0: fs[0], fk: fs[k]};
 }
 function P(L, n){ const q = L[PIx[n]]; return q && q[2] >= 0.35 ? q : null; }
+// Hüfte: Höhe der Hüftmitte und Beinlänge (Hüfte–Knie–Knöchel) in Videopixeln, für die Hüftlinie
+function hipInfo(L){
+  if (!L) return null;
+  const hl = P(L, 23), hr = P(L, 24); if (!hl && !hr) return null;
+  const y = hl && hr ? (hl[1] + hr[1]) / 2 : (hl || hr)[1];
+  const legs = [[23, 25, 27], [24, 26, 28]].map(([a, b, c]) => { const A = P(L, a), B = P(L, b), C = P(L, c); return A && B && C ? Math.hypot(A[0] - B[0], A[1] - B[1]) + Math.hypot(B[0] - C[0], B[1] - C[1]) : 0; }).filter(Boolean);
+  return {y, leg: legs.length ? Math.max(...legs) : 0};
+}
+// Auf und Ab: Spanne der Hüfthöhe geteilt durch die mittlere Beinlänge (Median, robust gegen Ausreißer)
+function hipOsc(ys, legs){ const l = legs.slice().sort((a, b) => a - b)[legs.length >> 1]; return l ? (Math.max(...ys) - Math.min(...ys)) / l * 100 : 0; }
+const pctTxt = v => (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), 1) + ' %';
 function poseAngles(L){
   const g = (a, b, c) => { const A = P(L, a), B = P(L, b), C = P(L, c); return A && B && C ? angle3(A, B, C) : NaN; };
   const ms = P(L, 11) && P(L, 12) ? [(P(L, 11)[0] + P(L, 12)[0]) / 2, (P(L, 11)[1] + P(L, 12)[1]) / 2] : null;
@@ -620,6 +633,15 @@ function pill(x, y, t, bg){
 }
 function dot(p, r, c){ const s = toS(p); ctx.beginPath(); ctx.arc(s[0], s[1], r, 0, 7); ctx.fillStyle = c; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = '#000'; ctx.stroke(); }
 function seg(a, b, c, w){ const A = toS(a), B = toS(b); ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.strokeStyle = c; ctx.lineWidth = w || 3; ctx.stroke(); }
+function hipPanel(L){
+  const h = hipInfo(L), ys = Object.values(V.pose).map(hipInfo).filter(x => x && x.leg);
+  const d = V.hipRef && h && h.leg ? (V.hipRef.y - h.y) / h.leg * 100 : null;
+  const osc = ys.length >= 5 ? hipOsc(ys.map(x => x.y), ys.map(x => x.leg)) : null;
+  return `<div class="res"><em>Hüfte zur Bezugslinie</em><b>${d != null ? pctTxt(d) + ' der Beinlänge' : V.hipRef ? '–' : 'noch keine Bezugslinie'}</b></div>
+    ${osc != null ? `<div class="res"><em>Auf und Ab über ${ys.length} Bilder mit Skelett</em><b>${fmt(osc, 1)} % der Beinlänge</b></div>` : ''}
+    <div class="btns" style="margin-top:4px">${h ? '<button class="btn sm" id="pHipRef">Höhe auf diesem Bild merken</button>' : ''}${V.hipRef ? '<button class="btn sm" id="pHipDel">Bezugslinie löschen</button>' : ''}</div>
+    <p class="note">Plus = Hüfte höher als die Bezugslinie. Gilt nur, wenn die Kamera stillstand und waagerecht war (Stativ, von der Seite). Kein Richtwert, zum Vergleich innerhalb eines Laufs.</p>`;
+}
 function render(){
   if (!V) return;
   clampView();
@@ -660,6 +682,18 @@ function render(){
       });
     }
     smallSkel = showAng && tall > 0 && tall < 110;
+  }
+  // Hüftlinie: waagerecht durch die Hüftmitte, dazu die gemerkte Bezugslinie
+  if (showHip){
+    const h = hipInfo(L);
+    if (V.hipRef){ ctx.setLineDash([8, 6]); seg([0, V.hipRef.y], [vw, V.hipRef.y], 'rgba(255,255,255,.9)', 2); ctx.setLineDash([]); }
+    if (h){
+      seg([0, h.y], [vw, h.y], '#FFD400', 2.5);
+      const s0 = toS([0, h.y]), sx = Math.max(6, s0[0] + 6);
+      const d = V.hipRef && h.leg ? (V.hipRef.y - h.y) / h.leg * 100 : null;
+      ctx.font = '600 13px Barlow, system-ui, sans-serif';
+      pill(sx, s0[1] - 26, 'Hüfte' + (d != null ? ' ' + pctTxt(d) + ' Beinlänge' : ''), 'rgba(120,95,0,.9)');
+    }
   }
   if (tool === 'pose' && poseBox && (poseBox.f === f || !L)){
     const a = toS([poseBox.x - poseBox.s / 2, poseBox.y - poseBox.s / 2]), w = poseBox.s * view.s;
@@ -772,6 +806,8 @@ function panel(light){
       <select id="pModel" style="width:100%">${Object.entries(POSE_MODELS).map(([k, v]) => `<option value="${k}"${k === poseModel() ? ' selected' : ''}>${v[0]}</option>`).join('')}</select>
       <label class="chk"><input type="checkbox" id="pAng" ${showAng ? 'checked' : ''}> Winkel im Bild</label>
       <label class="chk"><input type="checkbox" id="pHand" ${showHand ? 'checked' : ''}> Hand-Spur (links gelb, rechts blau)</label>
+      <label class="chk"><input type="checkbox" id="pHip" ${showHip ? 'checked' : ''}> Hüftlinie (waagerecht durch die Hüfte)</label>
+      ${showHip ? hipPanel(L) : ''}
       <p class="note">${n} Bilder mit Skelett. Links und rechts aus Sicht des Athleten. Winkel nur von der Seite gefilmt verlässlich. Erkennt die App jemand anderen, direkt auf den Athleten tippen; sie nimmt immer die Person in der Rahmenmitte. „Schnell“ rechnet etwas schneller, „Normal“ ist genauer.</p>`;
   } else if (tool === 'cmp'){
     const c = cmpState(), d = TECH[c.d];
@@ -825,6 +861,9 @@ function bindPanel(){
   on('pModel', 'change', e => { DB.poseModel = e.target.value; saveNow(); showMsg(`Erkennung „${POSE_MODELS[poseModel()][0]}“ gewählt. Gilt ab dem nächsten Antippen; schon erkannte Skelette bleiben, bis du sie neu berechnest.`, 'info'); });
   on('pAng', 'change', e => { showAng = e.target.checked; render(); });
   on('pHand', 'change', e => { showHand = e.target.checked; render(); });
+  on('pHip', 'change', e => { showHip = e.target.checked; render(); panel(); });
+  on('pHipRef', 'click', () => { const h = hipInfo(V.pose[cur()]); if (!h) return; V.hipRef = {y: h.y, f: cur()}; save(); render(); panel(); });
+  on('pHipDel', 'click', () => { delete V.hipRef; save(); render(); panel(); });
   on('lAll', 'click', () => { if (!confirm('Alle Linien, Winkel, Zeiten, Gerätepunkte, Maßstab und Skelette dieses Videos löschen?')) return; pushUndo(); V.marks = []; V.times = []; V.dev = {}; V.scale = null; V.pose = {}; save(); render(); panel(); });
 }
 
@@ -1150,10 +1189,14 @@ const LIVE = {
     {k: 'knee', leg: 'F', t: 'Vorderes Knie', min: 80, max: 100}, {k: 'knee', leg: 'B', t: 'Hinteres Knie', min: 110, max: 130}, {k: 'hipabove', t: 'Hüfte über Schultern'}, {k: 'hip', leg: 'F', t: 'Hüfte vorn'}]},
   ku_kraft: {n: 'Kugel · Stoßauslage (Kraftposition)', legs: 'hip', src: 'Richtwert: Druckbein-Knie ca. 120° (HLV, Manual Kugel Angleiten). Für das Stemmbein gibt es keinen festen Wert. Je nach Athlet anpassen.', ang: [
     {k: 'knee', leg: 'B', t: 'Druckbein-Knie (hinten)', min: 110, max: 130}, {k: 'knee', leg: 'F', t: 'Stemmbein-Knie (vorn)'}, {k: 'trunk', t: 'Rumpf zur Senkrechten'}, {k: 'elbow', leg: 'S', t: 'Ellbogen Stoßarm'}]},
+  sp_lauf: {n: 'Sprint · Laufen (Hüftlinie)', legs: 'hip', hip: true, src: 'Gelbe Linie waagerecht durch die Hüftmitte. „Höhe merken“ legt eine feste Bezugslinie fest, z. B. im aufrechten Laufen. Angezeigt wird, wie weit die Hüfte darüber (+) oder darunter (−) liegt und wie stark sie in den letzten 2 Sekunden auf und ab geht, jeweils in Prozent der Beinlänge. Keine festen Richtwerte, zum Vergleich innerhalb eines Laufs. Nur mit ruhiger, waagerechter Kamera von der Seite (Stativ), beim Mitschwenken stimmt die Bezugslinie nicht.', ang: [
+    {k: 'hipline', t: 'Hüfte zur Bezugslinie'}, {k: 'hiposc', t: 'Auf und Ab (2 s)'}, {k: 'trunk', t: 'Rumpf zur Senkrechten'}, {k: 'knee', leg: 'F', t: 'Knie vorn'}]},
   sp_stemm: {n: 'Speer / Ballwurf · Stemmschritt', legs: 'hip', src: 'Stemmbein gestreckt aufsetzen, nicht einknicken (Coach Athletics, „The Science of Javelin“). Als Zielbereich ist „fast gestreckt“ mit 160–180° gewählt. Je nach Athlet anpassen.', ang: [
     {k: 'knee', leg: 'F', t: 'Stemmbein-Knie (vorn)', min: 160, max: 180}, {k: 'knee', leg: 'B', t: 'Hinteres Knie'}, {k: 'trunk', t: 'Rumpf zur Senkrechten'}, {k: 'elbow', leg: 'S', t: 'Ellbogen Wurfarm'}]},
 };
-const live = {on: false, stream: null, face: 'environment', frozen: false, raf: 0, last: null, sel: null, miss: 0, ema: {}, fpsN: 0, fpsT: 0, rec: null, chunks: [], lock: null, ts: 0, edit: null};
+const live = {on: false, stream: null, face: 'environment', frozen: false, raf: 0, last: null, sel: null, miss: 0, ema: {}, fpsN: 0, fpsT: 0, rec: null, chunks: [], lock: null, ts: 0, edit: null, hipBuf: [], hipRef: null};
+const liveHipOn = () => !!(DB.liveHip || LIVE[livePreset()].hip);
+const NORANGE = ['hipabove', 'hipline', 'hiposc'];
 const lvid = $('lvid'), lcv = $('lcv'), lctx = lcv.getContext('2d');
 let LW = 300, LH = 200, ldpr = 1;
 const livePreset = () => LIVE[DB.livePreset] ? DB.livePreset : 'frei';
@@ -1185,7 +1228,7 @@ async function liveStart(){
   lvid.srcObject = live.stream; try { await lvid.play(); } catch (e) {}
   await new Promise(r => { if (lvid.videoWidth) r(); else lvid.addEventListener('loadedmetadata', r, {once: true}); });
   liveLayout();
-  live.on = true; live.frozen = false; live.last = null; live.sel = null; live.ema = {};
+  live.on = true; live.frozen = false; live.last = null; live.sel = null; live.ema = {}; live.hipBuf = []; live.hipRef = null;
   try { live.lock = await navigator.wakeLock.request('screen'); } catch (e) {}
   try {
     const p = await loadPose(); setBusy(null);
@@ -1266,6 +1309,14 @@ function liveValue(L, a, sides){
   if (a.k === 'hip') return {v: g(s.sh, s.hip, s.kn), j: s.hip};
   if (a.k === 'elbow') return {v: g(s.sh, s.el, s.wr), j: s.el};
   if (a.k === 'trunk'){ const A = poseAngles(L).trunk; return {v: isFinite(A) ? A : null, j: 11}; }
+  if (a.k === 'hipline'){
+    const h = hipInfo(L); if (!h || !h.leg) return null;
+    return {s: live.hipRef ? pctTxt((live.hipRef.y - h.y) / h.leg * 100) : 'merken', j: 23};
+  }
+  if (a.k === 'hiposc'){
+    const b = live.hipBuf; if (b.length < 6) return {s: '…', j: 23};
+    return {s: fmt(hipOsc(b.map(x => x[1]), b.map(x => x[2])), 1) + ' %', j: 23};
+  }
   if (a.k === 'hipabove'){
     const sl = P(L, 11), sr = P(L, 12), hl = P(L, 23), hr = P(L, 24); if (!sl || !sr || !hl || !hr) return null;
     return {b: (hl[1] + hr[1]) / 2 < (sl[1] + sr[1]) / 2};
@@ -1287,7 +1338,10 @@ function liveLoop(){
       const roi = liveRoi();
       L = livePick(liveCands(poseObj.detectForVideo(roi ? loff : lvid, ts), roi));
     } catch (e) { L = null; }
-    if (L){ live.last = L; live.miss = 0; }
+    if (L){ live.last = L; live.miss = 0;
+      const h = hipInfo(L), now = performance.now();
+      if (h && h.leg){ live.hipBuf.push([now, h.y, h.leg]); while (live.hipBuf.length && now - live.hipBuf[0][0] > 2000) live.hipBuf.shift(); }
+    }
     else if (++live.miss >= 4) live.last = null;   // mehrmals nichts gefunden: wieder im ganzen Bild nach der größten Person suchen
     live.fpsN++; const now = performance.now();
     if (now - live.fpsT > 1000){ $('lfps').textContent = Math.round(live.fpsN * 1000 / (now - live.fpsT)) + ' Bilder/s'; live.fpsN = 0; live.fpsT = now; }
@@ -1306,6 +1360,19 @@ function liveDraw(L){
   if (live.face === 'user'){ lctx.translate(LW, 0); lctx.scale(-1, 1); }
   lctx.drawImage(lvid, f.ox, f.oy, f.w, f.h);
   lctx.restore();
+  if (liveHipOn()){
+    if (live.hipRef){ const y = lmap([0, live.hipRef.y])[1]; lctx.setLineDash([9, 7]); lctx.beginPath(); lctx.moveTo(0, y); lctx.lineTo(LW, y); lctx.strokeStyle = 'rgba(255,255,255,.9)'; lctx.lineWidth = 2; lctx.stroke(); lctx.setLineDash([]); }
+    const h = hipInfo(L);
+    if (h){
+      const y = lmap([0, h.y])[1];
+      lctx.beginPath(); lctx.moveTo(0, y); lctx.lineTo(LW, y); lctx.strokeStyle = '#FFD400'; lctx.lineWidth = 3; lctx.stroke();
+      const d = live.hipRef && h.leg ? pctTxt((live.hipRef.y - h.y) / h.leg * 100) : '';
+      const t = 'Hüfte' + (d ? ' ' + d : ''); lctx.font = '700 15px Barlow, system-ui, sans-serif'; const w = lctx.measureText(t).width + 12;
+      const lx = LW - w - 8;   // rechts am Rand, damit es die Winkel am Gelenk nicht verdeckt
+      lctx.fillStyle = 'rgba(120,95,0,.92)'; lctx.beginPath(); lctx.roundRect ? lctx.roundRect(lx, y - 30, w, 24, 6) : lctx.rect(lx, y - 30, w, 24); lctx.fill();
+      lctx.fillStyle = '#fff'; lctx.fillText(t, lx + 6, y - 12);
+    }
+  }
   if (!L) return;
   lctx.lineCap = 'round';
   for (const [a, b, c] of BONES){ const A = P(L, a), B = P(L, b); if (!A || !B) continue; const p = lmap(A), q = lmap(B); lctx.beginPath(); lctx.moveTo(p[0], p[1]); lctx.lineTo(q[0], q[1]); lctx.strokeStyle = COL[c]; lctx.lineWidth = 4; lctx.stroke(); }
@@ -1329,6 +1396,7 @@ function liveTiles(L){
     const r = L ? liveValue(L, a, sides) : null, rg = liveRange(pid, i);
     let txt = '–', st = '';
     if (r && r.b != null){ txt = r.b ? 'ja' : 'nein'; st = r.b ? 'ok' : 'bad'; }
+    else if (r && r.s != null){ txt = r.s; }
     else if (r && r.v != null){
       const key = pid + i; live.ema[key] = live.ema[key] == null ? r.v : live.ema[key] * 0.5 + r.v * 0.5;
       const v = Math.round(live.ema[key]); txt = v + '°';
@@ -1342,10 +1410,12 @@ function renderLivePanel(){
   const pid = livePreset(), pr = LIVE[pid];
   $('lPreset').innerHTML = Object.entries(LIVE).map(([k, v]) => `<option value="${k}"${k === pid ? ' selected' : ''}>${esc(v.n)}</option>`).join('');
   $('lTiles').innerHTML = pr.ang.map((a, i) => { const rg = liveRange(pid, i);
-    return `<button type="button" class="ltile" data-lt="${i}"><b>–</b><span>${esc(a.t)}</span><span>${a.k === 'hipabove' ? 'Ziel: ja' : rg ? 'Ziel ' + rg[0] + '–' + rg[1] + '°' : 'ohne Ziel'}</span></button>`; }).join('');
+    return `<button type="button" class="ltile" data-lt="${i}"><b>–</b><span>${esc(a.t)}</span><span>${a.k === 'hipabove' ? 'Ziel: ja' : a.k === 'hipline' || a.k === 'hiposc' ? '% der Beinlänge' : rg ? 'Ziel ' + rg[0] + '–' + rg[1] + '°' : 'ohne Ziel'}</span></button>`; }).join('');
   $('lSrc').textContent = pr.src;
   const e = live.edit;
-  $('lEdit').innerHTML = e != null && pr.ang[e] && pr.ang[e].k !== 'hipabove' ? (() => { const rg = liveRange(pid, e) || ['', ''];
+  $('lHip').checked = liveHipOn(); $('lHip').disabled = !!pr.hip; $('lHipRef').hidden = !liveHipOn();
+  $('lHipRef').textContent = live.hipRef ? 'Bezug löschen' : 'Höhe merken';
+  $('lEdit').innerHTML = e != null && pr.ang[e] && !NORANGE.includes(pr.ang[e].k) ? (() => { const rg = liveRange(pid, e) || ['', ''];
     return `<div class="ledit"><b>${esc(pr.ang[e].t)}</b><div class="row" style="margin-top:6px">von <input type="number" inputmode="numeric" id="leMin" value="${rg[0]}"> bis <input type="number" inputmode="numeric" id="leMax" value="${rg[1]}"> Grad</div>
       <div class="btns"><button class="btn sm primary" id="leOk">Übernehmen</button><button class="btn sm" id="leNone">Ohne Ziel</button>${pr.ang[e].min != null ? '<button class="btn sm" id="leReset">Richtwert</button>' : ''}<button class="btn sm" id="leX">Schließen</button></div></div>`; })() : '';
   const set = v => { DB.live = DB.live || {}; DB.live[pid] = DB.live[pid] || {}; if (v === undefined) delete DB.live[pid][e]; else DB.live[pid][e] = v; saveNow(); live.edit = null; renderLivePanel(); };
@@ -1356,6 +1426,12 @@ function renderLivePanel(){
 $('liveBtn').onclick = liveStart;
 $('lClose').onclick = liveStop;
 $('lPreset').onchange = e => { DB.livePreset = e.target.value; live.edit = null; live.ema = {}; saveNow(); renderLivePanel(); };
+$('lHip').onchange = e => { DB.liveHip = e.target.checked; saveNow(); renderLivePanel(); };
+$('lHipRef').onclick = () => {
+  if (live.hipRef){ live.hipRef = null; renderLivePanel(); return; }
+  const h = hipInfo(live.cur || live.last); if (!h){ showMsg('Gerade ist keine Hüfte zu sehen. Athlet ganz ins Bild und erneut tippen.', 'info'); return; }
+  live.hipRef = {y: h.y}; renderLivePanel();
+};
 $('lTiles').addEventListener('click', e => { const t = e.target.closest('[data-lt]'); if (!t) return; live.edit = +t.dataset.lt; renderLivePanel(); });
 $('lFreeze').onclick = () => { live.frozen = !live.frozen; $('lFreeze').textContent = live.frozen ? 'Weiter' : 'Standbild'; $('lFreeze').classList.toggle('primary', live.frozen); };
 $('lFlip').onclick = async () => { live.face = live.face === 'user' ? 'environment' : 'user'; if (live.stream) live.stream.getTracks().forEach(t => t.stop()); live.on = false; cancelAnimationFrame(live.raf); await liveStart(); };
