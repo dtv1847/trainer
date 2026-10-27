@@ -147,7 +147,7 @@ body.running .appbar,body.running .subbar{display:none}
 </main>
 <div class="pov" id="impView" hidden><div class="povbox" id="impBox"></div></div>
 <div class="pov" id="spMapView" hidden><div class="povbox" id="spMapBox"></div></div>
-<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-24a · Spond</span></footer>
+<footer>Dürener TV 1847 · Abteilung Leichtathletik <span class="ver">Trainer-App · Version 2026-10-27b · Spond</span></footer>
 <script>
 (function(){
 /* ---------- Spond-Anbindung (gemeinsam für Start, Planung, Zirkel) ----------
@@ -167,7 +167,7 @@ const SPOND = (function(){
     o.groups = Array.isArray(o.groups) ? o.groups : [];
     o.events = Array.isArray(o.events) ? o.events : [];
     const m = (o.map && typeof o.map === 'object') ? o.map : {};
-    o.map = {sq: (m.sq && typeof m.sq === 'object') ? m.sq : {}, pg: (m.pg && typeof m.pg === 'object') ? m.pg : {}, done: !!m.done};
+    o.map = {sq: (m.sq && typeof m.sq === 'object') ? m.sq : {}, pg: (m.pg && typeof m.pg === 'object') ? m.pg : {}, done: !!m.done, ath: Array.isArray(m.ath) ? m.ath : null};
     return o;
   }
   function load(){ try { return norm(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch(e){ return norm(null); } }
@@ -269,7 +269,7 @@ const SPOND = (function(){
     return out;
   }
   const pgSubs = (gid, gname) => Array.isArray(st.map.pg[gid]) ? st.map.pg[gid] : suggestPg(gname);
-  function setMap(sq, pg){ st.map = {sq: sq || {}, pg: pg || {}, done: true}; save(); }
+  function setMap(sq, pg){ st.map = {sq: sq || {}, pg: pg || {}, done: true, ath: st.map.ath || null}; save(); }
 
   /* ---- Termine ---- */
   const evSubs = ev => ((ev.recipients && ev.recipients.group && ev.recipients.group.subGroups) || []).map(s => s.id);
@@ -453,7 +453,7 @@ const norm = s => String(s == null ? '' : s).trim().toLowerCase();
 const rid = () => Math.random().toString(36).slice(2,7);
 const clone = o => JSON.parse(JSON.stringify(o));
 function mergePlan(m, inc, st){
-  ['groups','lib','peaks','blocks'].forEach(k=>{ if (!Array.isArray(m[k])) m[k] = []; });
+  ['groups','lib','peaks','blocks','phases'].forEach(k=>{ if (!Array.isArray(m[k])) m[k] = []; });
   if (!m.units || typeof m.units !== 'object') m.units = {};
   if (!m.series || typeof m.series !== 'object') m.series = {};
   const gmap = {}, xmap = {};
@@ -496,6 +496,11 @@ function mergePlan(m, inc, st){
   let nP = 0;
   (inc.peaks||[]).forEach(p=>{ if (!p || m.peaks.some(x=>x.id===p.id || (norm(x.name)===norm(p.name) && x.date===p.date))) return;
     m.peaks.push(Object.assign(clone(p), {grp: p.grp === 'all' ? 'all' : (gmap[p.grp] || p.grp)})); nP++; });
+  let nPh = 0;
+  (inc.phases||[]).forEach(p=>{ if (!p) return; const grp = p.grp === 'all' ? 'all' : (gmap[p.grp] || p.grp);
+    if (m.phases.some(x=>x.id===p.id || (x.grp===grp && x.k===p.k && x.from===p.from && x.to===p.to))) return;
+    m.phases.push(Object.assign(clone(p), {grp})); nPh++; });
+  if (nPh) st.push(nPh + (nPh===1 ? ' Phase' : ' Phasen'));
   let nS = 0;
   Object.keys(inc.series||{}).forEach(g=>{ const t = gmap[g] || g; if (!m.groups.some(x=>x.id===t)) return;
     m.series[t] = m.series[t] || {};

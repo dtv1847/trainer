@@ -218,6 +218,8 @@ details.sp li{margin:4px 0}
 .stlist .n{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;font:700 15px var(--cond);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .stlist .nm{flex:1;min-width:0;font-weight:600}
 .stlist .nm small{display:block;font-weight:400;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stlist .nm{overflow-wrap:anywhere}
+@media (max-width:560px){ .stlist li{flex-wrap:wrap;row-gap:4px} .stlist .nm{flex:1 1 calc(100% - 100px)} .stlist .alt-btn{margin-left:87px} }
 .stlist .ic{width:48px;height:48px;flex:0 0 auto;border:1px solid var(--line);border-radius:8px;background:#fff;padding:2px;cursor:pointer;color:var(--ink)}
 
 /* ============ LAUF-ANSICHT ============ */
@@ -395,6 +397,12 @@ body.running .appbar,body.running .subbar{display:none}
     <div class="btns"><button class="btn small" type="button" id="stAdd">Hinzufügen</button></div>
   </div>
   <div class="block">
+    <div class="block-head"><h3>Vorlagen</h3></div>
+    <p class="note" style="margin:0 0 8px">Fertiger Zirkel mit 8 bis 10 Stationen. Ersetzt die Stationen oben, danach beliebig ändern.</p>
+    <div class="chips" id="tplChips"></div>
+    <p class="note" id="tplMsg"></p>
+  </div>
+  <div class="block">
     <div class="block-head"><h3>Übungen</h3><span class="tag" id="libCount">antippen zum Übernehmen</span></div>
     <div class="chips cats" id="libCats"></div>
     <input type="text" id="libSearch" placeholder="Übung suchen …" style="margin-top:10px" autocomplete="off">
@@ -495,7 +503,7 @@ body.running .appbar,body.running .subbar{display:none}
 </main>
 <div class="startbar" id="startBar"><div class="sb-in"><div class="sb-t" id="sbText"></div><button class="btn primary" type="button" id="sbBtn">Zirkel starten</button></div></div>
 
-<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-24b · Spond-Zusagen, U8/U10/Lauf</span></footer>
+<footer>Alles bleibt auf diesem Gerät gespeichert. <span class="ver">Zirkel · Version 2026-10-27b · Band, Ball, Turnen, Vorlagen</span></footer>
 </div>
 
 <!-- ============ LAUF ============ -->
@@ -720,6 +728,7 @@ function dv(a){ const r = a*Math.PI/180; return [Math.sin(r), Math.cos(r)]; }
 function wk(o, a, L){ const d = dv(a); return [o[0]+d[0]*L, o[1]+d[1]*L]; }
 function joints(q){
   q = Object.assign({}, STAND, q);
+  if (q.mir){ const m = a => -a; q = Object.assign({}, q, {t:m(q.t), h:q.h!=null?m(q.h):null, l:q.l.map(m), r:q.r.map(m), la:q.la.map(m), ra:q.ra.map(m), lft:q.lft!=null?m(q.lft):null, rft:q.rft!=null?m(q.rft):null}); }
   const J = {p:[0,0]};
   J.n = wk(J.p, q.t, SG.tr);
   J.s = wk(J.p, q.t, SG.tr - 2.5);
@@ -784,6 +793,28 @@ const PROPS = {
   board(x,w){ w = w || 26; return {s:`<path d="M${x-w/2} -7H${x+w/2}" stroke-width="4"/><path d="M${x-6} -6.5A6 6 0 0 0 ${x+6} -6.5" ${PS} fill="currentColor" fill-opacity=".3"/>`, p:[[x-w/2,-9],[x+w/2,0]]}; },
   txt(x,y,t){ return {s:`<text x="${x}" y="${y}" font-size="11" font-weight="700" font-family="sans-serif" text-anchor="middle" fill="currentColor" stroke="none">${t}</text>`, p:[[x-4,y-8],[x+4,y+1]]}; },
   sled(x,w,h,dir){ dir = dir || 1; const px = dir > 0 ? x+4 : x+w-4; return {s:`<path d="M${x-2} -1H${x+w}" stroke-width="3.6"/><rect x="${x}" y="-8" width="${w}" height="6" rx="1.5" fill="currentColor" fill-opacity=".35" stroke-width="2.6"/>`+(h?`<path d="M${px} -8V${-h}" stroke-width="3.6"/>`:''), p:[[x-2,-(h||8)],[x+w,0]]}; },
+  watch(x,y){ return {s:`<circle cx="${x}" cy="${y}" r="8.5" stroke-width="3"/><path d="M${x} ${y}V${y-5.5}M${x} ${y}L${x+4} ${y+2}" stroke-width="2.4"/><path d="M${x-2.5} ${y-11.5}h5" stroke-width="3"/>`, p:[[x-10,y-13],[x+10,y+10]]}; },
+  block(x){ return {s:`<path d="M${x} 0L${x+9} 0L${x+9} -7Z" fill="currentColor" fill-opacity=".5" stroke-width="2"/>`, p:[[x,-8],[x+10,0]]}; },
+  pit(x1,x2){ return {s:`<path d="M${x1} 1Q${(x1+x2)/2} 9 ${x2} 1Z" fill="currentColor" fill-opacity=".28" stroke="none"/><path d="M${x1-6} 0H${x1}" stroke-width="3"/>`, p:[[x1-6,0],[x2,9]]}; },
+  hjbar(x1,x2,h){ return {s:`<path d="M${x1} 0V${-h-6}M${x2} 0V${-h-6}" stroke-width="3"/><path d="M${x1} ${-h}H${x2}" stroke-width="2.2" stroke-dasharray="4 2"/>`, p:[[x1-2,-h-7],[x2+2,0]]}; },
+  matt(x1,x2,h){ return {s:`<rect x="${x1}" y="${-h}" width="${x2-x1}" height="${h}" rx="2.5" fill="currentColor" fill-opacity=".18" stroke-width="2.4"/>`, p:[[x1,-h],[x2,0]]}; },
+  tablet(x,y){ return {s:`<rect x="${x-14}" y="${y-10}" width="28" height="20" rx="3" stroke-width="3"/><path d="M${x-3} ${y-5}L${x+5} ${y}L${x-3} ${y+5}Z" fill="currentColor" stroke="none"/>`, p:[[x-15,y-11],[x+15,y+11]]}; },
+  bubble(x,y){ return {s:`<path d="M${x-12} ${y-8}h24a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-14l-6 5v-5h-4a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3z" stroke-width="2.4"/><path d="M${x-6} ${y-1}h12M${x-6} ${y+4}h8" stroke-width="2"/>`, p:[[x-16,y-9],[x+16,y+13]]}; },
+  tree(x){ return {s:`<path d="M${x} 0V-12" stroke-width="3.5"/><path d="M${x-11} -12L${x} -42L${x+11} -12Z" fill="currentColor" fill-opacity=".35" stroke-width="2.6"/>`, p:[[x-12,-43],[x+12,0]]}; },
+  slope(x1,x2,h){ return {s:`<path d="M${x1} 0L${x2} ${-h}L${x2} 0Z" fill="currentColor" fill-opacity=".15" stroke-width="2.6"/>`, p:[[x1,-h],[x2,0]]}; },
+  roller(x,y){ return {s:`<circle cx="${x}" cy="${y}" r="5.5" fill="currentColor" fill-opacity=".45" stroke-width="2.6"/>`, p:[[x-6,y-6],[x+6,y+6]]}; },
+  lane(x1,x2){ return {s:`<path d="M${x1} 2Q${(x1+x2)/2} 12 ${x2} 2M${x1} 7Q${(x1+x2)/2} 15 ${x2} 7" stroke-width="2.2" opacity=".6"/>`, p:[[x1,0],[x2,9]]}; },
+  bbox(x0,y0,x1,y1){ return {s:'', p:[[x0,y0],[x1,y1]]}; },
+  dice(x,y,s){ s = s || 12; const h = s/2, d = s*0.24, P = [[-d,-d],[d,d],[d,-d],[-d,d],[0,0]];
+    return {s:`<rect x="${x-h}" y="${y-h}" width="${s}" height="${s}" rx="2.5" stroke-width="2.6" fill="currentColor" fill-opacity=".08"/>` + P.map(([a,b])=>`<circle cx="${f1(x+a)}" cy="${f1(y+b)}" r="${f1(s*0.08)}" fill="currentColor" stroke="none"/>`).join(''), p:[[x-h-1,y-h-1],[x+h+1,y+h+1]]}; },
+  card(x,y,t,up){ return {s:`<rect x="${x-6}" y="${y-8}" width="12" height="16" rx="2" stroke-width="2.4" fill="currentColor" fill-opacity="${up?'0':'.3'}"/>` + (t ? `<text x="${x}" y="${y+3.5}" font-size="10" font-weight="700" font-family="sans-serif" text-anchor="middle" fill="currentColor" stroke="none">${t}</text>` : ''), p:[[x-7,y-9],[x+7,y+9]]}; },
+  flat(x,t){ return {s:`<rect x="${x-6}" y="-2.5" width="12" height="3" rx="1" fill="currentColor" fill-opacity="${t?'.85':'.35'}" stroke="none"/>`, p:[[x-6,-3],[x+6,0]]}; },
+  light(x,y,on){ on = on == null ? 0 : on; let c = ''; for (let i=0;i<3;i++) c += `<circle cx="${x}" cy="${y-9+i*9}" r="3" ${i===on?'fill="currentColor" stroke="none"':'stroke-width="1.8"'}/>`;
+    return {s:`<rect x="${x-6.5}" y="${y-15}" width="13" height="30" rx="3.5" stroke-width="2.6"/>` + c + `<path d="M${x} ${y+15}V0" stroke-width="2.6"/>`, p:[[x-7,y-16],[x+7,0]]}; },
+  grid(x,y,s){ s = s || 24; const a = s/3; let d = ''; for (let i=1;i<3;i++) d += `M${x+a*i} ${y}v${s}M${x} ${y+a*i}h${s}`;
+    return {s:`<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="2" stroke-width="2.4"/><path d="${d}" stroke-width="1.8"/><path d="M${x+2} ${y+2}l${a-4} ${a-4}M${x+a-2} ${y+2}l${-a+4} ${a-4}M${x+a*2+2} ${y+a+2}l${a-4} ${a-4}M${x+a*3-2} ${y+a+2}l${-a+4} ${a-4}" stroke-width="2"/>`, p:[[x-1,y-1],[x+s+1,y+s+1]]}; },
+  frisbee(x,y){ return {s:`<ellipse cx="${x}" cy="${y}" rx="7.5" ry="2.8" fill="currentColor" stroke="none"/>`, p:[[x-8,y-3],[x+8,y+3]]}; },
+  band(x,y,dx,dy){ return {s:`<path d="M${x} ${y}q${dx/2} ${dy+5} ${dx} ${dy}" stroke-width="2.4" stroke-dasharray="3 2"/>`, p:[[Math.min(x,x+dx),y-2],[Math.max(x,x+dx),y+dy+6]]}; },
   hoop(x){ return {s:`<ellipse cx="${x}" cy="3" rx="10" ry="3" ${PS}/>`, p:[[x-11,0],[x+11,6]]}; },
   signal(x,y){ return {s:`<circle cx="${x}" cy="${y}" r="7" ${PS}/><path d="M${x} ${y-4}V${y+0.8}" stroke-width="2.8"/><circle cx="${x}" cy="${y+3.4}" r="1.3" fill="currentColor" stroke="none"/>`, p:[[x-8,y-8],[x+8,y+8]]}; },
   speed(x,y){ return {s:`<path d="M${x} ${y}h-9M${x+2} ${y+7}h-12M${x} ${y+14}h-8" stroke-width="2.4" opacity=".6"/>`, p:[[x-10,y],[x+2,y+14]]}; },
@@ -803,13 +834,25 @@ const PROPS = {
 };
 function iconSvg(spec, opt){
   opt = opt || {};
-  let parts = [], pts = [], under = [], lastJ = null;
+  let parts = [], pts = [], under = [], lastJ = null, figs = [];
   for (const it of spec){
     const k = it[0];
-    if (k === 'F' || k === 'G'){ const J = placeFig(it[1]); parts.push(figSvg(J, k === 'G', it[1].fr)); lastJ = J; pts.push(...figPts(J)); }
+    if (k === 'F' || k === 'G'){ const J = placeFig(it[1]); parts.push(figSvg(J, k === 'G', it[1].fr)); lastJ = J; figs.push(J); pts.push(...figPts(J)); }
     else if (k === 'hball' || k === 'hsball'){ const j = lastJ[it[1]], x = j[0]+(it[2]||0), y = j[1]+(it[3]||0); const r = k==='hball' ? PROPS.ball(f1(x),f1(y),it[4]) : PROPS.sball(f1(x),f1(y)); parts.push(r.s); pts.push(...r.p); }
+    else if (k === 'link'){ const a = figs[it[1]][it[2]], b2 = figs[it[3]][it[4]]; parts.push(`<path d="M${f1(a[0])} ${f1(a[1])}L${f1(b2[0])} ${f1(b2[1])}" stroke-width="${it[5]||3}"/>`); }
+    else if (k === 'stick'){ const j = lastJ[it[1]], L = it[2], a = it[3]*Math.PI/180, dx = Math.sin(a)*L/2, dy = Math.cos(a)*L/2, o = it[4]||0;
+      const cx = j[0] + Math.sin(a)*o, cy = j[1] + Math.cos(a)*o;
+      parts.push(`<path d="M${f1(cx-dx)} ${f1(cy-dy)}L${f1(cx+dx)} ${f1(cy+dy)}" stroke-width="${it[5]||2.6}"/>`); pts.push([cx-dx,cy-dy],[cx+dx,cy+dy]); }
+    else if (k === 'hplate'){ const j = lastJ[it[1]]; const x = j[0]+(it[2]||0), y = j[1]+(it[3]||0), r = it[4]||7;
+      parts.push(`<circle cx="${f1(x)}" cy="${f1(y)}" r="${r}" stroke-width="3" fill="currentColor" fill-opacity=".35"/><circle cx="${f1(x)}" cy="${f1(y)}" r="1.6" fill="currentColor" stroke="none"/>`); pts.push([x-r,y-r],[x+r,y+r]); }
+    else if (k === 'hdisc'){ const j = lastJ[it[1]]; const x = j[0]+(it[2]||0), y = j[1]+(it[3]||0);
+      parts.push(`<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="6.5" ry="2.6" fill="currentColor" stroke="none"/>`); pts.push([x-7,y-3],[x+7,y+3]); }
+    else if (k === 'hdumb'){ const j = lastJ[it[1]]; const x = j[0]+(it[2]||0), y = j[1]+(it[3]||0);
+      parts.push(`<path d="M${f1(x)} ${f1(y-6)}V${f1(y+6)}" stroke-width="3"/><path d="M${f1(x-3)} ${f1(y-7)}h6M${f1(x-3)} ${f1(y+7)}h6" stroke-width="4"/>`); pts.push([x-4,y-8],[x+4,y+8]); }
     else if (k === 'hsled'){ const h = lastJ.rh; const r = PROPS.sled(f1(h[0]-4), 26, f1(-h[1])); parts.push(r.s); pts.push(...r.p); }
     else if (k === 'jline'){ const a = lastJ[it[1]]; parts.push(`<path d="M${f1(a[0])} ${f1(a[1])}L${it[2]} ${it[3]}" stroke-width="2.4"/>`); }
+    else if (k === 'jpath'){ const j = lastJ[it[1]]; parts.push(`<path d="M${f1(j[0])} ${f1(j[1])}${it[2]}" stroke-width="${it[3]||2.4}"${it[4]?' stroke-dasharray="'+it[4]+'"':''}/>`); }
+    else if (k === 'jat'){ const j = lastJ[it[1]]; const r = PROPS[it[2]](f1(j[0]+it[3]), f1(j[1]+it[4]), ...it.slice(5)); parts.push(r.s); pts.push(...r.p); }
     else if (k === 'hband'){ const a = lastJ.lh, b = lastJ.rh; parts.push(`<path d="M${f1(a[0])} ${f1(a[1])}L${f1(b[0])} ${f1(b[1])}" stroke-width="2.6"/>`); }
     else { const r = PROPS[k](...it.slice(1)); (k==='mat'||k==='ladder'||k==='floorline'||k==='hoop' ? under : parts).push(r.s); pts.push(...r.p); }
   }
@@ -995,6 +1038,130 @@ const EX = [
  s:[['wall',-24,74,-1],['F',{t:180,r:[2,0],l:[70,70],la:[-80,-80],ra:[30,60],x:-8}],['G',{t:180,r:[2,0],l:[-40,-40],la:[-80,-80],ra:[30,60],x:-8}],['turn',-8,-36,30,-10,60]]}
 ];
 const GENERIC = [['cone',-30],['cone',30],['F',{t:180,la:[-30,-150],ra:[30,150]}]];
+/* ===== Erweiterung 2026-10-27: Band, Gymnastikball, Turnen und Geräte, Hallenzirkel ===== */
+Object.assign(PROPS, {
+  // Minitrampolin: Sprungtuch mit Rahmen und schrägen Beinen
+  tramp(x, w){ w = w || 34; return {s:`<path d="M${x} -9H${x+w}" stroke-width="4"/><path d="M${x+3} -9L${x} 0M${x+w-3} -9L${x+w} 0" ${PS}/><path d="M${x+4} -8Q${x+w/2} -4 ${x+w-4} -8" stroke-width="2" opacity=".6"/>`, p:[[x-1,-11],[x+w+1,0]]}; },
+  // Sprossenwand: zwei Holme, Sprossen alle 9
+  rungs(x, h, w){ w = w || 14; let d = ''; for (let y = -9; y > -h; y -= 9) d += `M${x} ${y}H${x+w}`; return {s:`<path d="M${x} 0V${-h}M${x+w} 0V${-h}" stroke-width="3.6"/><path d="${d}" stroke-width="2.4"/>`, p:[[x-2,-h],[x+w+2,0]]}; },
+  // Ringe: Seile von oben, zwei Ringe
+  rings(x, y, top){ top = top == null ? y - 34 : top; return {s:`<path d="M${x-5} ${top}V${y-4}M${x+5} ${top}V${y-4}" stroke-width="2" opacity=".7"/><circle cx="${x-5}" cy="${y}" r="4" stroke-width="2.8"/><circle cx="${x+5}" cy="${y}" r="4" stroke-width="2.8"/>`, p:[[x-10,top],[x+10,y+5]]}; },
+  // Schlaufe (Miniband) als kleine Ellipse
+  loop(x, y, w){ w = w || 9; return {s:`<ellipse cx="${x}" cy="${y}" rx="${w}" ry="3" stroke-width="2.4" stroke-dasharray="3 2"/>`, p:[[x-w-1,y-4],[x+w+1,y+4]]}; },
+  // Barren: zwei Holme auf Stützen
+  pbars(x1, x2, h){ return {s:`<path d="M${x1} ${-h}H${x2}" stroke-width="4"/><path d="M${x1} ${-h-4}H${x2}" stroke-width="2.4" opacity=".55"/><path d="M${x1+6} ${-h}V0M${x2-6} ${-h}V0" ${PS}/>`, p:[[x1,-h-6],[x2,0]]}; },
+  // Reck: Stange auf zwei Pfosten
+  hbar(x1, x2, h){ return {s:`<path d="M${x1} 0V${-h}M${x2} 0V${-h}" stroke-width="3.2"/><path d="M${x1} ${-h}H${x2}" stroke-width="3.6"/>`, p:[[x1-2,-h-2],[x2+2,0]]}; }
+});
+CATS.push(['band', 'Band'], ['ball', 'Gymnastikball'], ['turnen', 'Turnen & Geräte']);
+const BALLR = 11;
+EX.push(
+/* ---------- Band: Schlaufe (Miniband) und langes Band ---------- */
+{id:'mb_walk', n:'Monster Walk mit Schlaufe', a:['Seitgehen mit Miniband','Monster Walk'], c:'band', cue:'Schlaufe über den Knien oder an den Fußgelenken. Leichte Hocke, Knie zeigen nach außen. Kleine Schritte seitwärts, die Schlaufe bleibt immer gespannt.',
+ s:[['F',{fr:1,t:172,l:[-24,-6],r:[24,6],la:[-20,10],ra:[20,-10]}],['jat','p','loop',0,20,12],['arrow',[-40,-30,-58,-30]]]},
+{id:'mb_clam', n:'Muschel mit Schlaufe', a:['Clamshell'], c:'band', cue:'Seitlage, Knie gebeugt, Schlaufe über den Knien. Füße bleiben zusammen, oberes Knie gegen die Schlaufe öffnen und langsam schließen. Becken kippt nicht nach hinten.',
+ s:[['mat',-46,44],['F',{t:-90,h:-90,l:[96,-150],r:[140,-120],la:[-92,-92],ra:[40,80]}],['loop',14,-12,7],['arrow',[30,-30,24,-44]]]},
+{id:'mb_bridge', n:'Hüftheben mit Schlaufe', c:'band', cue:'Rückenlage, Schlaufe über den Knien. Knie gegen die Schlaufe leicht nach außen drücken und den Po hochschieben, bis Knie, Hüfte und Schulter eine Linie bilden.',
+ s:[['mat',-44,30],['F',{t:-68,h:-95,l:[111,4],r:[112,5],la:[95,92],ra:[96,94],pin:['rf',20,-3.3]}],['jat','rk','loop',0,0,6]]},
+{id:'mb_squat', n:'Kniebeuge mit Schlaufe', c:'band', cue:'Schlaufe über den Knien. Tief in die Kniebeuge, die Knie drücken dabei aktiv nach außen und bleiben über den Füßen. Gerader Rücken.',
+ s:[['F',SQ],['jat','rk','loop',-2,0,7],['arrow',[-28,-56,-28,-30],true]]},
+{id:'mb_knee', n:'Kniehub mit Schlaufe', a:['Sprinter-Kniehub'], c:'band', cue:'Schlaufe um die Fußballen. Aufrecht stehen, ein Knie gegen den Zug aktiv nach vorn oben ziehen wie beim Sprint, Arme schwingen gegengleich. Seite wechseln.',
+ s:[['F',{t:180,r:[95,0],l:[-2,0],la:[-40,40],ra:[40,140]}],['jat','lf','loop',2,-2,8]]},
+{id:'lb_pallof', n:'Pallof-Press mit Band', a:['Anti-Rotation'], c:'band', cue:'Band seitlich auf Brusthöhe befestigen. Seitlich dazu stehen, Band vor der Brust halten und gerade nach vorn drücken. Der Rumpf darf sich nicht zum Band drehen.',
+ s:[['post',-46,64],['F',{fr:1,t:180,l:[-12,0],r:[12,0],la:[90,90],ra:[90,90]}],['path','M-46 -46Q-24 -42 -2 -46',2.4,'3 2'],['arrow',[16,-58,34,-58]]]},
+{id:'lb_press', n:'Brustdrücken mit Band', c:'band', cue:'Band hinter dem Rücken auf Schulterhöhe. Schrittstellung, Hände vor der Brust nach vorn drücken, langsam zurück. Schultern bleiben unten.',
+ s:[['F',{t:180,r:[14,0],l:[-10,0],la:[90,90],ra:[88,88]}],['path','M-12 -50Q-4 -36 30 -52',2.4,'3 2'],['arrow',[34,-60,50,-60]]]},
+{id:'lb_overhead', n:'Überkopfdrücken mit Band', c:'band', cue:'Auf dem Band stehen, Enden in Schulterhöhe. Arme nach oben strecken, ohne ins Hohlkreuz zu gehen. Langsam zurück.',
+ s:[['F',{fr:1,t:180,l:[-8,0],r:[8,0],la:[-170,-178],ra:[170,178]}],['path','M-8 0Q-22 -40 -10 -86M8 0Q22 -40 10 -86',2.2,'3 2']]},
+{id:'lb_kick', n:'Beinrückheben mit Band', a:['Kickback'], c:'band', cue:'Band um beide Fußgelenke oder vorn befestigt. Aufrecht, Hände an der Wand. Gestrecktes Bein kontrolliert nach hinten führen, ohne ins Hohlkreuz zu fallen.',
+ s:[['wall',30,74,-1],['F',{t:172,r:[0,0],l:[-30,-30],la:[70,80],ra:[70,82]}],['path','M2 -2Q-8 -6 -14 -4',2.2,'3 2'],['arrow',[-24,-12,-40,-20]]]},
+{id:'lb_ankle', n:'Fußgelenk kräftigen mit Band', c:'band', cue:'Im Sitzen, Band um den Fußballen, Enden in den Händen. Fuß gegen den Widerstand strecken und langsam zurück, dann nach innen und außen. Beugt Umknicken vor.',
+ s:[['mat',-44,44],['F',{t:-160,h:-170,r:[92,90],l:[90,88],la:[110,96],ra:[112,98],pin:['p',-24,-4]}],['path','M14 -22Q30 -18 38 -4',2.4,'3 2']]},
+{id:'lb_ham', n:'Beinrückseite dehnen mit Band', c:'band', cue:'Rückenlage, Band um den Fuß. Bein gestreckt nach oben ziehen, bis es hinten leicht zieht. 30 Sekunden halten, ruhig atmen, Seite wechseln.',
+ s:[['mat',-46,44],['F',{t:-90,h:-90,l:[90,90],r:[178,178],la:[160,160],ra:[158,158]}],['path','M-2 -44Q-2 -50 -2 -56',2.4,'3 2']]},
+/* ---------- Gymnastikball (Pezziball) ---------- */
+{id:'gb_plank', n:'Unterarmstütz auf dem Gymnastikball', a:['Plank auf dem Pezziball'], c:'ball', cue:'Unterarme auf dem Ball, Körper gestreckt wie beim Unterarmstütz. Ball ruhig halten, Bauch fest, Po nicht hoch. Für mehr Schwierigkeit kleine Kreise mit den Armen.',
+ s:[['ball',26,-BALLR,BALLR],['F',{t:110,h:112,l:[-72,-72],r:[-73,-73],la:[10,90],ra:[12,90],pin:['re',22,-21]}]]},
+{id:'gb_bridge', n:'Hüftheben mit Füßen auf dem Ball', c:'ball', cue:'Rückenlage, Fersen auf dem Ball, Arme neben dem Körper. Po hochschieben, bis der Körper gerade ist. Kurz halten, langsam ablassen.',
+ s:[['mat',-46,40],['ball',30,-BALLR,BALLR],['F',{t:-82,h:-92,l:[100,82],r:[101,83],la:[95,92],ra:[96,94],pin:['rf',30,-20]}]]},
+{id:'gb_curl', n:'Beinbeuger mit Fersen auf dem Ball', c:'ball', cue:'Rückenlage, Fersen auf dem Ball, Hüfte hoch. Ball mit den Fersen zum Po rollen und wieder wegschieben, die Hüfte bleibt oben.',
+ s:[['mat',-46,40],['ball',22,-BALLR,BALLR],['F',{t:-66,h:-95,l:[118,30],r:[120,32],la:[95,92],ra:[96,94],pin:['rf',20,-20]}],['arrow',[40,-30,26,-30]]]},
+{id:'gb_tuck', n:'Knie zur Brust auf dem Ball', a:['Ball-Klappmesser'], c:'ball', cue:'Liegestützposition, Schienbeine auf dem Ball. Knie zur Brust ziehen, der Ball rollt mit, dann wieder strecken. Hüfte nicht durchhängen lassen.',
+ s:[['ball',-30,-BALLR,BALLR],['F',{t:112,h:118,l:[-30,-100],r:[-32,-102],la:[2,2],ra:[0,0]}],['arrow',[-30,-36,-12,-36]]]},
+{id:'gb_back', n:'Rückenstrecker über dem Ball', c:'ball', cue:'Bauchlage über dem Ball, Füße an der Wand oder breit am Boden. Oberkörper langsam heben, bis er gerade ist, Blick zum Boden. Nicht ins Hohlkreuz überstrecken.',
+ s:[['ball',0,-BALLR,BALLR],['F',{t:100,h:104,l:[-110,-100],r:[-112,-102],la:[160,160],ra:[162,162],pin:['p',-6,-21]}]]},
+{id:'gb_crunch', n:'Crunch auf dem Ball', c:'ball', cue:'Rücken auf dem Ball, Füße hüftbreit am Boden. Oberkörper leicht einrollen und zurück, der Ball bleibt ruhig. Hände an den Schläfen, nicht am Kopf ziehen.',
+ s:[['ball',-6,-BALLR,BALLR],['F',{t:-120,h:-140,l:[100,0],r:[102,2],la:[-150,40],ra:[-150,40],pin:['p',-2,-22]}]]},
+{id:'gb_wall', n:'Wandkniebeuge mit Ball', c:'ball', cue:'Ball zwischen unterem Rücken und Wand. Langsam in die Kniebeuge rollen, bis die Oberschenkel fast waagerecht sind, und wieder hoch. Knie über den Füßen.',
+ s:[['wall',-16,76,-1],['ball',-6,-40,9],['F',{t:180,l:[80,0],r:[81,1],la:[30,60],ra:[32,62],x:6}]]},
+{id:'gb_pass', n:'Ball übergeben Hand zu Fuß', a:['Ball-Übergabe'], c:'ball', cue:'Rückenlage, Ball über dem Kopf in den Händen. Arme und Beine gleichzeitig heben, Ball an die Füße übergeben, beide ablegen. Dann zurück an die Hände.',
+ s:[['mat',-46,44],['F',{t:-90,h:-90,l:[140,140],r:[142,142],la:[-150,-150],ra:[-148,-148]}],['ball',-6,-48,9]]},
+/* ---------- Turnen und Geräte ---------- */
+{id:'t_roll', n:'Rolle vorwärts und rückwärts', a:['Purzelbaum'], c:'turnen', cue:'Auf der Matte: Hände schulterbreit aufsetzen, Kinn auf die Brust, rund machen und über den Rücken abrollen. Rückwärts: Hände neben den Ohren mitdrücken. Mit Hilfestellung beginnen.',
+ s:[['mat',-46,46],['F',{t:122,h:96,l:[70,-30],r:[72,-28],la:[40,8],ra:[42,10],x:-12}],['turn',10,-46,22,200,500]]},
+{id:'t_dive', n:'Hechtrolle über ein Hindernis', c:'turnen', cue:'Kurzer Anlauf, beidbeiniger Absprung, Arme nach vorn. Über ein niedriges Hindernis (Schaumstoffrolle, Zauberschnur) auf die Matte stützen und weich abrollen. Erst ab sicherer Rolle.',
+ s:[['mat',-10,50],['roller',-14,-6],['F',{t:105,h:110,l:[-80,-80],r:[-82,-82],la:[100,100],ra:[102,102],air:22,x:-6}],['arrow',[-40,-20,-20,-50,10,-30]]]},
+{id:'t_cart', n:'Rad', c:'turnen', cue:'Seitlich zur Bewegungsrichtung, Arme oben. Hand, Hand, Fuß, Fuß nacheinander auf einer Linie aufsetzen, Beine gestreckt und breit. Mit Linie oder Matte als Hilfe.',
+ s:[['mat',-46,46],['F',{fr:1,t:0,h:0,l:[150,150],r:[-150,-150],la:[-170,-170],ra:[170,170]}],['turn',0,-50,40,200,340]]},
+{id:'t_wallhs', n:'Handstand an der Wand', a:['Wand hochlaufen'], c:'turnen', cue:'Bauch zur Wand: Hände vor der Wand aufsetzen, mit den Füßen die Wand hochlaufen, so weit es sicher geht. Körper fest, Arme gestreckt, Blick zwischen die Hände. Kontrolliert zurücklaufen.',
+ s:[['wall',24,96,1],['mat',-30,24],['F',{t:0,h:0,l:[178,178],r:[176,176],la:[0,0],ra:[2,2],pin:['rh',12,-1]}]]},
+{id:'t_bridge', n:'Brücke', c:'turnen', cue:'Rückenlage, Füße aufgestellt, Hände neben den Ohren mit den Fingern zu den Schultern. Hüfte und Bauch nach oben drücken, Arme strecken. Nur aufwärmt und ohne Schmerzen.',
+ s:[['mat',-46,46],['F',{t:-70,h:-30,l:[40,0],r:[42,2],la:[-5,0],ra:[-3,0]}]]},
+{id:'t_candle', n:'Kerze', a:['Schulterstand'], c:'turnen', cue:'Rückenlage, Beine über den Kopf schwingen, Hände stützen die Hüfte. Beine senkrecht nach oben strecken und halten. Nacken entlasten, Kopf nicht drehen.',
+ s:[['mat',-46,46],['F',{t:0,h:-90,l:[180,180],r:[178,178],la:[90,180],ra:[92,178]}]]},
+{id:'t_kneeup', n:'Hängendes Knieheben an der Sprossenwand', c:'turnen', cue:'Rücken zur Sprossenwand hängen, Arme gestreckt. Knie langsam zur Brust ziehen und kontrolliert senken, ohne Schwung. Leichter: Knie nur bis waagerecht.',
+ s:[['rungs',-28,92],['F',{t:180,l:[90,0],r:[92,2],la:[176,176],ra:[178,178],pin:['rh',-20,-88]}]]},
+{id:'t_sidebar', n:'Seitstütz an der Sprossenwand', c:'turnen', cue:'Füße seitlich in einer unteren Sprosse, Unterarm am Boden. Hüfte hochdrücken, Körper gerade. Seite wechseln.',
+ s:[['rungs',26,52],['F',{t:-102,h:-110,l:[78,78],r:[77,77],la:[0,90],ra:[178,178],pin:['rf',28,-17]}]]},
+{id:'t_tuckhang', n:'Schwebehang am Reck', c:'turnen', cue:'An der Reckstange hängen, Arme leicht gebeugt, Knie angehockt. So lange wie möglich ruhig halten. Absprung und Abgang mit Hilfestellung, Matte unter dem Reck.',
+ s:[['hbar',-30,30,90],['mat',-34,34],['F',{fr:1,t:180,l:[-80,0],r:[80,0],la:[-140,-176],ra:[140,176],pin:['rh',8,-90]}]]},
+{id:'t_parwalk', n:'Stützlaufen am Barren', c:'turnen', cue:'Im Stütz zwischen den Holmen, Arme gestreckt, Schultern tief. Hand vor Hand vorwärts und rückwärts gehen. Leichter: Barren niedrig, Füße am Boden.',
+ s:[['pbars',-46,46,40],['F',{t:178,l:[10,0],r:[-6,4],la:[4,0],ra:[0,0],pin:['rh',6,-40]}],['arrow',[24,-62,40,-62]]]},
+{id:'t_parswing', n:'Stützschwingen am Barren', c:'turnen', cue:'Im Stütz zwischen den Holmen, Arme gestreckt. Gestreckte Beine aus der Schulter vor und zurück schwingen. Körper fest, Schultern bleiben über den Händen.',
+ s:[['pbars',-40,40,40],['G',{t:178,l:[-30,-30],r:[-32,-32],la:[2,0],ra:[0,0],pin:['rh',0,-40]}],['F',{t:178,l:[40,40],r:[42,42],la:[2,0],ra:[0,0],pin:['rh',0,-40]}]]},
+{id:'t_vault', n:'Hocke über den Kasten', c:'turnen', cue:'Kurzer Anlauf, beidbeiniger Absprung vom Brett. Hände auf den Kasten, Knie anhocken und über den Kasten, sicher auf der Matte landen. Immer mit Hilfestellung.',
+ s:[['board',-40,22],['box',-14,30,26],['mat',22,56],['F',{t:140,h:150,l:[60,-60],r:[62,-58],la:[8,6],ra:[10,8],pin:['rh',2,-27]}]]},
+{id:'t_straddle', n:'Grätsche über den Kasten', c:'turnen', cue:'Anlauf, Absprung vom Brett, Hände vorn auf den Kasten. Beine breit grätschen und über den Kasten, aufrecht landen. Mit Hilfestellung vorn, Kasten quer und niedrig beginnen.',
+ s:[['board',-40,22],['box',-14,30,26],['mat',22,56],['F',{fr:1,t:150,h:160,l:[-60,-60],r:[60,60],la:[8,6],ra:[-8,-6],pin:['rh',4,-27]}]]},
+{id:'t_kneejump', n:'Aufknien und Strecksprung', c:'turnen', cue:'Aus dem Knien auf der Matte schnell auf die Füße springen und direkt in einen Strecksprung, landen auf dem Weichboden. Arme schwingen mit.',
+ s:[['matt',0,46,10],['G',{t:180,l:[-90,0],r:[-92,0],la:[-30,-20],ra:[-30,-20],x:-28}],['F',{t:180,l:[-4,0],r:[2,0],la:[176,176],ra:[178,178],air:12,x:16}],['arrow',[-24,-40,-6,-80,10,-60]]]},
+{id:'t_benchpull', n:'Langbank hochziehen', a:['Bankziehen','Sitzbank hochziehen'], c:'turnen', cue:'Langbank schräg in die Sprossenwand einhängen. In Bauchlage auf der Bank liegen und sich mit beiden Armen gleichzeitig Zug um Zug nach oben ziehen. Leichter: Bank flach, auf dem Boden ziehen.',
+ s:[['rungs',34,70],['path','M-46 0L36 -40',3],['path','M-40 1V-3M30 -36V-32',2.4],['F',{t:116,h:118,l:[-64,-64],r:[-65,-65],la:[150,120],ra:[148,118],pin:['p',-12,-30]}],['arrow',[8,-56,24,-64]]]},
+{id:'t_benchhop', n:'Seitliches Überspringen der Langbank', c:'turnen', cue:'Seitlich neben der Langbank, Hände auf der Bank. Beine geschlossen von einer Seite zur anderen springen. Leichter: ohne Hände, nur über eine Linie.',
+ s:[['bench',-24,48,12],['F',{fr:1,t:150,l:[50,10],r:[52,12],la:[8,4],ra:[-8,-4],pin:['rh',4,-12]}],['arrow',[-30,-30,0,-60,30,-30]]]},
+{id:'t_ringhold', n:'Stützhalten an den Ringen', c:'turnen', cue:'Ringe niedrig, Füße am Boden oder Knie angehockt. In den Stütz drücken, Arme gestreckt, Ringe eng am Körper. Wenige Sekunden halten.',
+ s:[['rings',0,-36,-92],['F',{fr:1,t:180,l:[-10,60],r:[10,60],la:[-8,0],ra:[8,0],pin:['rh',5,-36]}]]},
+{id:'t_ringrow', n:'Rudern unter den Ringen', c:'turnen', cue:'Unter den Ringen liegen, Ringe greifen, Körper gestreckt, Fersen am Boden. Brust zu den Ringen ziehen, langsam ablassen. Je flacher, desto schwerer.',
+ s:[['rings',22,-50,-92],['F',{t:116,h:118,l:[-64,-64],r:[-65,-65],la:[150,180],ra:[152,182],pin:['rh',22,-50]}]]},
+{id:'tramp_ski', n:'Skifahrer auf dem Minitrampolin', a:['Skifahrer Trampolin'], c:'turnen', cue:'Stehend auf dem Minitrampolin, Füße eng zusammen. Kleine, schnelle Sprünge seitlich hin und her wie beim Wedeln, Oberkörper bleibt ruhig über der Mitte.',
+ s:[['tramp',-20,40],['F',{t:174,h:178,l:[18,-14],r:[20,-12],la:[-30,60],ra:[30,70],pin:['rf',4,-12]}],['arrow',[-30,-54,30,-54],true]]},
+{id:'pole_plank', n:'Plank mit Stange', a:['Stabi mit der Stange','Unterarmstütz mit Stange'], c:'turnen', cue:'Unterarmstütz, Gymnastikstange schräg vor dem Körper greifen und kräftig schräg nach unten in den Boden drücken. Rumpf fest, Po nicht hoch. 20 bis 30 Sekunden halten.',
+ s:[['mat',-44,40],['F',{t:97,l:[-73,-73],r:[-74,-74],la:[0,90],ra:[2,90],h:100}],['path','M14 -2L40 -30',3.4],['arrow',[42,-40,32,-24]]]},
+{id:'kk_ball', n:'Koordination plus Kopf: Ball und Farben', a:['Ball und Farben ansagen'], c:'koord', cue:'Zu zweit einen Ball zuwerfen. Der Partner ruft vor jedem Wurf eine Farbe oder Zahl, je nach Ansage mit links oder rechts fangen. Regeln alle paar Minuten ändern.',
+ s:[['F',{t:180,ra:[150,175],la:[-30,-10],x:-26}],['F',{t:178,mir:1,ra:[60,90],la:[60,90],x:26}],['path','M-20 -94 Q2 -110 22 -94',2,'3 3'],['sball',0,-104],['bubble',-22,-100]]},
+{id:'boxpush', n:'Liegestütz mit Händen auf dem Kasten', a:['Liegestütz erhöht'], c:'ober', cue:'Hände schulterbreit auf dem Kastendeckel, Körper gestreckt. Brust zum Kasten senken und hochdrücken. Je höher der Kasten, desto leichter.',
+ s:[['box',22,26,22],['F',{t:110,l:[-60,-60],r:[-61,-61],la:[0,0],ra:[2,2],h:112,pin:['rh',30,-22]}]]}
+);
+/* Belastete Regionen (Zirkel: Ersatz bei Schonung) */
+const LOADS_MORE = {
+ mb_walk:['knie','huefte'], mb_clam:['huefte'], mb_bridge:[], mb_squat:['knie'], mb_knee:['huefte','fuss'],
+ lb_pallof:['schulter'], lb_press:['schulter','hand'], lb_overhead:['schulter'], lb_kick:['huefte','ruecken'], lb_ankle:['fuss'], lb_ham:[],
+ gb_plank:['schulter'], gb_bridge:[], gb_curl:['knie'], gb_tuck:['schulter','hand'], gb_back:['ruecken'], gb_crunch:['ruecken'], gb_wall:['knie'], gb_pass:['ruecken'],
+ t_roll:['ruecken','schulter'], t_dive:['schulter','ruecken','hand'], t_cart:['hand','schulter'], t_wallhs:['schulter','hand'], t_bridge:['ruecken','schulter','hand'], t_candle:['ruecken'],
+ t_kneeup:['schulter','hand'], t_sidebar:['schulter'], t_tuckhang:['schulter','hand'], t_parwalk:['schulter','hand'], t_parswing:['schulter','hand'],
+ t_vault:['hand','schulter','knie'], t_straddle:['hand','schulter','huefte'], t_kneejump:['knie','fuss'], t_benchpull:['schulter','hand'], t_benchhop:['knie','fuss','hand'],
+ t_ringhold:['schulter','hand'], t_ringrow:['schulter','hand'], tramp_ski:['knie','fuss'], pole_plank:['schulter'], kk_ball:['hand'], boxpush:['schulter','hand']
+};
+/* Zirkel-Vorlagen: Stationen nach Namen (EX.n) */
+const ZTPL = [
+ {k:'turnen', n:'Hallenzirkel Turnen', st:['Rolle vorwärts und rückwärts','Langbank hochziehen','Stützlaufen am Barren','Hängendes Knieheben an der Sprossenwand','Hocke über den Kasten','Skifahrer auf dem Minitrampolin','Schwebehang am Reck','Plank mit Stange','Balancieren auf der Bank','Seitliches Überspringen der Langbank']},
+ {k:'sprung', n:'Sprungkraft', st:['Kastensprünge','Hürdensprünge','Seilspringen','Weitsprung aus dem Stand','Schlittschuhsprünge','Fußgelenksprünge','Seitliches Überspringen der Langbank','Aufknien und Strecksprung']},
+ {k:'rumpf', n:'Rumpf', st:['Unterarmstütz','Plank mit Stange','Seitstütz','Käfer (Dead Bug)','Unterarmstütz auf dem Gymnastikball','Hüftheben mit Füßen auf dem Ball','Rückenstrecker über dem Ball','Pallof-Press mit Band','Russian Twist','Vierfüßlerstand diagonal']},
+ {k:'bandball', n:'Band und Ball', st:['Monster Walk mit Schlaufe','Kniebeuge mit Schlaufe','Muschel mit Schlaufe','Pallof-Press mit Band','Rudern mit Band','Beinbeuger mit Fersen auf dem Ball','Knie zur Brust auf dem Ball','Crunch auf dem Ball']},
+ {k:'koord', n:'Koordination', st:['Koordinationsleiter','Balancieren auf der Bank','Skifahrer auf dem Minitrampolin','Ball prellen im Laufen','Koordination plus Kopf: Ball und Farben','Reifensprünge','Standwaage','Zielwurf']}
+];
+
+/* ===== Ende Erweiterung ===== */
 
 const EXN = {}, EXI = {};
 EX.forEach(e=>{ EXN[e.n.toLowerCase()] = e; EXI[e.id] = e; (e.a||[]).forEach(x=>{ if (!EXN[x.toLowerCase()]) EXN[x.toLowerCase()] = e; }); });
@@ -1036,9 +1203,13 @@ const ALTPREF = {
  wurf:   ['chestpass','throwwall','mbput','bandpull','row','bridge','wallsit','deadbug'],
  schnell:['chestpass','mbslam','throwwall','bandpull','bridge','plank','deadbug'],
  koord:  ['target','dribble','balance','wallsit','plank','bridge','deadbug'],
- mobil:  ['armcircle','hipflexor','worldsbest','legswing','deadbug','bridge']
+ mobil:  ['armcircle','hipflexor','worldsbest','legswing','deadbug','bridge'],
+ band:   ['mb_bridge','lb_pallof','row','bandpull','gb_bridge','deadbug','bridge'],
+ ball:   ['gb_bridge','gb_pass','deadbug','bridge','plank','wallsit'],
+ turnen: ['plank','pole_plank','deadbug','bridge','row','bandpull','balance','wallsit']
 };
 const ALTANY = ['deadbug','bridge','wallsit','balance','armcircle','plank'];
+Object.assign(LOADS, LOADS_MORE);
 EX.forEach(e=>{ e.L = LOADS[e.id] || []; });
 function todayStr(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
 function injOf(name){ return (db.day.inj[name] || []).filter(r=>REGS[r]); }
@@ -1046,10 +1217,13 @@ function exOfStation(name){ const id = icoId(name); return id ? EXI[id] : null; 
 /* Ersatz für eine Station bei gegebenen Regionen; null = Übung ist unkritisch */
 /* Verwandte Bereiche: ähnliche Trainingswirkung, wenn im eigenen Bereich nichts passt */
 const RELATED = {rumpf:['beine','mobil','ober'], beine:['rumpf','mobil','koord'], ober:['rumpf','wurf'], sprung:['wurf','rumpf','ober','beine'],
-  wurf:['ober','rumpf'], schnell:['wurf','ober','rumpf','beine'], koord:['rumpf','mobil','wurf'], mobil:['rumpf','koord','beine']};
+  wurf:['ober','rumpf'], schnell:['wurf','ober','rumpf','beine'], koord:['rumpf','mobil','wurf'], mobil:['rumpf','koord','beine'],
+  band:['rumpf','beine','ober','ball'], ball:['rumpf','band','beine'], turnen:['ober','rumpf','koord','band']};
 /* Übungen, die besonderes Gerät brauchen: als Ersatz nur, wenn nichts anderes passt */
 const GEAR = new Set(['stepup','bulgarian','pistol','dips','pullup','boxjump','minihurdle','sledpush','sledpull','benchwalk','wobble','hoops',
-  'hurdlemob','hurdlewalk','ladder','nordic','rope','slalom','shuttle','sprint20','freesprint','walllean','take3','sbj','bound']);
+  'hurdlemob','hurdlewalk','ladder','nordic','rope','slalom','shuttle','sprint20','freesprint','walllean','take3','sbj','bound',
+  't_dive','t_cart','t_wallhs','t_kneeup','t_sidebar','t_tuckhang','t_parwalk','t_parswing','t_vault','t_straddle','t_kneejump','t_benchpull','t_benchhop',
+  't_ringhold','t_ringrow','tramp_ski','boxpush','lb_pallof','lb_press','lb_kick','gb_wall']);
 const ALTCACHE = new Map();
 /* Plant für eine Kombination von Regionen die Ersatzübungen über den ganzen Zirkel:
    jede Übung möglichst nur einmal, zuerst aus dem eigenen Bereich, dann aus verwandten. */
@@ -1425,6 +1599,18 @@ function renderStations(){
     </li>`; }).join('') : '<li style="color:var(--muted)">Noch keine Station gewählt.</li>';
   renderLib();
   renderPlanNote();
+}
+let tplAsk = '', tplUndo = null;
+function renderTpl(){
+  $('#tplChips').innerHTML = ZTPL.map(t=>`<button type="button" class="chip${tplAsk===t.k?' on':''}" data-tpl="${t.k}">${esc(t.n)} <span style="opacity:.6">${t.st.length}</span></button>`).join('');
+}
+function useTpl(k){
+  const t = ZTPL.find(x=>x.k===k); if (!t) return;
+  if (db.stations.length && tplAsk !== k){ tplAsk = k; renderTpl(); $('#tplMsg').textContent = `„${t.n}“ ersetzt deine ${db.stations.length} Stationen. Zum Bestätigen nochmal tippen.`; return; }
+  tplUndo = db.stations.slice(); tplAsk = '';
+  db.stations = t.st.filter(n=>exFor(n)).slice(0, 14);
+  save(); renderStations(); renderTpl();
+  $('#tplMsg').innerHTML = `Vorlage „${esc(t.n)}“ übernommen: ${db.stations.length} Stationen.` + (tplUndo.length ? ' <button class="btn small" type="button" id="tplUndo">Rückgängig</button>' : '');
 }
 function renderLib(){
   const cnt = c => c === 'alle' ? EX.length : EX.filter(e=>e.c === c).length;
@@ -2093,6 +2279,9 @@ on('#sqTabs','click', e=>{
 on('#sqEditSel','change', e=>{ db.squad = e.target.value; if (!db.sel.includes(db.squad)){ db.sel.push(db.squad); db.sel = SQUADS.map(([q])=>q).filter(q=>db.sel.includes(q)); } save(); renderAttendance(); });
 on('#optMix','change', e=>{ db.mix = e.target.checked; save(); });
 on('#fromAth','click', importAthletes);
+on('#tplChips','click', e=>{ const b = e.target.closest('[data-tpl]'); if (b) useTpl(b.dataset.tpl); });
+on('#tplMsg','click', e=>{ if (e.target.closest('#tplUndo') && tplUndo){ db.stations = tplUndo; tplUndo = null; save(); renderStations(); $('#tplMsg').textContent = 'Rückgängig gemacht.'; } });
+renderTpl();
 on('#fromSpond','click', fromSpond);
 on('#spZ','click', async e=>{
   const r = e.target.closest('#spzRef');

@@ -177,6 +177,38 @@ details.block > .inner{padding:0 14px 14px}
 .sv-tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
 .svi.ro{cursor:default}
 @media (max-width:380px){ .svi{grid-template-columns:3.1rem 44px 1fr} .svi .svic{width:44px;height:44px} }
+/* Kalender */
+.calhead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.calhead b{flex:1;text-align:center;font:700 20px var(--cond)}
+.calhead .icon-btn{font-size:22px}
+.calwd{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;font-size:12px;color:var(--muted);text-align:center;margin-bottom:2px}
+.calwk{margin:0 0 6px}
+.calph{font:600 12px var(--body);color:#fff;background:var(--pc);border-radius:5px 5px 0 0;padding:2px 7px;display:flex;justify-content:space-between;gap:6px}
+.calph.rec{background:repeating-linear-gradient(135deg,var(--pc) 0 7px,color-mix(in srgb,var(--pc) 70%,#fff) 7px 14px)}
+.caldays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;border:2px solid var(--pc);border-top:0;border-radius:0 0 6px 6px;padding:3px;background:#fff}
+.cday{min-height:62px;border-radius:5px;background:var(--bg);padding:3px 3px 4px;font-size:10.5px;line-height:1.25;cursor:pointer;border:0;text-align:left;font-family:inherit;color:var(--ink);min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:2px}
+.cday.out{opacity:.45}
+.cday.today{outline:2px solid var(--ink);outline-offset:-2px}
+.cday .dn{font-weight:700;font-size:12.5px}
+.cday i{font-style:normal;display:block;border-radius:3px;padding:0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cday .cu{background:#2B2B2B;color:#fff}
+.cday .cs{background:#D9EFE8;color:#0B5E4E}
+.cday .cs.x{background:#FDECEC;color:var(--red-deep);text-decoration:line-through}
+.cday .cw{background:#FFE7A3;color:#5A4300;font-weight:700}
+.cday .cp{background:#FFD400;color:#2B2B2B;font-weight:700}
+.callegend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;color:var(--muted);margin-top:6px}
+.callegend span{display:inline-flex;align-items:center;gap:5px}
+.callegend i{display:inline-block;width:14px;height:10px;border-radius:2px}
+/* Phasen von Hand */
+.phrow{display:grid;grid-template-columns:12px minmax(0,1fr) auto 38px;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.phrow .sw{width:12px;height:12px;border-radius:3px}
+.phrow em{font-style:normal;font-size:13px;color:var(--muted);text-align:right}
+.phrec{background:#F6F6F4;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:14px}
+/* Gruppen verwalten */
+.gedit{display:grid;grid-template-columns:minmax(0,1fr) 7.5rem;gap:8px;margin:0 0 8px}
+.gedit input,.gedit select{min-width:0}
+.gath{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.gdel{margin-top:10px}
 /* Spond bei der Einheit */
 .daycard .spd{color:#0E7C66;font-weight:600}
 .daycard .spd.x{color:var(--red)}
@@ -381,6 +413,7 @@ body.running .appbar,body.running .subbar{display:none}
   <nav class="jump" aria-label="Bereiche">
     <a href="#woche">Woche</a>
     <a href="#einheit">Einheit</a>
+    <a href="#kalender">Kalender</a>
     <a href="#reihen">Reihen</a>
     <a href="#saison">Saison</a>
     <a href="#uebungen">Übungen</a>
@@ -456,9 +489,21 @@ body.running .appbar,body.running .subbar{display:none}
 </section>
 
 <!-- ============ SAISON ============ -->
+<section id="kalender">
+  <h2>Kalender</h2>
+  <p class="lead">Monat der gewählten Gruppe mit Phase, Einheiten, Spond-Terminen, Wettkämpfen und Höhepunkten. Einen Tag antippen öffnet die Einheit.</p>
+  <div class="block">
+    <div class="calhead"><button class="icon-btn" type="button" id="calPrev" aria-label="Monat zurück">‹</button><b id="calTitle"></b><button class="icon-btn" type="button" id="calNext" aria-label="Monat vor">›</button><button class="btn small" type="button" id="calToday">Heute</button></div>
+    <div class="calwd"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div>
+    <div id="calGrid"></div>
+    <div class="callegend"><span><i style="background:#2E9D55"></i>Aufbau</span><span><i style="background:#1D6FB8"></i>Vorbereitung</span><span><i style="background:#D7191C"></i>Wettkampf</span><span><i style="background:repeating-linear-gradient(135deg,#888 0 4px,#ccc 4px 8px)"></i>Empfehlung</span><span><i style="background:#2B2B2B"></i>Einheit (min)</span><span><i style="background:#D9EFE8"></i>Spond</span><span><i style="background:#FFE7A3"></i>Wettkampf</span><span><i style="background:#FFD400"></i>Höhepunkt</span></div>
+  </div>
+</section>
+
 <section id="saison">
   <h2>Saison</h2>
   <p class="lead">Wettkampfhöhepunkte festlegen. Daraus ergibt sich die Phase und die vorgeschlagene Verteilung.</p>
+  <div class="block" id="phBlock"></div>
   <div id="peakOut"></div>
   <details class="block" id="peakBox">
     <summary><h3>Höhepunkt eintragen</h3></summary>
@@ -515,7 +560,20 @@ body.running .appbar,body.running .subbar{display:none}
 <!-- ============ GRUPPEN ============ -->
 <section id="gruppen">
   <h2>Gruppen</h2>
-  <p class="lead">Trainingstage und Dauer je Gruppe. Gruppen ohne Tage tauchen in der Wochenansicht nicht auf.</p>
+  <p class="lead">Trainingstage und Dauer je Gruppe. Eigene Gruppen anlegen, zum Beispiel eine Fördergruppe oder ein Einzelathlet. Gruppen ohne Tage tauchen in der Wochenansicht nicht auf.</p>
+  <details class="block" id="grpNewBox">
+    <summary><h3>Gruppe anlegen</h3></summary>
+    <div class="inner">
+      <div class="fg">
+        <label class="f full"><span>Name</span><input type="text" id="gnName" placeholder="z. B. Fördergruppe Sprint, Lisa Läuferin" autocomplete="off"></label>
+        <label class="f"><span>Art</span><select id="gnKind"><option value="grp">Trainingsgruppe</option><option value="foerder">Fördergruppe</option><option value="einzel">Einzelathlet</option></select></label>
+        <label class="f"><span>Altersklasse</span><select id="gnAge"></select></label>
+      </div>
+      <div class="btns"><button class="btn primary" type="button" id="gnAdd">Anlegen</button></div>
+      <p class="warn" id="gnErr" hidden></p>
+      <p class="note">Die Altersklasse steuert Übungsauswahl und Altersregeln. Athleten aus der Athletenliste kannst du danach zuordnen.</p>
+    </div>
+  </details>
   <div id="grpOut"></div>
 </section>
 
@@ -552,7 +610,7 @@ body.running .appbar,body.running .subbar{display:none}
   </div>
   <div class="sv-body" id="svBody"></div>
 </div>
-<footer class="only-js">Die Vorschläge sind Richtwerte und ersetzen nicht die Trainerentscheidung. <span class="ver">Planung · Version 2026-10-24b · Spond, QR-Code</span></footer>
+<footer class="only-js">Die Vorschläge sind Richtwerte und ersetzen nicht die Trainerentscheidung. <span class="ver">Planung · Version 2026-10-27b · Kalender, Phasen, eigene Gruppen</span></footer>
 
 <script>
 (function(){
@@ -3040,6 +3098,13 @@ const PHASES = {
   reg:  {n:'Erholung',     s:'nach dem Wettkampf',     d:{schnell:10, technik:30, kraft:25, ausdauer:35}},
   off:  {n:'Übergang',     s:'vielseitig, kein Ziel',  d:{schnell:10, technik:30, kraft:30, ausdauer:30}}
 };
+/* Drei Phasen, von Hand je Gruppe festgelegt. Die Verteilung kommt aus den bisherigen Stufen (base). */
+const PH3 = {
+  auf: {n:'Aufbau',       s:'Grundlagen und Umfang',            base:'gla',  c:'#2E9D55'},
+  vor: {n:'Vorbereitung', s:'disziplinnah, Kraft und Technik',  base:'spez', c:'#1D6FB8'},
+  wk:  {n:'Wettkampf',    s:'Qualität vor Umfang',              base:'wk',   c:'#D7191C'}
+};
+const K3 = {gla:'auf', off:'auf', reg:'auf', auf:'vor', spez:'vor', wk:'wk', peak:'wk'};
 const PH_TABLE = [['Wettkampfwoche','peak'],['1 bis 2 Wochen','wk'],['3 bis 6 Wochen','spez'],['7 bis 12 Wochen','auf'],['mehr als 12 Wochen','gla'],['bis 2 Wochen danach','reg'],['kein Höhepunkt','off']];
 const AGEPROF = [
   {w:.75, d:{schnell:30, technik:40, kraft:15, ausdauer:15}},
@@ -3561,6 +3626,131 @@ Object.assign(PIC, {
  ms_4: [BBW,['F',Object.assign({},RUN,{x:4,air:2})],['speed',-26,-64],['path','M50 -110V4',2.4,'3 3']],
 });
 
+/* ===== Erweiterung 2026-10-27: Band, Gymnastikball, Turnen und Geräte, Hallenzirkel ===== */
+Object.assign(PROPS, {
+  // Minitrampolin: Sprungtuch mit Rahmen und schrägen Beinen
+  tramp(x, w){ w = w || 34; return {s:`<path d="M${x} -9H${x+w}" stroke-width="4"/><path d="M${x+3} -9L${x} 0M${x+w-3} -9L${x+w} 0" ${PS}/><path d="M${x+4} -8Q${x+w/2} -4 ${x+w-4} -8" stroke-width="2" opacity=".6"/>`, p:[[x-1,-11],[x+w+1,0]]}; },
+  // Sprossenwand: zwei Holme, Sprossen alle 9
+  rungs(x, h, w){ w = w || 14; let d = ''; for (let y = -9; y > -h; y -= 9) d += `M${x} ${y}H${x+w}`; return {s:`<path d="M${x} 0V${-h}M${x+w} 0V${-h}" stroke-width="3.6"/><path d="${d}" stroke-width="2.4"/>`, p:[[x-2,-h],[x+w+2,0]]}; },
+  // Ringe: Seile von oben, zwei Ringe
+  rings(x, y, top){ top = top == null ? y - 34 : top; return {s:`<path d="M${x-5} ${top}V${y-4}M${x+5} ${top}V${y-4}" stroke-width="2" opacity=".7"/><circle cx="${x-5}" cy="${y}" r="4" stroke-width="2.8"/><circle cx="${x+5}" cy="${y}" r="4" stroke-width="2.8"/>`, p:[[x-10,top],[x+10,y+5]]}; },
+  // Schlaufe (Miniband) als kleine Ellipse
+  loop(x, y, w){ w = w || 9; return {s:`<ellipse cx="${x}" cy="${y}" rx="${w}" ry="3" stroke-width="2.4" stroke-dasharray="3 2"/>`, p:[[x-w-1,y-4],[x+w+1,y+4]]}; },
+  // Barren: zwei Holme auf Stützen
+  pbars(x1, x2, h){ return {s:`<path d="M${x1} ${-h}H${x2}" stroke-width="4"/><path d="M${x1} ${-h-4}H${x2}" stroke-width="2.4" opacity=".55"/><path d="M${x1+6} ${-h}V0M${x2-6} ${-h}V0" ${PS}/>`, p:[[x1,-h-6],[x2,0]]}; },
+  // Reck: Stange auf zwei Pfosten
+  hbar(x1, x2, h){ return {s:`<path d="M${x1} 0V${-h}M${x2} 0V${-h}" stroke-width="3.2"/><path d="M${x1} ${-h}H${x2}" stroke-width="3.6"/>`, p:[[x1-2,-h-2],[x2+2,0]]}; }
+});
+CATS.push(['band', 'Band'], ['ball', 'Gymnastikball'], ['turnen', 'Turnen & Geräte']);
+const BALLR = 11;
+EX.push(
+/* ---------- Band: Schlaufe (Miniband) und langes Band ---------- */
+{id:'mb_walk', n:'Monster Walk mit Schlaufe', a:['Seitgehen mit Miniband','Monster Walk'], c:'band', cue:'Schlaufe über den Knien oder an den Fußgelenken. Leichte Hocke, Knie zeigen nach außen. Kleine Schritte seitwärts, die Schlaufe bleibt immer gespannt.',
+ s:[['F',{fr:1,t:172,l:[-24,-6],r:[24,6],la:[-20,10],ra:[20,-10]}],['jat','p','loop',0,20,12],['arrow',[-40,-30,-58,-30]]]},
+{id:'mb_clam', n:'Muschel mit Schlaufe', a:['Clamshell'], c:'band', cue:'Seitlage, Knie gebeugt, Schlaufe über den Knien. Füße bleiben zusammen, oberes Knie gegen die Schlaufe öffnen und langsam schließen. Becken kippt nicht nach hinten.',
+ s:[['mat',-46,44],['F',{t:-90,h:-90,l:[96,-150],r:[140,-120],la:[-92,-92],ra:[40,80]}],['loop',14,-12,7],['arrow',[30,-30,24,-44]]]},
+{id:'mb_bridge', n:'Hüftheben mit Schlaufe', c:'band', cue:'Rückenlage, Schlaufe über den Knien. Knie gegen die Schlaufe leicht nach außen drücken und den Po hochschieben, bis Knie, Hüfte und Schulter eine Linie bilden.',
+ s:[['mat',-44,30],['F',{t:-68,h:-95,l:[111,4],r:[112,5],la:[95,92],ra:[96,94],pin:['rf',20,-3.3]}],['jat','rk','loop',0,0,6]]},
+{id:'mb_squat', n:'Kniebeuge mit Schlaufe', c:'band', cue:'Schlaufe über den Knien. Tief in die Kniebeuge, die Knie drücken dabei aktiv nach außen und bleiben über den Füßen. Gerader Rücken.',
+ s:[['F',SQ],['jat','rk','loop',-2,0,7],['arrow',[-28,-56,-28,-30],true]]},
+{id:'mb_knee', n:'Kniehub mit Schlaufe', a:['Sprinter-Kniehub'], c:'band', cue:'Schlaufe um die Fußballen. Aufrecht stehen, ein Knie gegen den Zug aktiv nach vorn oben ziehen wie beim Sprint, Arme schwingen gegengleich. Seite wechseln.',
+ s:[['F',{t:180,r:[95,0],l:[-2,0],la:[-40,40],ra:[40,140]}],['jat','lf','loop',2,-2,8]]},
+{id:'lb_pallof', n:'Pallof-Press mit Band', a:['Anti-Rotation'], c:'band', cue:'Band seitlich auf Brusthöhe befestigen. Seitlich dazu stehen, Band vor der Brust halten und gerade nach vorn drücken. Der Rumpf darf sich nicht zum Band drehen.',
+ s:[['post',-46,64],['F',{fr:1,t:180,l:[-12,0],r:[12,0],la:[90,90],ra:[90,90]}],['path','M-46 -46Q-24 -42 -2 -46',2.4,'3 2'],['arrow',[16,-58,34,-58]]]},
+{id:'lb_press', n:'Brustdrücken mit Band', c:'band', cue:'Band hinter dem Rücken auf Schulterhöhe. Schrittstellung, Hände vor der Brust nach vorn drücken, langsam zurück. Schultern bleiben unten.',
+ s:[['F',{t:180,r:[14,0],l:[-10,0],la:[90,90],ra:[88,88]}],['path','M-12 -50Q-4 -36 30 -52',2.4,'3 2'],['arrow',[34,-60,50,-60]]]},
+{id:'lb_overhead', n:'Überkopfdrücken mit Band', c:'band', cue:'Auf dem Band stehen, Enden in Schulterhöhe. Arme nach oben strecken, ohne ins Hohlkreuz zu gehen. Langsam zurück.',
+ s:[['F',{fr:1,t:180,l:[-8,0],r:[8,0],la:[-170,-178],ra:[170,178]}],['path','M-8 0Q-22 -40 -10 -86M8 0Q22 -40 10 -86',2.2,'3 2']]},
+{id:'lb_kick', n:'Beinrückheben mit Band', a:['Kickback'], c:'band', cue:'Band um beide Fußgelenke oder vorn befestigt. Aufrecht, Hände an der Wand. Gestrecktes Bein kontrolliert nach hinten führen, ohne ins Hohlkreuz zu fallen.',
+ s:[['wall',30,74,-1],['F',{t:172,r:[0,0],l:[-30,-30],la:[70,80],ra:[70,82]}],['path','M2 -2Q-8 -6 -14 -4',2.2,'3 2'],['arrow',[-24,-12,-40,-20]]]},
+{id:'lb_ankle', n:'Fußgelenk kräftigen mit Band', c:'band', cue:'Im Sitzen, Band um den Fußballen, Enden in den Händen. Fuß gegen den Widerstand strecken und langsam zurück, dann nach innen und außen. Beugt Umknicken vor.',
+ s:[['mat',-44,44],['F',{t:-160,h:-170,r:[92,90],l:[90,88],la:[110,96],ra:[112,98],pin:['p',-24,-4]}],['path','M14 -22Q30 -18 38 -4',2.4,'3 2']]},
+{id:'lb_ham', n:'Beinrückseite dehnen mit Band', c:'band', cue:'Rückenlage, Band um den Fuß. Bein gestreckt nach oben ziehen, bis es hinten leicht zieht. 30 Sekunden halten, ruhig atmen, Seite wechseln.',
+ s:[['mat',-46,44],['F',{t:-90,h:-90,l:[90,90],r:[178,178],la:[160,160],ra:[158,158]}],['path','M-2 -44Q-2 -50 -2 -56',2.4,'3 2']]},
+/* ---------- Gymnastikball (Pezziball) ---------- */
+{id:'gb_plank', n:'Unterarmstütz auf dem Gymnastikball', a:['Plank auf dem Pezziball'], c:'ball', cue:'Unterarme auf dem Ball, Körper gestreckt wie beim Unterarmstütz. Ball ruhig halten, Bauch fest, Po nicht hoch. Für mehr Schwierigkeit kleine Kreise mit den Armen.',
+ s:[['ball',26,-BALLR,BALLR],['F',{t:110,h:112,l:[-72,-72],r:[-73,-73],la:[10,90],ra:[12,90],pin:['re',22,-21]}]]},
+{id:'gb_bridge', n:'Hüftheben mit Füßen auf dem Ball', c:'ball', cue:'Rückenlage, Fersen auf dem Ball, Arme neben dem Körper. Po hochschieben, bis der Körper gerade ist. Kurz halten, langsam ablassen.',
+ s:[['mat',-46,40],['ball',30,-BALLR,BALLR],['F',{t:-82,h:-92,l:[100,82],r:[101,83],la:[95,92],ra:[96,94],pin:['rf',30,-20]}]]},
+{id:'gb_curl', n:'Beinbeuger mit Fersen auf dem Ball', c:'ball', cue:'Rückenlage, Fersen auf dem Ball, Hüfte hoch. Ball mit den Fersen zum Po rollen und wieder wegschieben, die Hüfte bleibt oben.',
+ s:[['mat',-46,40],['ball',22,-BALLR,BALLR],['F',{t:-66,h:-95,l:[118,30],r:[120,32],la:[95,92],ra:[96,94],pin:['rf',20,-20]}],['arrow',[40,-30,26,-30]]]},
+{id:'gb_tuck', n:'Knie zur Brust auf dem Ball', a:['Ball-Klappmesser'], c:'ball', cue:'Liegestützposition, Schienbeine auf dem Ball. Knie zur Brust ziehen, der Ball rollt mit, dann wieder strecken. Hüfte nicht durchhängen lassen.',
+ s:[['ball',-30,-BALLR,BALLR],['F',{t:112,h:118,l:[-30,-100],r:[-32,-102],la:[2,2],ra:[0,0]}],['arrow',[-30,-36,-12,-36]]]},
+{id:'gb_back', n:'Rückenstrecker über dem Ball', c:'ball', cue:'Bauchlage über dem Ball, Füße an der Wand oder breit am Boden. Oberkörper langsam heben, bis er gerade ist, Blick zum Boden. Nicht ins Hohlkreuz überstrecken.',
+ s:[['ball',0,-BALLR,BALLR],['F',{t:100,h:104,l:[-110,-100],r:[-112,-102],la:[160,160],ra:[162,162],pin:['p',-6,-21]}]]},
+{id:'gb_crunch', n:'Crunch auf dem Ball', c:'ball', cue:'Rücken auf dem Ball, Füße hüftbreit am Boden. Oberkörper leicht einrollen und zurück, der Ball bleibt ruhig. Hände an den Schläfen, nicht am Kopf ziehen.',
+ s:[['ball',-6,-BALLR,BALLR],['F',{t:-120,h:-140,l:[100,0],r:[102,2],la:[-150,40],ra:[-150,40],pin:['p',-2,-22]}]]},
+{id:'gb_wall', n:'Wandkniebeuge mit Ball', c:'ball', cue:'Ball zwischen unterem Rücken und Wand. Langsam in die Kniebeuge rollen, bis die Oberschenkel fast waagerecht sind, und wieder hoch. Knie über den Füßen.',
+ s:[['wall',-16,76,-1],['ball',-6,-40,9],['F',{t:180,l:[80,0],r:[81,1],la:[30,60],ra:[32,62],x:6}]]},
+{id:'gb_pass', n:'Ball übergeben Hand zu Fuß', a:['Ball-Übergabe'], c:'ball', cue:'Rückenlage, Ball über dem Kopf in den Händen. Arme und Beine gleichzeitig heben, Ball an die Füße übergeben, beide ablegen. Dann zurück an die Hände.',
+ s:[['mat',-46,44],['F',{t:-90,h:-90,l:[140,140],r:[142,142],la:[-150,-150],ra:[-148,-148]}],['ball',-6,-48,9]]},
+/* ---------- Turnen und Geräte ---------- */
+{id:'t_roll', n:'Rolle vorwärts und rückwärts', a:['Purzelbaum'], c:'turnen', cue:'Auf der Matte: Hände schulterbreit aufsetzen, Kinn auf die Brust, rund machen und über den Rücken abrollen. Rückwärts: Hände neben den Ohren mitdrücken. Mit Hilfestellung beginnen.',
+ s:[['mat',-46,46],['F',{t:122,h:96,l:[70,-30],r:[72,-28],la:[40,8],ra:[42,10],x:-12}],['turn',10,-46,22,200,500]]},
+{id:'t_dive', n:'Hechtrolle über ein Hindernis', c:'turnen', cue:'Kurzer Anlauf, beidbeiniger Absprung, Arme nach vorn. Über ein niedriges Hindernis (Schaumstoffrolle, Zauberschnur) auf die Matte stützen und weich abrollen. Erst ab sicherer Rolle.',
+ s:[['mat',-10,50],['roller',-14,-6],['F',{t:105,h:110,l:[-80,-80],r:[-82,-82],la:[100,100],ra:[102,102],air:22,x:-6}],['arrow',[-40,-20,-20,-50,10,-30]]]},
+{id:'t_cart', n:'Rad', c:'turnen', cue:'Seitlich zur Bewegungsrichtung, Arme oben. Hand, Hand, Fuß, Fuß nacheinander auf einer Linie aufsetzen, Beine gestreckt und breit. Mit Linie oder Matte als Hilfe.',
+ s:[['mat',-46,46],['F',{fr:1,t:0,h:0,l:[150,150],r:[-150,-150],la:[-170,-170],ra:[170,170]}],['turn',0,-50,40,200,340]]},
+{id:'t_wallhs', n:'Handstand an der Wand', a:['Wand hochlaufen'], c:'turnen', cue:'Bauch zur Wand: Hände vor der Wand aufsetzen, mit den Füßen die Wand hochlaufen, so weit es sicher geht. Körper fest, Arme gestreckt, Blick zwischen die Hände. Kontrolliert zurücklaufen.',
+ s:[['wall',24,96,1],['mat',-30,24],['F',{t:0,h:0,l:[178,178],r:[176,176],la:[0,0],ra:[2,2],pin:['rh',12,-1]}]]},
+{id:'t_bridge', n:'Brücke', c:'turnen', cue:'Rückenlage, Füße aufgestellt, Hände neben den Ohren mit den Fingern zu den Schultern. Hüfte und Bauch nach oben drücken, Arme strecken. Nur aufwärmt und ohne Schmerzen.',
+ s:[['mat',-46,46],['F',{t:-70,h:-30,l:[40,0],r:[42,2],la:[-5,0],ra:[-3,0]}]]},
+{id:'t_candle', n:'Kerze', a:['Schulterstand'], c:'turnen', cue:'Rückenlage, Beine über den Kopf schwingen, Hände stützen die Hüfte. Beine senkrecht nach oben strecken und halten. Nacken entlasten, Kopf nicht drehen.',
+ s:[['mat',-46,46],['F',{t:0,h:-90,l:[180,180],r:[178,178],la:[90,180],ra:[92,178]}]]},
+{id:'t_kneeup', n:'Hängendes Knieheben an der Sprossenwand', c:'turnen', cue:'Rücken zur Sprossenwand hängen, Arme gestreckt. Knie langsam zur Brust ziehen und kontrolliert senken, ohne Schwung. Leichter: Knie nur bis waagerecht.',
+ s:[['rungs',-28,92],['F',{t:180,l:[90,0],r:[92,2],la:[176,176],ra:[178,178],pin:['rh',-20,-88]}]]},
+{id:'t_sidebar', n:'Seitstütz an der Sprossenwand', c:'turnen', cue:'Füße seitlich in einer unteren Sprosse, Unterarm am Boden. Hüfte hochdrücken, Körper gerade. Seite wechseln.',
+ s:[['rungs',26,52],['F',{t:-102,h:-110,l:[78,78],r:[77,77],la:[0,90],ra:[178,178],pin:['rf',28,-17]}]]},
+{id:'t_tuckhang', n:'Schwebehang am Reck', c:'turnen', cue:'An der Reckstange hängen, Arme leicht gebeugt, Knie angehockt. So lange wie möglich ruhig halten. Absprung und Abgang mit Hilfestellung, Matte unter dem Reck.',
+ s:[['hbar',-30,30,90],['mat',-34,34],['F',{fr:1,t:180,l:[-80,0],r:[80,0],la:[-140,-176],ra:[140,176],pin:['rh',8,-90]}]]},
+{id:'t_parwalk', n:'Stützlaufen am Barren', c:'turnen', cue:'Im Stütz zwischen den Holmen, Arme gestreckt, Schultern tief. Hand vor Hand vorwärts und rückwärts gehen. Leichter: Barren niedrig, Füße am Boden.',
+ s:[['pbars',-46,46,40],['F',{t:178,l:[10,0],r:[-6,4],la:[4,0],ra:[0,0],pin:['rh',6,-40]}],['arrow',[24,-62,40,-62]]]},
+{id:'t_parswing', n:'Stützschwingen am Barren', c:'turnen', cue:'Im Stütz zwischen den Holmen, Arme gestreckt. Gestreckte Beine aus der Schulter vor und zurück schwingen. Körper fest, Schultern bleiben über den Händen.',
+ s:[['pbars',-40,40,40],['G',{t:178,l:[-30,-30],r:[-32,-32],la:[2,0],ra:[0,0],pin:['rh',0,-40]}],['F',{t:178,l:[40,40],r:[42,42],la:[2,0],ra:[0,0],pin:['rh',0,-40]}]]},
+{id:'t_vault', n:'Hocke über den Kasten', c:'turnen', cue:'Kurzer Anlauf, beidbeiniger Absprung vom Brett. Hände auf den Kasten, Knie anhocken und über den Kasten, sicher auf der Matte landen. Immer mit Hilfestellung.',
+ s:[['board',-40,22],['box',-14,30,26],['mat',22,56],['F',{t:140,h:150,l:[60,-60],r:[62,-58],la:[8,6],ra:[10,8],pin:['rh',2,-27]}]]},
+{id:'t_straddle', n:'Grätsche über den Kasten', c:'turnen', cue:'Anlauf, Absprung vom Brett, Hände vorn auf den Kasten. Beine breit grätschen und über den Kasten, aufrecht landen. Mit Hilfestellung vorn, Kasten quer und niedrig beginnen.',
+ s:[['board',-40,22],['box',-14,30,26],['mat',22,56],['F',{fr:1,t:150,h:160,l:[-60,-60],r:[60,60],la:[8,6],ra:[-8,-6],pin:['rh',4,-27]}]]},
+{id:'t_kneejump', n:'Aufknien und Strecksprung', c:'turnen', cue:'Aus dem Knien auf der Matte schnell auf die Füße springen und direkt in einen Strecksprung, landen auf dem Weichboden. Arme schwingen mit.',
+ s:[['matt',0,46,10],['G',{t:180,l:[-90,0],r:[-92,0],la:[-30,-20],ra:[-30,-20],x:-28}],['F',{t:180,l:[-4,0],r:[2,0],la:[176,176],ra:[178,178],air:12,x:16}],['arrow',[-24,-40,-6,-80,10,-60]]]},
+{id:'t_benchpull', n:'Langbank hochziehen', a:['Bankziehen','Sitzbank hochziehen'], c:'turnen', cue:'Langbank schräg in die Sprossenwand einhängen. In Bauchlage auf der Bank liegen und sich mit beiden Armen gleichzeitig Zug um Zug nach oben ziehen. Leichter: Bank flach, auf dem Boden ziehen.',
+ s:[['rungs',34,70],['path','M-46 0L36 -40',3],['path','M-40 1V-3M30 -36V-32',2.4],['F',{t:116,h:118,l:[-64,-64],r:[-65,-65],la:[150,120],ra:[148,118],pin:['p',-12,-30]}],['arrow',[8,-56,24,-64]]]},
+{id:'t_benchhop', n:'Seitliches Überspringen der Langbank', c:'turnen', cue:'Seitlich neben der Langbank, Hände auf der Bank. Beine geschlossen von einer Seite zur anderen springen. Leichter: ohne Hände, nur über eine Linie.',
+ s:[['bench',-24,48,12],['F',{fr:1,t:150,l:[50,10],r:[52,12],la:[8,4],ra:[-8,-4],pin:['rh',4,-12]}],['arrow',[-30,-30,0,-60,30,-30]]]},
+{id:'t_ringhold', n:'Stützhalten an den Ringen', c:'turnen', cue:'Ringe niedrig, Füße am Boden oder Knie angehockt. In den Stütz drücken, Arme gestreckt, Ringe eng am Körper. Wenige Sekunden halten.',
+ s:[['rings',0,-36,-92],['F',{fr:1,t:180,l:[-10,60],r:[10,60],la:[-8,0],ra:[8,0],pin:['rh',5,-36]}]]},
+{id:'t_ringrow', n:'Rudern unter den Ringen', c:'turnen', cue:'Unter den Ringen liegen, Ringe greifen, Körper gestreckt, Fersen am Boden. Brust zu den Ringen ziehen, langsam ablassen. Je flacher, desto schwerer.',
+ s:[['rings',22,-50,-92],['F',{t:116,h:118,l:[-64,-64],r:[-65,-65],la:[150,180],ra:[152,182],pin:['rh',22,-50]}]]},
+{id:'tramp_ski', n:'Skifahrer auf dem Minitrampolin', a:['Skifahrer Trampolin'], c:'turnen', cue:'Stehend auf dem Minitrampolin, Füße eng zusammen. Kleine, schnelle Sprünge seitlich hin und her wie beim Wedeln, Oberkörper bleibt ruhig über der Mitte.',
+ s:[['tramp',-20,40],['F',{t:174,h:178,l:[18,-14],r:[20,-12],la:[-30,60],ra:[30,70],pin:['rf',4,-12]}],['arrow',[-30,-54,30,-54],true]]},
+{id:'pole_plank', n:'Plank mit Stange', a:['Stabi mit der Stange','Unterarmstütz mit Stange'], c:'turnen', cue:'Unterarmstütz, Gymnastikstange schräg vor dem Körper greifen und kräftig schräg nach unten in den Boden drücken. Rumpf fest, Po nicht hoch. 20 bis 30 Sekunden halten.',
+ s:[['mat',-44,40],['F',{t:97,l:[-73,-73],r:[-74,-74],la:[0,90],ra:[2,90],h:100}],['path','M14 -2L40 -30',3.4],['arrow',[42,-40,32,-24]]]},
+{id:'kk_ball', n:'Koordination plus Kopf: Ball und Farben', a:['Ball und Farben ansagen'], c:'koord', cue:'Zu zweit einen Ball zuwerfen. Der Partner ruft vor jedem Wurf eine Farbe oder Zahl, je nach Ansage mit links oder rechts fangen. Regeln alle paar Minuten ändern.',
+ s:[['F',{t:180,ra:[150,175],la:[-30,-10],x:-26}],['F',{t:178,mir:1,ra:[60,90],la:[60,90],x:26}],['path','M-20 -94 Q2 -110 22 -94',2,'3 3'],['sball',0,-104],['bubble',-22,-100]]},
+{id:'boxpush', n:'Liegestütz mit Händen auf dem Kasten', a:['Liegestütz erhöht'], c:'ober', cue:'Hände schulterbreit auf dem Kastendeckel, Körper gestreckt. Brust zum Kasten senken und hochdrücken. Je höher der Kasten, desto leichter.',
+ s:[['box',22,26,22],['F',{t:110,l:[-60,-60],r:[-61,-61],la:[0,0],ra:[2,2],h:112,pin:['rh',30,-22]}]]}
+);
+/* Belastete Regionen (Zirkel: Ersatz bei Schonung) */
+const LOADS_MORE = {
+ mb_walk:['knie','huefte'], mb_clam:['huefte'], mb_bridge:[], mb_squat:['knie'], mb_knee:['huefte','fuss'],
+ lb_pallof:['schulter'], lb_press:['schulter','hand'], lb_overhead:['schulter'], lb_kick:['huefte','ruecken'], lb_ankle:['fuss'], lb_ham:[],
+ gb_plank:['schulter'], gb_bridge:[], gb_curl:['knie'], gb_tuck:['schulter','hand'], gb_back:['ruecken'], gb_crunch:['ruecken'], gb_wall:['knie'], gb_pass:['ruecken'],
+ t_roll:['ruecken','schulter'], t_dive:['schulter','ruecken','hand'], t_cart:['hand','schulter'], t_wallhs:['schulter','hand'], t_bridge:['ruecken','schulter','hand'], t_candle:['ruecken'],
+ t_kneeup:['schulter','hand'], t_sidebar:['schulter'], t_tuckhang:['schulter','hand'], t_parwalk:['schulter','hand'], t_parswing:['schulter','hand'],
+ t_vault:['hand','schulter','knie'], t_straddle:['hand','schulter','huefte'], t_kneejump:['knie','fuss'], t_benchpull:['schulter','hand'], t_benchhop:['knie','fuss','hand'],
+ t_ringhold:['schulter','hand'], t_ringrow:['schulter','hand'], tramp_ski:['knie','fuss'], pole_plank:['schulter'], kk_ball:['hand'], boxpush:['schulter','hand']
+};
+/* Zirkel-Vorlagen: Stationen nach Namen (EX.n) */
+const ZTPL = [
+ {k:'turnen', n:'Hallenzirkel Turnen', st:['Rolle vorwärts und rückwärts','Langbank hochziehen','Stützlaufen am Barren','Hängendes Knieheben an der Sprossenwand','Hocke über den Kasten','Skifahrer auf dem Minitrampolin','Schwebehang am Reck','Plank mit Stange','Balancieren auf der Bank','Seitliches Überspringen der Langbank']},
+ {k:'sprung', n:'Sprungkraft', st:['Kastensprünge','Hürdensprünge','Seilspringen','Weitsprung aus dem Stand','Schlittschuhsprünge','Fußgelenksprünge','Seitliches Überspringen der Langbank','Aufknien und Strecksprung']},
+ {k:'rumpf', n:'Rumpf', st:['Unterarmstütz','Plank mit Stange','Seitstütz','Käfer (Dead Bug)','Unterarmstütz auf dem Gymnastikball','Hüftheben mit Füßen auf dem Ball','Rückenstrecker über dem Ball','Pallof-Press mit Band','Russian Twist','Vierfüßlerstand diagonal']},
+ {k:'bandball', n:'Band und Ball', st:['Monster Walk mit Schlaufe','Kniebeuge mit Schlaufe','Muschel mit Schlaufe','Pallof-Press mit Band','Rudern mit Band','Beinbeuger mit Fersen auf dem Ball','Knie zur Brust auf dem Ball','Crunch auf dem Ball']},
+ {k:'koord', n:'Koordination', st:['Koordinationsleiter','Balancieren auf der Bank','Skifahrer auf dem Minitrampolin','Ball prellen im Laufen','Koordination plus Kopf: Ball und Farben','Reifensprünge','Standwaage','Zielwurf']}
+];
+
+/* ===== Ende Erweiterung ===== */
+
 return {iconSvg, EX, GENERIC, PIC};
 })();
 /* ===== Erweiterung der Planungs-Bibliothek: Anleitung, Bild, Altersregeln ===== */
@@ -3762,6 +3952,62 @@ const FLAGINFO = {
  diskus:{n:'Diskus', t:a=>'Gewicht nach Altersklasse, siehe Maße-Seite. Sektor absperren, alle stehen hinter dem Werfer.'}
 };
 
+/* ===== Planungs-Bibliothek, Erweiterung 2026-10-27: Band, Gymnastikball, Turnen und Geräte =====
+   Altersindex: 0 U10, 1 U12, 2 U14, 3 U16, 4 U18, 5 U20, 6 Aktive, 7 Masters.
+   Band ab U14 (leichtes Band), kräftige Bänder als Zusatzlast erst ab U18 (siehe FLAGINFO.band). */
+FLAGINFO.band = {n:'Band', t:a=>'Band vorher auf Risse prüfen, sicher befestigen. ' + (a < 4 ? 'Für diese Gruppe nur leichte Bänder, ohne echte Zusatzlast. Kräftige Bänder erst ab U18.' : 'Bandstärke so wählen, dass die Technik sauber bleibt.')};
+FLAGINFO.gball = {n:'Gymnastikball', t:a=>'Ballgröße passend wählen: im Sitzen sind die Knie etwa im rechten Winkel. Nicht auf glattem Boden, genug Abstand zu Wänden und Geräten.'};
+FLAGINFO.turn = {n:'Turngerät', t:a=>'Matten unterlegen, Geräte vorher prüfen. ' + (a < 3 ? 'Mit Hilfestellung, immer ein Erwachsener am Gerät.' : 'Neue Elemente mit Hilfestellung, sonst sichern lassen.')};
+LIBN.push(
+ // Band: Aktivierung und Vorbeugung
+ {id:'n_mbwalk', sp:'warm', name:'Monster Walk mit Schlaufe', min:6, place:'both', from:2, to:7, note:'Miniband · Hüfte aktivieren', ic:'mb_walk', fl:'band', how:'Schlaufe über den Knien oder an den Fußgelenken. Leichte Hocke, Knie nach außen, 10 bis 15 Schritte seitwärts und zurück, dann vorwärts und rückwärts. Die Schlaufe bleibt gespannt.'},
+ {id:'n_mbknee', sp:'warm', name:'Kniehub mit Schlaufe', min:6, place:'both', from:2, to:7, note:'Miniband · sprintnah', ic:'mb_knee', fl:'band', how:'Schlaufe um die Fußballen. Aufrecht, ein Knie gegen den Zug aktiv nach vorn oben ziehen, Arme schwingen gegengleich. Je Seite 10 bis 12, zügig und sauber.'},
+ {id:'n_lbankle', sp:'warm', name:'Fußgelenk kräftigen mit Band', min:6, place:'both', from:2, to:7, note:'langes Band · Vorbeugung Umknicken', ic:'lb_ankle', fl:'band', how:'Im Sitzen, Band um den Fußballen. Fuß gegen den Widerstand strecken, dann nach innen und außen ziehen, je 12 bis 15 pro Richtung. Langsam zurück.'},
+ // Band: Kraft
+ {id:'n_mbsquat', sp:'kraft', name:'Kniebeuge mit Schlaufe', min:8, place:'both', from:2, to:7, note:'Miniband · Knie nach außen', ic:'mb_squat', fl:'band', how:'Schlaufe über den Knien. Tiefe Kniebeuge, die Knie drücken aktiv nach außen und bleiben über den Füßen. 3 Serien mit 10 bis 12, ruhiges Tempo.'},
+ {id:'n_mbbridge', sp:'kraft', name:'Hüftheben mit Schlaufe', min:6, place:'both', from:2, to:7, note:'Miniband · Gesäß', ic:'mb_bridge', fl:'band', how:'Rückenlage, Schlaufe über den Knien. Knie leicht gegen die Schlaufe nach außen drücken und den Po hochschieben. 3 Serien mit 12, oben kurz halten.'},
+ {id:'n_mbclam', sp:'kraft', name:'Muschel mit Schlaufe', min:6, place:'both', from:2, to:7, note:'Miniband · Hüfte, Knie-Vorbeugung', ic:'mb_clam', fl:'band', how:'Seitlage, Knie gebeugt, Schlaufe über den Knien. Füße zusammen, oberes Knie öffnen und langsam schließen. Je Seite 2 Serien mit 15.'},
+ {id:'n_lbpallof', sp:'kraft', name:'Pallof-Press mit Band', min:8, place:'both', from:2, to:7, note:'langes Band · Rumpf gegen Drehung', ic:'lb_pallof', fl:'band', how:'Band seitlich auf Brusthöhe befestigen. Seitlich stehen, Band vor der Brust gerade nach vorn drücken, 2 Sekunden halten. Rumpf dreht nicht mit. Je Seite 2 bis 3 Serien mit 10.'},
+ {id:'n_lbpress', sp:'kraft', name:'Brustdrücken mit Band', min:8, place:'both', from:2, to:7, note:'langes Band · Brust, Schulter', ic:'lb_press', fl:'band', how:'Band hinter dem Rücken auf Schulterhöhe. Schrittstellung, Hände nach vorn drücken und langsam zurück. 3 Serien mit 12.'},
+ {id:'n_lboverhead', sp:'kraft', name:'Überkopfdrücken mit Band', min:6, place:'both', from:2, to:7, note:'langes Band · Schulter', ic:'lb_overhead', fl:'band', how:'Auf dem Band stehen, Enden auf Schulterhöhe. Arme nach oben strecken, ohne Hohlkreuz. 2 bis 3 Serien mit 10.'},
+ {id:'n_lbkick', sp:'kraft', name:'Beinrückheben mit Band', min:6, place:'both', from:2, to:7, note:'langes Band · Gesäß, Hüftstreckung', ic:'lb_kick', fl:'band', how:'Hände an der Wand, Band am Fußgelenk. Gestrecktes Bein kontrolliert nach hinten führen, Becken bleibt gerade. Je Seite 2 Serien mit 12.'},
+ // Band: Beweglichkeit
+ {id:'n_lbham', sp:'end', name:'Beinrückseite dehnen mit Band', min:6, place:'both', from:2, to:7, note:'langes Band · Dehnen', ic:'lb_ham', fl:'band', how:'Rückenlage, Band um den Fuß, Bein gestreckt nach oben ziehen, bis es hinten leicht zieht. Je Seite 30 Sekunden, ruhig atmen.'},
+ // Gymnastikball
+ {id:'n_gbplank', sp:'kraft', name:'Unterarmstütz auf dem Gymnastikball', min:6, place:'in', from:1, to:7, note:'Pezziball · Rumpf', ic:'gb_plank', fl:'gball', how:'Unterarme auf dem Ball, Körper gestreckt. 3 × 20 bis 30 Sekunden halten. Schwerer: kleine Kreise mit den Armen.'},
+ {id:'n_gbbridge', sp:'kraft', name:'Hüftheben mit Füßen auf dem Ball', min:6, place:'in', from:1, to:7, note:'Pezziball · Gesäß, Rumpf', ic:'gb_bridge', fl:'gball', how:'Rückenlage, Fersen auf dem Ball. Po hochschieben, bis der Körper gerade ist, kurz halten, langsam ab. 3 Serien mit 10.'},
+ {id:'n_gbcurl', sp:'kraft', name:'Beinbeuger mit Fersen auf dem Ball', min:6, place:'in', from:2, to:7, note:'Pezziball · Oberschenkel hinten', ic:'gb_curl', fl:'gball', how:'Hüfte hoch, Fersen auf dem Ball. Ball zum Po rollen und wegschieben, die Hüfte bleibt oben. 3 Serien mit 8 bis 12. Gute Vorbeugung für die Oberschenkelrückseite.'},
+ {id:'n_gbtuck', sp:'kraft', name:'Knie zur Brust auf dem Ball', min:6, place:'in', from:2, to:7, note:'Pezziball · Rumpf, Schulter', ic:'gb_tuck', fl:'gball', how:'Liegestützposition, Schienbeine auf dem Ball. Knie zur Brust ziehen, der Ball rollt mit, wieder strecken. 3 Serien mit 8 bis 10.'},
+ {id:'n_gbback', sp:'kraft', name:'Rückenstrecker über dem Ball', min:6, place:'in', from:1, to:7, note:'Pezziball · Rücken', ic:'gb_back', fl:'gball', how:'Bauchlage über dem Ball, Füße an der Wand. Oberkörper heben, bis er gerade ist, nicht überstrecken. 3 Serien mit 10.'},
+ {id:'n_gbcrunch', sp:'kraft', name:'Crunch auf dem Ball', min:6, place:'in', from:1, to:7, note:'Pezziball · Bauch', ic:'gb_crunch', fl:'gball', how:'Rücken auf dem Ball, Füße am Boden. Leicht einrollen und zurück, der Ball bleibt ruhig. 3 Serien mit 12 bis 15.'},
+ {id:'n_gbpass', sp:'kraft', name:'Ball übergeben Hand zu Fuß', min:6, place:'in', from:1, to:7, note:'Pezziball · ganzer Rumpf', ic:'gb_pass', fl:'gball', how:'Rückenlage, Ball in den Händen über dem Kopf. Arme und Beine heben, Ball an die Füße übergeben, ablegen, zurück. 2 bis 3 Serien mit 8.'},
+ // Turnen: Boden und Geräte (Technik)
+ {id:'n_troll', sp:'technik', name:'Rolle vorwärts und rückwärts', min:10, place:'in', from:0, to:7, note:'Boden · Matte', ic:'t_roll', fl:'turn', how:'Rund machen, Kinn auf die Brust, Hände schulterbreit aufsetzen und über den Rücken abrollen. Rückwärts mit den Händen neben den Ohren mitdrücken. Leichter: schiefe Ebene aus Matten.'},
+ {id:'n_tdive', sp:'technik', name:'Hechtrolle über ein Hindernis', min:10, place:'in', from:1, to:6, note:'Boden · erst ab sicherer Rolle', ic:'t_dive', fl:'turn', how:'Kurzer Anlauf, beidbeiniger Absprung, über ein niedriges weiches Hindernis auf die Matte stützen und abrollen. Hindernis langsam höher und weiter.'},
+ {id:'n_tcart', sp:'technik', name:'Rad', min:10, place:'in', from:0, to:6, note:'Boden · Linie als Hilfe', ic:'t_cart', fl:'turn', how:'Seitlich stehen, Arme oben. Hand, Hand, Fuß, Fuß auf einer Linie aufsetzen, Beine gestreckt und breit. Erst über eine Bank oder mit Hilfestellung an der Hüfte.'},
+ {id:'n_twallhs', sp:'technik', name:'Handstand an der Wand', min:8, place:'in', from:1, to:6, note:'Boden · Wand hochlaufen', ic:'t_wallhs', fl:'turn', how:'Bauch zur Wand: Hände vor der Wand, mit den Füßen die Wand hochlaufen, so weit es sicher geht. Körper fest, Arme gestreckt. 3 bis 5 Versuche, kurz halten.'},
+ {id:'n_tbridge', sp:'end', name:'Brücke', min:6, place:'in', from:0, to:5, note:'Boden · Beweglichkeit Schulter, Rücken', ic:'t_bridge', fl:'turn', how:'Rückenlage, Füße aufgestellt, Hände neben den Ohren. Hüfte und Bauch nach oben drücken, Arme strecken, 5 bis 10 Sekunden halten. Nur aufgewärmt.'},
+ {id:'n_tcandle', sp:'technik', name:'Kerze', min:6, place:'in', from:0, to:5, note:'Boden · Körperspannung', ic:'t_candle', fl:'turn', how:'Beine über den Kopf schwingen, Hände stützen die Hüfte, Beine senkrecht strecken und halten. Kopf nicht drehen.'},
+ {id:'n_tvault', sp:'technik', name:'Hocke über den Kasten', min:12, place:'in', from:0, to:5, note:'Kasten · Hilfestellung', ic:'t_vault', fl:'turn', how:'Anlauf, beidbeiniger Absprung vom Brett, Hände auf den Kasten, anhocken und darüber, sicher landen. Kasten quer und niedrig beginnen, immer mit Hilfestellung.'},
+ {id:'n_tstraddle', sp:'technik', name:'Grätsche über den Kasten', min:12, place:'in', from:1, to:5, note:'Kasten · Hilfestellung vorn', ic:'t_straddle', fl:'turn', how:'Anlauf, Absprung vom Brett, Hände vorn auf den Kasten, Beine breit grätschen und darüber, aufrecht landen. Hilfestellung steht vorn.'},
+ // Turnen: Kraft an Geräten
+ {id:'n_tkneeup', sp:'kraft', name:'Hängendes Knieheben an der Sprossenwand', min:8, place:'in', from:1, to:7, note:'Sprossenwand · Bauch', ic:'t_kneeup', fl:'turn', how:'Rücken zur Sprossenwand hängen, Knie langsam zur Brust und kontrolliert senken, ohne Schwung. 3 Serien mit 6 bis 10.'},
+ {id:'n_tsidebar', sp:'kraft', name:'Seitstütz an der Sprossenwand', min:6, place:'in', from:2, to:7, note:'Sprossenwand · Rumpf seitlich', ic:'t_sidebar', fl:'turn', how:'Füße seitlich in einer unteren Sprosse, Unterarm am Boden, Hüfte hoch. Je Seite 3 × 15 bis 20 Sekunden.'},
+ {id:'n_ttuckhang', sp:'kraft', name:'Schwebehang am Reck', min:6, place:'in', from:0, to:7, note:'Reck · Haltekraft', ic:'t_tuckhang', fl:'turn', how:'An der Stange hängen, Arme leicht gebeugt, Knie angehockt, so lange wie möglich halten. Matte darunter, Auf- und Abgang mit Hilfe.'},
+ {id:'n_tparwalk', sp:'kraft', name:'Stützlaufen am Barren', min:8, place:'in', from:0, to:7, note:'Barren · Stützkraft', ic:'t_parwalk', fl:'turn', how:'Im Stütz zwischen den Holmen, Arme gestreckt, Schultern tief. Hand vor Hand vor und zurück. Leichter: Barren niedrig, Füße am Boden.'},
+ {id:'n_tparswing', sp:'kraft', name:'Stützschwingen am Barren', min:8, place:'in', from:1, to:6, note:'Barren · Körperspannung', ic:'t_parswing', fl:'turn', how:'Im Stütz gestreckte Beine aus der Schulter vor und zurück schwingen, Körper fest. 3 Serien mit 6 bis 8 Schwüngen.'},
+ {id:'n_tbenchpull', sp:'kraft', name:'Langbank hochziehen', min:8, place:'in', from:0, to:7, note:'Langbank schräg in der Sprossenwand', ic:'t_benchpull', fl:'turn', how:'Bank schräg einhängen, in Bauchlage mit beiden Armen gleichzeitig nach oben ziehen, Beine locker. Leichter: Bank flach. 3 bis 4 Durchgänge.'},
+ {id:'n_tringhold', sp:'kraft', name:'Stützhalten an den Ringen', min:6, place:'in', from:1, to:7, note:'Ringe niedrig · Schulter', ic:'t_ringhold', fl:'turn', how:'Ringe niedrig, in den Stütz drücken, Arme gestreckt, Ringe eng am Körper. 3 bis 5 × 5 bis 10 Sekunden.'},
+ {id:'n_tringrow', sp:'kraft', name:'Rudern unter den Ringen', min:8, place:'in', from:1, to:7, note:'Ringe · Rücken, Arme', ic:'t_ringrow', fl:'turn', how:'Unter den Ringen liegen, Körper gestreckt, Brust zu den Ringen ziehen. Je flacher, desto schwerer. 3 Serien mit 8 bis 12.'},
+ {id:'n_poleplank', sp:'kraft', name:'Plank mit Stange', min:6, place:'both', from:1, to:7, note:'Gymnastikstange · Rumpf', ic:'pole_plank', fl:'', how:'Unterarmstütz, Gymnastikstange schräg vor dem Körper greifen und kräftig schräg nach unten in den Boden drücken. 3 × 20 bis 30 Sekunden.'},
+ {id:'n_boxpush', sp:'kraft', name:'Liegestütz mit Händen auf dem Kasten', min:6, place:'in', from:0, to:7, note:'Kasten · leichtere Liegestütz', ic:'boxpush', fl:'', how:'Hände auf dem Kastendeckel, Körper gestreckt, Brust zum Kasten senken und hochdrücken. Je höher der Kasten, desto leichter. 3 Serien mit 8 bis 12.'},
+ // Turnen: Sprung und Koordination
+ {id:'n_tkneejump', sp:'kraft', name:'Aufknien und Strecksprung', min:8, place:'in', from:1, to:6, note:'Weichboden · Sprungkraft', ic:'t_kneejump', fl:'plyo turn', how:'Aus dem Knien schnell auf die Füße springen und direkt in einen Strecksprung auf den Weichboden. 3 Serien mit 4 bis 6.'},
+ {id:'n_tbenchhop', sp:'kraft', name:'Seitliches Überspringen der Langbank', min:6, place:'in', from:0, to:6, note:'Langbank · Sprungkraft', ic:'t_benchhop', fl:'plyo', how:'Hände auf der Bank, Beine geschlossen von Seite zu Seite springen. 3 × 20 Sekunden. Leichter: ohne Hände über eine Linie.'},
+ {id:'n_trampski', sp:'warm', name:'Skifahrer auf dem Minitrampolin', min:6, place:'in', from:0, to:7, note:'Minitrampolin · Koordination', ic:'tramp_ski', fl:'turn', how:'Stehend auf dem Minitrampolin, Füße eng. Kleine schnelle Sprünge seitlich hin und her, Oberkörper ruhig. 3 × 20 Sekunden.'},
+ {id:'n_kkball', sp:'warm', name:'Koordination plus Kopf: Ball und Farben', min:8, place:'both', from:0, to:7, note:'Partner · Ball zuwerfen und Ansage', ic:'kk_ball', fl:'', how:'Zu zweit einen Ball zuwerfen. Vor jedem Wurf ruft der Partner eine Farbe oder Zahl, danach mit links oder rechts fangen. Regeln alle paar Minuten wechseln.'}
+);
+
 /* Methodische Reihen und Bausteine */
 const REIHEN = [
  {id:'r_ws', name:'Weitsprung', from:0, to:7, steps:[
@@ -3890,6 +4136,8 @@ function normalize(o){
     g.focus = {};
     Object.keys(f).forEach(k=>{ if (Array.isArray(f[k])) g.focus[k] = f[k].filter(m=>MAIN.includes(m)); });
     g.min = clamp(+g.min||90, 30, 240);
+    g.kind = ['grp','foerder','einzel'].includes(g.kind) ? g.kind : 'grp';
+    g.ath = Array.isArray(g.ath) ? g.ath.map(String).slice(0, 60) : [];
   });
   o.lib = Array.isArray(o.lib) && o.lib.length ? o.lib : freshLib();
   o.lib = o.lib.filter(e=>e && typeof e === 'object');
@@ -3920,6 +4168,8 @@ function normalize(o){
     .map(b=>({id:b.id||uid(), name:String(b.name||'Baustein').slice(0,40), items:b.items.map(String).slice(0,20)})).slice(0,40);
   o.peaks = (Array.isArray(o.peaks)?o.peaks:[]).filter(p=>p && /^\d{4}-\d{2}-\d{2}$/.test(p.date))
     .map(p=>({id:p.id||uid(), name:String(p.name||'Höhepunkt').slice(0,40), date:p.date, grp:p.grp||'all'}));
+  o.phases = (Array.isArray(o.phases) ? o.phases : []).filter(p=>p && PH3[p.k] && /^\d{4}-\d{2}-\d{2}$/.test(p.from) && /^\d{4}-\d{2}-\d{2}$/.test(p.to) && p.from <= p.to)
+    .map(p=>({id:p.id||uid(), k:p.k, from:p.from, to:p.to, grp:p.grp && (p.grp==='all' || o.groups.some(g=>g.id===p.grp)) ? p.grp : 'all'}));
   o.units = (o.units && typeof o.units === 'object') ? o.units : {};
   Object.keys(o.units).forEach(k=>{
     const u = o.units[k];
@@ -4004,7 +4254,20 @@ function whyNotAll(e, gs){
 function peaksFor(g){
   return db.peaks.filter(p=>p.grp==='all' || p.grp===g.id).slice().sort((a,b)=>a.date.localeCompare(b.date));
 }
+function manualPhase(g, mon){
+  const mid = iso(new Date(mon.getTime() + 3*DAYMS));
+  const hit = (db.phases||[]).filter(p=>p.from <= mid && mid <= p.to && (p.grp === g.id || p.grp === 'all'));
+  return hit.find(p=>p.grp === g.id) || hit[0] || null;
+}
 function phaseInfo(g, mon){
+  const a = autoPhase(g, mon), rec3 = K3[a.k], man = manualPhase(g, mon);
+  if (man){
+    const k = man.k === 'wk' && a.k === 'peak' ? 'peak' : PH3[man.k].base;
+    return {k, k3:man.k, manual:man, rec3, ph:{n:PH3[man.k].n, s:k === 'peak' ? PHASES.peak.s : PH3[man.k].s, d:PHASES[k].d}, next:a.next, last:a.last};
+  }
+  return {k:a.k, k3:rec3, manual:null, rec3, ph:{n:PH3[rec3].n, s:PHASES[a.k].s, d:PHASES[a.k].d}, next:a.next, last:a.last};
+}
+function autoPhase(g, mon){
   const ps = peaksFor(g);
   let next = null, last = null;
   ps.forEach(p=>{
@@ -4020,7 +4283,7 @@ function phaseInfo(g, mon){
   else if (next) k = 'gla';
   else if (last && last.w >= -2) k = 'reg';
   else k = 'off';
-  return {k, ph:PHASES[k], next, last};
+  return {k, next, last};
 }
 const AUTOFOCUS = {
   1:[['schnell','technik']],
@@ -4215,13 +4478,15 @@ function renderPicker(){
   $('#grpSel').innerHTML = db.groups.map(x=>`<option value="${x.id}"${x.id===g.id?' selected':''}>${esc(x.name)}</option>`).join('');
   const {info} = distFor(g, mon);
   $('#phName').textContent = info.ph.n;
-  $('#phSub').textContent = info.next
+  $('#phSub').textContent = info.manual ? 'von Hand festgelegt' : info.next
     ? (info.next.w === 0 ? 'diese Woche' : info.next.w === 1 ? 'nächste Woche' : 'in ' + info.next.w + ' Wochen')
     : info.ph.s;
 }
 function renderPhaseBox(){
   const g = group(), mon = weekMon(), {t, dist, info, main} = targets(g, mon);
   let h = `<div class="block-head"><h3>${esc(info.ph.n)}</h3><span class="tag">${esc(g.name)}, ${g.min} min je Einheit</span></div>`;
+  h += info.manual ? `<p class="note" style="margin:0 0 6px">Phase von Hand festgelegt (${fmtD(parseIso(info.manual.from))} bis ${fmtD(parseIso(info.manual.to))}).${info.rec3 !== info.k3 ? ' Empfehlung aus den Höhepunkten wäre: ' + PH3[info.rec3].n + '.' : ''} <button class="linkbtn" type="button" data-go="saison">Phasen ändern</button></p>`
+    : `<p class="note" style="margin:0 0 6px">Empfehlung aus den Höhepunkten. <button class="linkbtn" type="button" data-go="saison">Phasen von Hand festlegen</button></p>`;
   h += info.next
     ? `<p style="margin:0">Nächster Höhepunkt: <b>${esc(info.next.p.name)}</b> am ${fmtD(parseIso(info.next.p.date))}${parseIso(info.next.p.date).getFullYear()}, ${info.next.w === 0 ? 'diese Woche' : info.next.w === 1 ? 'nächste Woche' : 'in ' + info.next.w + ' Wochen'}. ${esc(info.ph.s)}.</p>`
     : `<p style="margin:0">Kein Höhepunkt eingetragen. <button class="linkbtn" type="button" data-go="saison">Jetzt festlegen</button>, dann passt sich die Verteilung automatisch an.</p>`;
@@ -4326,7 +4591,8 @@ function renderUnitHead(){
   h += `<p class="note">Der schwarze Strich ist der Vorschlag für diesen Tag, abgeleitet aus Phase und Tagesschwerpunkt.</p>`;
   if (mine.length) h += mine.map(o=>`<div class="hint"><i class="${o.lvl}"></i><div>${o.text}</div></div>`).join('');
   $('#unitHead').innerHTML = h;
-  $('#spUnit').innerHTML = spondHtml(g, iso(d), false);
+  const gath = athList().filter(a=>g.ath.includes(a.id));
+  $('#spUnit').innerHTML = (gath.length ? `<p class="note" style="margin:0 0 8px">${KIND[g.kind]}: ${gath.map(a=>esc(a.name)).join(', ')}</p>` : '') + spondHtml(g, iso(d), false);
   $('#unitNote').value = u ? u.note : '';
 }
 function libFiltered(){
@@ -4617,7 +4883,7 @@ function fillSuggestion(){
 /* ---- Saison, Übungen, Gruppen ---- */
 function renderPeaks(){
   $('#pkGroup').innerHTML = '<option value="all">alle Gruppen</option>' + db.groups.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('');
-  $('#phTable').innerHTML = PH_TABLE.map(([lab,k])=>`<tr><td>${lab}</td><td>${PHASES[k].n}</td><td>${MAIN.map(m=>spOf(m).n.slice(0,1)+' '+PHASES[k].d[m]).join(' · ')}</td></tr>`).join('');
+  $('#phTable').innerHTML = PH_TABLE.map(([lab,k])=>`<tr><td>${lab}</td><td>${PH3[K3[k]].n}${PHASES[k].n !== PH3[K3[k]].n ? ' <span class="tag">(' + PHASES[k].n + ')</span>' : ''}</td><td>${MAIN.map(m=>spOf(m).n.slice(0,1)+' '+PHASES[k].d[m]).join(' · ')}</td></tr>`).join('');
   const out = $('#peakOut'), today = monday(new Date());
   const list = db.peaks.slice().sort((a,b)=>a.date.localeCompare(b.date));
   if (!list.length){ out.innerHTML = '<div class="info">Noch kein Höhepunkt. Ohne Ziel plant die App in der Phase Übergang, also vielseitig.</div>'; return; }
@@ -4654,6 +4920,7 @@ function renderExAdmin(){
   }).join('');
 }
 function renderGroups(){
+  if (!$('#gnAge').innerHTML) $('#gnAge').innerHTML = AGES.map((a,i)=>`<option value="${i}"${i===2?' selected':''}>${a}</option>`).join('');
   $('#grpOut').innerHTML = db.groups.map(g=>{
     const rows = g.days.map(day=>{
       const foc = dayFocus(g, day), own = hasOwnFocus(g, day);
@@ -4661,12 +4928,20 @@ function renderGroups(){
         <div class="qchips">${MAIN.map(m=>`<button type="button" class="qchip${foc.includes(m)?' on':''}" data-foc="${g.id}:${day}:${m}"><i class="sw" style="background:${spOf(m).c}"></i>${spOf(m).n}</button>`).join('')}</div>
         <button class="btn small" type="button" data-focreset="${g.id}:${day}"${own?'':' disabled style="opacity:.4"'}>automatisch</button></div>`;
     }).join('');
-    return `<div class="block"><div class="block-head"><h3>${esc(g.name)}</h3><span class="tag">Altersstufe ${AGES[g.age]}</span></div>
+    const ath = athList(), mine = ath.filter(a=>g.ath.includes(a.id));
+    return `<div class="block"><div class="block-head"><h3>${esc(g.name)}</h3><span class="tag">${KIND[g.kind]} · ${AGES[g.age]}</span></div>
+    <div class="gedit"><label class="f"><span>Name</span><input type="text" value="${esc(g.name)}" data-gname="${g.id}" maxlength="24"></label>
+      <label class="f"><span>Altersklasse</span><select data-gage="${g.id}">${AGES.map((a,i)=>`<option value="${i}"${g.age===i?' selected':''}>${a}</option>`).join('')}</select></label></div>
+    <div class="f"><span>Athleten${mine.length ? ' (' + mine.length + ')' : ''}</span>
+      <div class="gath">${mine.map(a=>`<span class="qchip on">${esc(a.name)}</span>`).join('')}<button class="btn small" type="button" data-gath="${g.id}">${gAthOpen === g.id ? 'Fertig' : mine.length ? 'Ändern' : 'Athleten zuordnen'}</button></div>
+      ${gAthOpen === g.id ? (ath.length ? `<div class="gath">${ath.slice().sort((a,b)=>a.name.localeCompare(b.name,'de')).map(a=>`<button type="button" class="qchip${g.ath.includes(a.id)?' on':''}" data-gathx="${g.id}:${a.id}">${esc(a.name)}${a.jg ? ' <span style="opacity:.6">' + a.jg + '</span>' : ''}</button>`).join('')}</div>` : '<p class="note">Die Athletenliste ist noch leer (Seite Athleten).</p>') : ''}
+    </div>
     <div class="f"><span>Trainingstage</span><div class="qchips" style="margin-top:4px">${DAYS.map((d,i)=>`<button type="button" class="qchip${g.days.includes(i+1)?' on':''}" data-day-toggle="${g.id}:${i+1}">${d}</button>`).join('')}</div></div>
     <div class="fg" style="margin-top:10px">
       <label class="f"><span>Dauer in Minuten</span><input type="number" inputmode="numeric" value="${g.min}" data-gmin="${g.id}"></label>
     </div>
     ${rows ? `<h4>Tagesschwerpunkt</h4><p class="note" style="margin:0 0 4px">Ohne eigene Auswahl verteilt die App die Schwerpunkte automatisch über die Woche. Keiner gewählt heißt vielseitig.</p>${rows}` : ''}
+    ${db.groups.length > 1 ? `<div class="gdel"><button class="btn small danger" type="button" data-gdel="${g.id}">${gDelAsk === g.id ? 'Wirklich löschen? Nochmal tippen' : 'Gruppe löschen'}</button>${gDelAsk === g.id ? `<p class="note">Löscht die Gruppe mit ihren Einheiten, Phasen und Höhepunkten. Gemeinsame Einheiten bleiben bei den anderen Gruppen.</p>` : ''}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -4710,8 +4985,149 @@ function download(name, text, type){
 function flash(el, text){ if (!el) return; el.textContent = text; el.hidden = false; clearTimeout(el._t); el._t = setTimeout(()=>el.hidden = true, 6000); }
 
 function renderAll(){
-  renderWarn(); renderPicker(); renderPhaseBox(); renderWeek(); renderUnit(); renderPeaks(); renderExAdmin(); renderGroups();
+  renderWarn(); renderPicker(); renderPhaseBox(); renderWeek(); renderUnit(); renderCal(); renderPhases(); renderPeaks(); renderExAdmin(); renderGroups();
 }
+/* ---------- Phasen von Hand, mit Empfehlung aus den Höhepunkten ---------- */
+const addD = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+let phPrev = null, phForm = {k:'auf', grp:'', from:'', to:''};
+function recPhases(gid){
+  const today = monday(new Date()), t = iso(today);
+  const dates = [...new Set(db.peaks.filter(p=>gid === 'all' ? true : (p.grp === gid || p.grp === 'all')).map(p=>p.date).filter(d=>d >= t))].sort();
+  const out = []; let start = today;
+  const push = (k, a, b)=>{ if (b < a) return; const l = out[out.length-1]; if (l && l.k === k && iso(addD(parseIso(l.to), 1)) === iso(a)) l.to = iso(b); else out.push({k, from:iso(a), to:iso(b)}); };
+  dates.forEach(pd=>{
+    const pm = monday(parseIso(pd)), wkFrom = addD(pm, -14), vorFrom = addD(pm, -84), end = addD(pm, 6);
+    if (end < start) return;
+    if (start < vorFrom) push('auf', start, addD(vorFrom, -1));
+    const v0 = start > vorFrom ? start : vorFrom; if (v0 < wkFrom) push('vor', v0, addD(wkFrom, -1));
+    push('wk', start > wkFrom ? start : wkFrom, end);
+    start = addD(end, 1);
+  });
+  if (!out.length) push('auf', start, addD(start, 12*7 - 1));
+  return out;
+}
+function grpName(id){ return id === 'all' ? 'alle Gruppen' : (db.groups.find(g=>g.id===id) || {name:'?'}).name; }
+function renderPhases(){
+  const box = $('#phBlock'); if (!box) return;
+  const g = group(); if (!phForm.grp) phForm.grp = g.id;
+  const list = db.phases.slice().sort((a,b)=>a.from.localeCompare(b.from) || a.grp.localeCompare(b.grp));
+  const opts = '<option value="all">alle Gruppen</option>' + db.groups.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+  const sel = (o, v) => o.replace(`value="${v}"`, `value="${v}" selected`);
+  box.innerHTML = `<div class="block-head"><h3>Phasen</h3><span class="tag">Aufbau · Vorbereitung · Wettkampf</span></div>
+    <p class="note" style="margin-top:0">Phasen von Hand je Gruppe festlegen. Wo nichts eingetragen ist, gilt die Empfehlung aus den Höhepunkten. Die Phase bestimmt die vorgeschlagene Verteilung in der Woche.</p>
+    ${list.length ? list.map(p=>`<div class="phrow"><span class="sw" style="background:${PH3[p.k].c}"></span><div><b>${PH3[p.k].n}</b><div class="tag">${esc(grpName(p.grp))}</div></div><em>${fmtD(parseIso(p.from))}${parseIso(p.from).getFullYear() !== parseIso(p.to).getFullYear() ? parseIso(p.from).getFullYear() : ''} – ${fmtD(parseIso(p.to))}${parseIso(p.to).getFullYear()}</em><button class="icon-btn" type="button" data-phdel="${p.id}" aria-label="löschen">×</button></div>`).join('') : '<p class="note">Noch keine Phase von Hand eingetragen.</p>'}
+    <div class="fg" style="margin-top:10px">
+      <label class="f"><span>Phase</span><select id="phK">${Object.keys(PH3).map(k=>`<option value="${k}"${phForm.k===k?' selected':''}>${PH3[k].n}</option>`).join('')}</select></label>
+      <label class="f"><span>Gilt für</span><select id="phG">${sel(opts, phForm.grp)}</select></label>
+      <label class="f"><span>Von</span><input type="date" id="phFrom" value="${phForm.from}"></label>
+      <label class="f"><span>Bis</span><input type="date" id="phTo" value="${phForm.to}"></label>
+    </div>
+    <div class="btns"><button class="btn primary" type="button" id="phAdd">Phase speichern</button><button class="btn" type="button" id="phRec">Empfehlung zeigen</button></div>
+    <p class="warn" id="phErr" hidden></p>
+    ${phPrev ? `<div class="phrec"><b>Empfehlung für ${esc(grpName(phPrev.grp))}</b> (aus ${db.peaks.length ? 'den Höhepunkten' : 'der Saison ohne Höhepunkt'}):
+      ${phPrev.list.map(x=>`<div class="phrow" style="grid-template-columns:12px minmax(0,1fr) auto"><span class="sw" style="background:${PH3[x.k].c}"></span><b>${PH3[x.k].n}</b><em>${fmtD(parseIso(x.from))} – ${fmtD(parseIso(x.to))}${parseIso(x.to).getFullYear()}</em></div>`).join('')}
+      <p class="note">Übernehmen ersetzt die Phasen dieser Auswahl („${esc(grpName(phPrev.grp))}“) ab heute. Danach einzeln anpassen.</p>
+      <div class="btns"><button class="btn primary" type="button" id="phRecOk">Übernehmen</button><button class="btn" type="button" id="phRecNo">Verwerfen</button></div></div>` : ''}`;
+}
+on('#phBlock','change', e=>{
+  if (e.target.id === 'phK') phForm.k = e.target.value;
+  if (e.target.id === 'phG') phForm.grp = e.target.value;
+  if (e.target.id === 'phFrom') phForm.from = e.target.value;
+  if (e.target.id === 'phTo') phForm.to = e.target.value;
+});
+on('#phBlock','click', e=>{
+  const err = $('#phErr');
+  if (e.target.closest('#phAdd')){
+    const k = $('#phK').value, grp = $('#phG').value, from = $('#phFrom').value, to = $('#phTo').value;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)){ err.textContent = 'Bitte Beginn und Ende wählen.'; err.hidden = false; return; }
+    if (to < from){ err.textContent = 'Das Ende liegt vor dem Beginn.'; err.hidden = false; return; }
+    // Überschneidungen derselben Auswahl werden gekürzt bzw. ersetzt
+    const keep = [];
+    db.phases.forEach(p=>{
+      if (p.grp !== grp || p.to < from || p.from > to){ keep.push(p); return; }
+      if (p.from < from) keep.push(Object.assign({}, p, {id:uid(), to:iso(addD(parseIso(from), -1))}));
+      if (p.to > to) keep.push(Object.assign({}, p, {id:uid(), from:iso(addD(parseIso(to), 1))}));
+    });
+    keep.push({id:uid(), k, grp, from, to});
+    db.phases = keep; phForm = {k, grp, from:'', to:''};
+    save(); renderAll(); return;
+  }
+  const d = e.target.closest('[data-phdel]');
+  if (d){ db.phases = db.phases.filter(p=>p.id !== d.dataset.phdel); save(); renderAll(); return; }
+  if (e.target.closest('#phRec')){ const grp = $('#phG').value; phForm.grp = grp; phPrev = {grp, list:recPhases(grp)}; renderPhases(); return; }
+  if (e.target.closest('#phRecNo')){ phPrev = null; renderPhases(); return; }
+  if (e.target.closest('#phRecOk') && phPrev){
+    const t = iso(monday(new Date()));
+    db.phases = db.phases.filter(p=>p.grp !== phPrev.grp || p.to < t).map(p=>p.grp === phPrev.grp && p.to >= t ? p : p);
+    phPrev.list.forEach(x=>db.phases.push({id:uid(), k:x.k, grp:phPrev.grp, from:x.from, to:x.to}));
+    phPrev = null; save(); renderAll(); return;
+  }
+});
+
+/* ---------- Kalender ---------- */
+let calM = null;
+function renderCal(){
+  const box = $('#calGrid'); if (!box) return;
+  const g = group(), now = new Date();
+  if (!calM) calM = new Date(now.getFullYear(), now.getMonth(), 1);
+  const first = new Date(calM.getFullYear(), calM.getMonth(), 1), last = new Date(calM.getFullYear(), calM.getMonth() + 1, 0);
+  $('#calTitle').textContent = first.toLocaleDateString('de-DE', {month:'long', year:'numeric'}) + ' · ' + g.name;
+  const t = iso(now), home = SPOND.has() ? SPOND.pgSubs(g.id, g.name) : [];
+  const peaks = peaksFor(g);
+  let h = '';
+  for (let w = monday(first); w <= last; w = addD(w, 7)){
+    const info = phaseInfo(g, w), ph = PH3[info.k3];
+    let cells = '';
+    for (let i = 0; i < 7; i++){
+      const d = addD(w, i), di = iso(d), mon = iso(w), u = unit(g.id, mon, i + 1);
+      const mins = u ? u.items.reduce((a,x)=>a + x.min, 0) : 0;
+      const evs = SPOND.has() ? SPOND.eventsOn(di) : [];
+      const mine = evs.filter(e=>SPOND.evSubs(e).some(x=>home.includes(x)));
+      const comp = evs.filter(e=>e.matchEvent && !mine.includes(e));
+      const pk = peaks.filter(p=>p.date === di);
+      cells += `<button type="button" class="cday${d.getMonth() !== calM.getMonth() ? ' out' : ''}${di === t ? ' today' : ''}" data-cal="${di}">
+        <span class="dn">${d.getDate()}</span>
+        ${mins ? `<i class="cu">${mins}′</i>` : ''}
+        ${mine.map(e=>`<i class="cs${e.cancelled ? ' x' : ''}">${SPOND.evTime(e)}${e.cancelled ? '' : ' · ' + SPOND.counts(e).acc}</i>`).join('')}
+        ${mine.filter(e=>e.matchEvent).length || comp.length ? `<i class="cw">WK</i>` : ''}
+        ${pk.map(p=>`<i class="cp">★ ${esc(p.name)}</i>`).join('')}
+      </button>`;
+    }
+    h += `<div class="calwk" style="--pc:${ph.c}"><div class="calph${info.manual ? '' : ' rec'}"><span>${ph.n}</span><span>KW ${kw(w)}${info.manual ? '' : ' · Empfehlung'}</span></div><div class="caldays">${cells}</div></div>`;
+  }
+  box.innerHTML = h;
+}
+on('#calPrev','click', ()=>{ calM = new Date(calM.getFullYear(), calM.getMonth() - 1, 1); renderCal(); });
+on('#calNext','click', ()=>{ calM = new Date(calM.getFullYear(), calM.getMonth() + 1, 1); renderCal(); });
+on('#calToday','click', ()=>{ const n = new Date(); calM = new Date(n.getFullYear(), n.getMonth(), 1); renderCal(); });
+on('#calGrid','click', e=>{
+  const b = e.target.closest('[data-cal]'); if (!b) return;
+  const d = parseIso(b.dataset.cal), mon = iso(monday(d)), day = (d.getDay() + 6) % 7 + 1, g = group();
+  db.s.week = mon; curDay = day; save(); renderAll();
+  const u = unit(g.id, mon, day);
+  if (u && u.items.length) openShow(); else goTo('einheit');
+});
+
+/* ---------- Gruppen anlegen, umbenennen, löschen ---------- */
+function athList(){ try { const o = JSON.parse(localStorage.getItem('dtv-training-v1') || 'null'); return o && Array.isArray(o.athletes) ? o.athletes.filter(a=>a && a.name) : []; } catch(e){ return []; } }
+const KIND = {grp:'Trainingsgruppe', foerder:'Fördergruppe', einzel:'Einzelathlet'};
+let gDelAsk = '', gAthOpen = '';
+function deleteGroup(gid){
+  if (db.groups.length < 2) return;
+  // gemeinsame Einheiten, die diese Gruppe hält, an die erste andere Gruppe übergeben
+  Object.keys(db.units).forEach(k=>{
+    if (!k.startsWith(gid + '|')) return;
+    const u = db.units[k]; if (!u || u.ref) return;
+    const refs = Object.keys(db.units).filter(x=>db.units[x] && db.units[x].ref === k);
+    if (refs.length){ const nk = refs[0]; db.units[nk] = u; refs.slice(1).forEach(x=>{ db.units[x] = {ref:nk}; }); }
+  });
+  Object.keys(db.units).forEach(k=>{ if (k.startsWith(gid + '|')) delete db.units[k]; });
+  delete db.series[gid];
+  db.peaks = db.peaks.filter(p=>p.grp !== gid); db.phases = db.phases.filter(p=>p.grp !== gid);
+  db.groups = db.groups.filter(g=>g.id !== gid);
+  if (db.s.grp === gid){ db.s.grp = db.groups[0].id; curDay = null; }
+}
+
 
 /* ---------- Ereignisse ---------- */
 on('#wkPrev','click',()=>{ const m = weekMon(); m.setDate(m.getDate()-7); db.s.week = iso(m); save(); renderAll(); });
@@ -4848,7 +5264,24 @@ on('#exOut','click',e=>{
     db.lib = db.lib.filter(x=>x.id !== ex.id); save(); renderExAdmin(); renderUnit();
   }
 });
+on('#gnAdd','click', ()=>{
+  const err = $('#gnErr'), name = $('#gnName').value.trim();
+  if (!name){ err.textContent = 'Bitte einen Namen eintragen.'; err.hidden = false; return; }
+  if (db.groups.some(g=>g.name.toLowerCase() === name.toLowerCase())){ err.textContent = 'Diesen Namen gibt es schon.'; err.hidden = false; return; }
+  err.hidden = true;
+  const kind = $('#gnKind').value, g = {id:uid(), name:name.slice(0,24), age:+$('#gnAge').value || 0, days:[], focus:{}, min:kind === 'einzel' ? 60 : 90, kind, ath:[]};
+  db.groups.push(g); db.s.grp = g.id; curDay = null; $('#gnName').value = ''; $('#grpNewBox').open = false;
+  save(); renderAll(); flash($('#unitMsg'), `Gruppe „${g.name}“ angelegt. Unter Gruppen die Trainingstage wählen.`);
+  setTimeout(()=>{ const el = document.querySelector(`[data-gname="${g.id}"]`); if (el) el.closest('.block').scrollIntoView({block:'start'}); }, 50);
+});
 on('#grpOut','click',e=>{
+  const dl = e.target.closest('[data-gdel]');
+  if (dl){ const id = dl.dataset.gdel; if (gDelAsk !== id){ gDelAsk = id; renderGroups(); return; } gDelAsk = ''; deleteGroup(id); save(); renderAll(); return; }
+  const ga = e.target.closest('[data-gath]');
+  if (ga){ gAthOpen = gAthOpen === ga.dataset.gath ? '' : ga.dataset.gath; renderGroups(); return; }
+  const gx = e.target.closest('[data-gathx]');
+  if (gx){ const [gid, aid] = gx.dataset.gathx.split(':'), g = db.groups.find(x=>x.id===gid); if (!g) return;
+    const i = g.ath.indexOf(aid); if (i >= 0) g.ath.splice(i, 1); else g.ath.push(aid); save(); renderGroups(); renderUnit(); return; }
   const f = e.target.closest('[data-foc]');
   if (f){
     const [gid, day, m] = f.dataset.foc.split(':');
@@ -4875,6 +5308,10 @@ on('#grpOut','click',e=>{
   save(); renderGroups(); renderPhaseBox(); renderWeek(); renderUnit();
 });
 on('#grpOut','change',e=>{
+  const gn = e.target.closest('[data-gname]');
+  if (gn){ const g = db.groups.find(x=>x.id===gn.dataset.gname); const v = gn.value.trim().slice(0,24); if (g && v){ g.name = v; save(); renderAll(); } else gn.value = g ? g.name : ''; return; }
+  const ag = e.target.closest('[data-gage]');
+  if (ag){ const g = db.groups.find(x=>x.id===ag.dataset.gage); if (g){ g.age = clamp(+ag.value, 0, 7); save(); renderAll(); } return; }
   const inp = e.target.closest('[data-gmin]'); if (!inp) return;
   const g = db.groups.find(x=>x.id===inp.dataset.gmin); if (!g) return;
   g.min = clamp(parseInt(inp.value,10)||90, 30, 240); inp.value = g.min;
@@ -4882,7 +5319,7 @@ on('#grpOut','change',e=>{
 });
 on('#exportBtn','click',()=>{
   download('dtv-planung-' + iso(new Date()) + '.json',
-    JSON.stringify({app:'dtv-plan', version:1, saved:new Date().toISOString(), groups:db.groups, lib:db.lib, peaks:db.peaks, units:db.units, s:db.s}, null, 2),
+    JSON.stringify({app:'dtv-plan', version:1, saved:new Date().toISOString(), groups:db.groups, lib:db.lib, peaks:db.peaks, phases:db.phases, units:db.units, s:db.s}, null, 2),
     'application/json');
   flash($('#dataMsg'), 'Sicherung wird gespeichert. Auf dem iPad liegt sie in der Dateien-App unter Downloads.');
 });
